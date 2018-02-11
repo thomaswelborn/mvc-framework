@@ -1,3 +1,0 @@
-AutoSuggest.Templates.SuggestList = function(data, view) {
-  return document.createRange().createContextualFragment('<div></div>');
-};
