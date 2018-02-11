@@ -1,31 +1,27 @@
 AutoSuggest.Controllers.AutoSuggest = function(settings) {
-  var queryString = AutoSuggest.Controllers.QueryString();
-  var suggestionList = AutoSuggest.Controllers.SuggestionList();
+  var mainUIModel = new Model();
+  var mainDataModel = new Model();
+  var mainView = new View();
+  var queryStringController = AutoSuggest.Controllers.QueryString();
+  var suggestionListController = AutoSuggest.Controllers.SuggestionList();
   
-  var uiModel = new Model({
-    name: 'auto-suggest',
-    data: {}
-  });
-  
-  var view = new View({
-    elementName: 'div',
-    attributes: {
-      'data-view-id': 'auto-suggest'
+  return new Controller(Object.assign(settings || {}, {
+    models: {
+      'mainUI': mainUIModel,
+      'mainData': mainDataModel,
     },
+    views: {
+      'main': mainView,
+    },
+    controllers: {
+      'queryString': queryStringController,
+      'suggestionList': suggestionListController,
+    },
+    controllerEvents: {
+      '@queryString change:value': 'onQueryStringChangeValue',
+      '@suggestionList change:index': 'onSuggestionListChangeIndex',
+    },
+    onQueryStringChangeValue: function() {},
+    onSuggestionListChangeIndex: function() {},
   });
-  view.render().element.append(
-    queryString.view.render().element, 
-    suggestionList.view.render().element
-  );
-
-  var $parentElement = settings.$parentElement;
-  $parentElement.prepend(view.element);
-  
-  var controller = Object.assign(settings || {}, {
-    view: view,
-    queryString: queryString,
-    suggestionList: suggestionList,
-  });
-  
-  return controller;
 };

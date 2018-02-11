@@ -1,3 +1,25 @@
+class Events {
+  constructor() {
+    this.events = {};
+  }
+  on(eventName, callback) {
+    this.events[eventName] = this.events[eventName] || [];
+    this.events[eventName].push(callback);
+  }
+  off(eventName, callback) {
+    var currentEvents = this.events[eventName];
+    if(typeof currentEvents === 'undefined' || currentEvents.length === 0) return;
+    var currentEventIndex = currentEvents.indexOf(callback);
+    if(currentEventIndex >= 0) currentEvents.splice(currentEventIndex, 1);
+  }
+  trigger(eventName, data) {
+    this.events[eventName].forEach(function(callback) {
+      try {
+        callback(data);
+      } catch(error) {}
+    });
+  }
+}
 class AJAX {
   constructor(type, url, settings) {
     this.responseTypes = ['', 'arraybuffer', 'blob', 'document', 'json', 'text'];
@@ -25,48 +47,6 @@ class AJAX {
   setHeaders(xhr, headers) {
     headers.forEach(function(header) {
       xhr.setRequestHeader(Object.keys(header)[0], Object.values(header)[0]);
-    });
-  }
-}
-class Controller extends Events {
-  constructor(settings) {
-    this.settings = settings;
-    for(var key in this.settings) {
-      this[key] = this.settings[key];
-    }
-    this.bindEvents(this.views, this.viewEvents);
-    this.bindEvents(this.models, this.modelEvents);
-  }
-  bindEvents(target, events) {
-    Object.entries(events).forEach(function(event) {
-      event[0] = event[0].split(' ');
-      var element = event[0][0].replace('@', '');
-      var elementEvent = event[0][1];
-      var elementEventCallback = event[1];
-      target[element].on(elementEvent, this[elementEventCallback]);
-    }.bind(this));
-  }
-}
-
-class Events {
-  constructor() {
-    this.events = {};
-  }
-  on(eventName, callback) {
-    this.events[eventName] = this.events[eventName] || [];
-    this.events[eventName].push(callback);
-  }
-  off(eventName, callback) {
-    var currentEvents = this.events[eventName];
-    if(typeof currentEvents === 'undefined' || currentEvents.length === 0) return;
-    var currentEventIndex = currentEvents.indexOf(callback);
-    if(currentEventIndex >= 0) currentEvents.splice(currentEventIndex, 1);
-  }
-  trigger(eventName, data) {
-    this.events[eventName].forEach(function(callback) {
-      try {
-        callback(data);
-      } catch(error) {}
     });
   }
 }
@@ -142,83 +122,6 @@ class Model extends Events {
   }
 }
 
-class Router extends Events {
-  constructor(settings) {
-    super();
-    this.settings = settings;
-    for(var setting in this.settings) {
-      this[setting] = this.settings[setting];
-    }
-    this.setRoutes(this.settings.routes, this.settings.controllers);
-    this.setEvents();
-    this.start();
-    try {
-      this.initialize();
-    } catch(error) {}
-  }
-  start() {
-    var location = this.getRoute();
-    if(location === '') {
-      window.location.hash = '/';
-    }else {
-      window.dispatchEvent(new Event('hashchange'));
-    }
-  }
-  setRoutes(routes, controllers) {
-    for(var route in routes) {
-      this.routes[route] = controllers[routes[route]];
-    }
-    return;
-  }
-  setEvents() {
-    window.addEventListener('hashchange', this.onHashChange.bind(this));
-    return;
-  }
-  getRoute() {
-    return String(window.location.hash).split('#').pop();
-  }
-  onHashChange(event) {
-    var route = this.getRoute();
-    try {
-      this.routes[route](event);
-      this.trigger('navigate', event);
-    } catch(error) {}
-  }
-  navigate(path) {
-    window.location.hash = path;
-  }
-}
-var sampleData = {
-  name: 'Some Name',
-  entries: [1,2,3,4,5],
-  obj: {
-    a: 1,
-    b: 2,
-    c: 3
-  }
-};
-var sampleTemplate = function(data) {
-  var template = Array(
-    '<div class="template">',
-      '<div class="name">',
-        data.name,
-      '</div>',
-      '<div class="entries">',
-        data.entries.map(function(element){
-          return '<span class="entry">Entry: ' + element + '</span>';
-        }).join(''),
-      '</div>',
-      '<div class="obj">',
-        Object.entries(data.obj).map(function(element) {
-          return '<span>' + element[0] + ': ' + element[1] + '</span>';
-        }).join(''),
-      '</div>',
-    '</div>'
-  ).join('');
-  return document.createRange().createContextualFragment(template);
-};
-
-var htmlFragment = sampleTemplate(sampleData);
 class View extends Events {
   constructor(settings) {
     super();
@@ -287,5 +190,71 @@ class View extends Events {
     }
     this.trigger('render', this);
     return this;
+  }
+}
+class Controller extends Events {
+  constructor(settings) {
+    this.settings = settings;
+    for(var key in this.settings) {
+      this[key] = this.settings[key];
+    }
+    this.bindEvents(this.views, this.viewEvents);
+    this.bindEvents(this.models, this.modelEvents);
+  }
+  bindEvents(target, events) {
+    Object.entries(events).forEach(function(event) {
+      event[0] = event[0].split(' ');
+      var element = event[0][0].replace('@', '');
+      var elementEvent = event[0][1];
+      var elementEventCallback = event[1];
+      target[element].on(elementEvent, this[elementEventCallback]);
+    }.bind(this));
+  }
+}
+
+class Router extends Events {
+  constructor(settings) {
+    super();
+    this.settings = settings;
+    for(var setting in this.settings) {
+      this[setting] = this.settings[setting];
+    }
+    this.setRoutes(this.settings.routes, this.settings.controllers);
+    this.setEvents();
+    this.start();
+    try {
+      this.initialize();
+    } catch(error) {}
+  }
+  start() {
+    var location = this.getRoute();
+    if(location === '') {
+      window.location.hash = '/';
+    }else {
+      window.dispatchEvent(new Event('hashchange'));
+    }
+  }
+  setRoutes(routes, controllers) {
+    for(var route in routes) {
+      this.routes[route] = controllers[routes[route]];
+    }
+    return;
+  }
+  setEvents() {
+    window.addEventListener('hashchange', this.onHashChange.bind(this));
+    return;
+  }
+  getRoute() {
+    return String(window.location.hash).split('#').pop();
+  }
+  onHashChange(event) {
+    var route = this.getRoute();
+    try {
+      this.routes[route](event);
+      this.trigger('navigate', event);
+    } catch(error) {}
+  }
+  navigate(path) {
+    window.location.hash = path;
   }
 }

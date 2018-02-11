@@ -1,3 +1,7 @@
-AutoSuggest.Templates.SuggestionList = function(data, view) {
-  return document.createRange().createContextualFragment('<div></div>');
+AutoSuggest.Templates.SuggestionList = function(data) {
+  var template = Array(
+    '<ul>',
+    '</ul>'
+  ).join('');
+  return document.createRange().createContextualFragment(template);
 };

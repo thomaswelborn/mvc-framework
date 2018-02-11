@@ -1,7 +1,7 @@
-AutoSuggest.Templates.QueryString = function(data, view) {
+AutoSuggest.Templates.QueryString = function(data) {
   var template = Array(
     '<input type="text">',
-    '<input type="submit" value="Submit">'
+    '<input type="submit" value="Query">'
   ).join('');
   return document.createRange().createContextualFragment(template);
 };

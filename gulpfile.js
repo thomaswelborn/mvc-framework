@@ -3,7 +3,14 @@ var gulpConcat = require('gulp-concat');
 
 var configuration = {
   develop: {
-    src: 'develop/scripts/**.js',
+    src: [
+      'develop/scripts/Events.js',
+      'develop/scripts/AJAX.js',
+      'develop/scripts/Model.js',
+      'develop/scripts/View.js',
+      'develop/scripts/Controller.js',
+      'develop/scripts/Router.js'
+    ],
     destination: 'develop/',
     filename: 'mvc-framework.js',
   },
