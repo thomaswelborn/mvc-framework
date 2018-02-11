@@ -1,25 +1,3 @@
-class Events {
-  constructor() {
-    this.events = {};
-  }
-  on(eventName, callback) {
-    this.events[eventName] = this.events[eventName] || [];
-    this.events[eventName].push(callback);
-  }
-  off(eventName, callback) {
-    var events = this.events[eventName];
-    if(typeof events === 'undefined' || events.length === 0) return;
-    var eventIndex = events.indexOf(callback);
-    if(eventIndex >= 0) events.splice(eventIndex, 1);
-  }
-  trigger(eventName, data) {
-    this.events[eventName].forEach(function(callback) {
-      try {
-        callback(data);
-      } catch(error) {}
-    });
-  }
-}
 class AJAX {
   constructor(type, url, settings) {
     this.responseTypes = ['', 'arraybuffer', 'blob', 'document', 'json', 'text'];
@@ -50,43 +28,46 @@ class AJAX {
     });
   }
 }
-class Router extends Events {
+class Controller extends Events {
   constructor(settings) {
-    super();
     this.settings = settings;
-    this.setRoutes(this.settings.routes, this.settings.controllers);
-    this.setEvents();
-    this.start();
-    try {
-      this.initialize();
-    } catch(error) {}
-  }
-  setRoutes(routes, controllers) {
-    for(var route in routes) {
-      this.routes[route] = controllers[routes[route]];
+    for(var key in this.settings) {
+      this[key] = this.settings[key];
     }
-    return;
+    this.bindEvents(this.views, this.viewEvents);
+    this.bindEvents(this.models, this.modelEvents);
   }
-  setEvents() {
-    window.addEventListener('hashchange', this.onHashChange.bind(this));
-    return;
+  bindEvents(target, events) {
+    Object.entries(events).forEach(function(event) {
+      event[0] = event[0].split(' ');
+      var element = event[0][0].replace('@', '');
+      var elementEvent = event[0][1];
+      var elementEventCallback = event[1];
+      target[element].on(elementEvent, this[elementEventCallback]);
+    }.bind(this));
   }
-  start() {
-    var location = this.getRoute();
-    (location === '') ? window.location.hash = '/' : window.dispatchEvent(new Event('hashchange'));
+}
+
+class Events {
+  constructor() {
+    this.events = {};
   }
-  getRoute() {
-    return String(window.location.hash).split('#').pop();
+  on(eventName, callback) {
+    this.events[eventName] = this.events[eventName] || [];
+    this.events[eventName].push(callback);
   }
-  onHashChange(event) {
-    var route = this.getRoute();
-    try {
-      this.routes[route](event);
-      this.trigger('navigate', event);
-    } catch(error) {}
+  off(eventName, callback) {
+    var currentEvents = this.events[eventName];
+    if(typeof currentEvents === 'undefined' || currentEvents.length === 0) return;
+    var currentEventIndex = currentEvents.indexOf(callback);
+    if(currentEventIndex >= 0) currentEvents.splice(currentEventIndex, 1);
   }
-  navigate(path) {
-    window.location.hash = path;
+  trigger(eventName, data) {
+    this.events[eventName].forEach(function(callback) {
+      try {
+        callback(data);
+      } catch(error) {}
+    });
   }
 }
 class Model extends Events {
@@ -95,8 +76,8 @@ class Model extends Events {
     this.settings = settings || {};
     this.data = {};
     this._data = this.settings.data;
-    this.setAll(this.settings.data);
     delete this.settings.data;
+    this.setAll(this._data);
     for(var key in this.settings) {
       this[key] = this.settings[key];
     }
@@ -104,17 +85,17 @@ class Model extends Events {
       this.initialize();
     } catch(error) {}
   }
-  fetch(settings) {
-    return new AJAX('GET', this.url || url, settings || {});
+  fetch(settings, url) {
+    return new AJAX('GET', url || this.url, settings || {});
   }
-  add(settings) {
-    return new AJAX('POST', this.url || url, settings || {});
+  add(settings, url) {
+    return new AJAX('POST', url || this.url, settings || {});
   }
-  update(settings) {
-    return new AJAX('PUT', this.url || url, settings || {});
+  update(settings, url) {
+    return new AJAX('PUT', url || this.url, settings || {});
   }
-  remove(settings) {
-    return new AJAX('DELETE', this.url || url, settings || {});
+  remove(settings, url) {
+    return new AJAX('DELETE', url || this.url, settings || {});
   }
   setAll(data) {
     for(var key in data) {
@@ -160,6 +141,84 @@ class Model extends Events {
     return (key) ? this.data[key] : this._data;
   }
 }
+
+class Router extends Events {
+  constructor(settings) {
+    super();
+    this.settings = settings;
+    for(var setting in this.settings) {
+      this[setting] = this.settings[setting];
+    }
+    this.setRoutes(this.settings.routes, this.settings.controllers);
+    this.setEvents();
+    this.start();
+    try {
+      this.initialize();
+    } catch(error) {}
+  }
+  start() {
+    var location = this.getRoute();
+    if(location === '') {
+      window.location.hash = '/';
+    }else {
+      window.dispatchEvent(new Event('hashchange'));
+    }
+  }
+  setRoutes(routes, controllers) {
+    for(var route in routes) {
+      this.routes[route] = controllers[routes[route]];
+    }
+    return;
+  }
+  setEvents() {
+    window.addEventListener('hashchange', this.onHashChange.bind(this));
+    return;
+  }
+  getRoute() {
+    return String(window.location.hash).split('#').pop();
+  }
+  onHashChange(event) {
+    var route = this.getRoute();
+    try {
+      this.routes[route](event);
+      this.trigger('navigate', event);
+    } catch(error) {}
+  }
+  navigate(path) {
+    window.location.hash = path;
+  }
+}
+var sampleData = {
+  name: 'Some Name',
+  entries: [1,2,3,4,5],
+  obj: {
+    a: 1,
+    b: 2,
+    c: 3
+  }
+};
+var sampleTemplate = function(data) {
+  var template = Array(
+    '<div class="template">',
+      '<div class="name">',
+        data.name,
+      '</div>',
+      '<div class="entries">',
+        data.entries.map(function(element){
+          return '<span class="entry">Entry: ' + element + '</span>';
+        }).join(''),
+      '</div>',
+      '<div class="obj">',
+        Object.entries(data.obj).map(function(element) {
+          return '<span>' + element[0] + ': ' + element[1] + '</span>';
+        }).join(''),
+      '</div>',
+    '</div>'
+  ).join('');
+  return document.createRange().createContextualFragment(template);
+};
+
+var htmlFragment = sampleTemplate(sampleData);
 class View extends Events {
   constructor(settings) {
     super();
