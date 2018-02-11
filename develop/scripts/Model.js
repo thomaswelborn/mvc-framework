@@ -4,8 +4,8 @@ class Model extends Events {
     this.settings = settings || {};
     this.data = {};
     this._data = this.settings.data;
-    this.setAll(this.settings.data);
     delete this.settings.data;
+    this.setAll(this._data);
     for(var key in this.settings) {
       this[key] = this.settings[key];
     }
@@ -13,17 +13,17 @@ class Model extends Events {
       this.initialize();
     } catch(error) {}
   }
-  fetch(settings) {
-    return new AJAX('GET', this.url || url, settings || {});
+  fetch(settings, url) {
+    return new AJAX('GET', url || this.url, settings || {});
   }
-  add(settings) {
-    return new AJAX('POST', this.url || url, settings || {});
+  add(settings, url) {
+    return new AJAX('POST', url || this.url, settings || {});
   }
-  update(settings) {
-    return new AJAX('PUT', this.url || url, settings || {});
+  update(settings, url) {
+    return new AJAX('PUT', url || this.url, settings || {});
   }
-  remove(settings) {
-    return new AJAX('DELETE', this.url || url, settings || {});
+  remove(settings, url) {
+    return new AJAX('DELETE', url || this.url, settings || {});
   }
   setAll(data) {
     for(var key in data) {

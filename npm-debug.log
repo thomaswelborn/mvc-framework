@@ -1,0 +1,149 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/bin/node',
+1 verbose cli   '/usr/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   '-g',
+1 verbose cli   'concat-files' ]
+2 info using npm@1.4.28
+3 info using node@v0.10.37
+4 verbose node symlink /usr/bin/node
+5 verbose cache add [ 'concat-files', null ]
+6 verbose cache add name=undefined spec="concat-files" args=["concat-files",null]
+7 verbose parsed url { protocol: null,
+7 verbose parsed url   slashes: null,
+7 verbose parsed url   auth: null,
+7 verbose parsed url   host: null,
+7 verbose parsed url   port: null,
+7 verbose parsed url   hostname: null,
+7 verbose parsed url   hash: null,
+7 verbose parsed url   search: null,
+7 verbose parsed url   query: null,
+7 verbose parsed url   pathname: 'concat-files',
+7 verbose parsed url   path: 'concat-files',
+7 verbose parsed url   href: 'concat-files' }
+8 silly lockFile ada03522-concat-files concat-files
+9 verbose lock concat-files /home/patrick/.npm/ada03522-concat-files.lock
+10 silly lockFile ada03522-concat-files concat-files
+11 silly lockFile ada03522-concat-files concat-files
+12 verbose addNamed [ 'concat-files', '' ]
+13 verbose addNamed [ null, '*' ]
+14 silly lockFile 23a4040e-concat-files concat-files@
+15 verbose lock concat-files@ /home/patrick/.npm/23a4040e-concat-files.lock
+16 silly addNameRange { name: 'concat-files', range: '*', hasData: false }
+17 verbose request where is /concat-files
+18 verbose request registry https://registry.npmjs.org/
+19 verbose request id 10872cdcf0f68048
+20 verbose url raw /concat-files
+21 verbose url resolving [ 'https://registry.npmjs.org/', './concat-files' ]
+22 verbose url resolved https://registry.npmjs.org/concat-files
+23 verbose request where is https://registry.npmjs.org/concat-files
+24 info trying registry request attempt 1 at 10:13:49
+25 http GET https://registry.npmjs.org/concat-files
+26 http 200 https://registry.npmjs.org/concat-files
+27 silly registry.get cb [ 200,
+27 silly registry.get   { 'content-type': 'application/json; charset=UTF-8',
+27 silly registry.get     server: 'UploadServer',
+27 silly registry.get     'cache-control': 'max-age=300',
+27 silly registry.get     'last-modified': 'Fri, 14 Apr 2017 0:33:05 GMT',
+27 silly registry.get     etag: '"58f018c1-c7f"',
+27 silly registry.get     'x-npm-region': 'US-West',
+27 silly registry.get     'content-encoding': 'gzip',
+27 silly registry.get     'content-length': '1120',
+27 silly registry.get     'accept-ranges': 'bytes',
+27 silly registry.get     date: 'Sun, 11 Feb 2018 18:13:49 GMT',
+27 silly registry.get     via: '1.1 varnish',
+27 silly registry.get     age: '5522',
+27 silly registry.get     connection: 'keep-alive',
+27 silly registry.get     'x-served-by': 'cache-sea1044-SEA',
+27 silly registry.get     'x-cache': 'HIT',
+27 silly registry.get     'x-cache-hits': '1',
+27 silly registry.get     'x-timer': 'S1518372830.985578,VS0,VE1',
+27 silly registry.get     vary: 'Accept-Encoding, Accept' } ]
+28 silly addNameRange number 2 { name: 'concat-files', range: '*', hasData: true }
+29 silly addNameRange versions [ 'concat-files', [ '0.1.0', '0.1.1' ] ]
+30 verbose addNamed [ 'concat-files', '0.1.1' ]
+31 verbose addNamed [ '0.1.1', '0.1.1' ]
+32 silly lockFile 56ee959d-concat-files-0-1-1 concat-files@0.1.1
+33 verbose lock concat-files@0.1.1 /home/patrick/.npm/56ee959d-concat-files-0-1-1.lock
+34 silly lockFile f967a7ba-cat-files-concat-files-0-1-1-tgz https://registry.npmjs.org/concat-files/-/concat-files-0.1.1.tgz
+35 verbose lock https://registry.npmjs.org/concat-files/-/concat-files-0.1.1.tgz /home/patrick/.npm/f967a7ba-cat-files-concat-files-0-1-1-tgz.lock
+36 verbose addRemoteTarball [ 'https://registry.npmjs.org/concat-files/-/concat-files-0.1.1.tgz',
+36 verbose addRemoteTarball   '7016ae60278ba3f6b0b561368fa211160e556db5' ]
+37 info retry fetch attempt 1 at 10:13:50
+38 verbose fetch to= /tmp/npm-3796-ZTO5v19a/registry.npmjs.org/concat-files/-/concat-files-0.1.1.tgz
+39 http GET https://registry.npmjs.org/concat-files/-/concat-files-0.1.1.tgz
+40 http 200 https://registry.npmjs.org/concat-files/-/concat-files-0.1.1.tgz
+41 silly lockFile f967a7ba-cat-files-concat-files-0-1-1-tgz https://registry.npmjs.org/concat-files/-/concat-files-0.1.1.tgz
+42 silly lockFile f967a7ba-cat-files-concat-files-0-1-1-tgz https://registry.npmjs.org/concat-files/-/concat-files-0.1.1.tgz
+43 silly lockFile 56ee959d-concat-files-0-1-1 concat-files@0.1.1
+44 silly lockFile 56ee959d-concat-files-0-1-1 concat-files@0.1.1
+45 silly lockFile 23a4040e-concat-files concat-files@
+46 silly lockFile 23a4040e-concat-files concat-files@
+47 silly resolved [ { name: 'concat-files',
+47 silly resolved     version: '0.1.1',
+47 silly resolved     description: 'Concatenate files asynchronously',
+47 silly resolved     main: 'index.js',
+47 silly resolved     scripts: { test: 'mocha test -R spec -C' },
+47 silly resolved     repository:
+47 silly resolved      { type: 'git',
+47 silly resolved        url: 'git+ssh://git@github.com/vvo/concat-files.git' },
+47 silly resolved     author: { name: 'Vincent Voyer', email: 'vincent@zeroload.net' },
+47 silly resolved     license: 'MIT',
+47 silly resolved     dependencies: { async: '~0.2.6' },
+47 silly resolved     devDependencies: { temp: '~0.5.0', bench: '~0.3.5', mocha: '~1.8.2' },
+47 silly resolved     gitHead: 'db964d9627e64fe62b4c37c477cd900e16d2e310',
+47 silly resolved     bugs: { url: 'https://github.com/vvo/concat-files/issues' },
+47 silly resolved     homepage: 'https://github.com/vvo/concat-files#readme',
+47 silly resolved     _id: 'concat-files@0.1.1',
+47 silly resolved     _shasum: '7016ae60278ba3f6b0b561368fa211160e556db5',
+47 silly resolved     _from: 'concat-files@',
+47 silly resolved     _npmVersion: '3.10.10',
+47 silly resolved     _nodeVersion: '7.2.1',
+47 silly resolved     _npmUser: { name: 'vvo', email: 'vincent.voyer@gmail.com' },
+47 silly resolved     maintainers: [ [Object] ],
+47 silly resolved     dist:
+47 silly resolved      { shasum: '7016ae60278ba3f6b0b561368fa211160e556db5',
+47 silly resolved        tarball: 'https://registry.npmjs.org/concat-files/-/concat-files-0.1.1.tgz' },
+47 silly resolved     _npmOperationalInternal:
+47 silly resolved      { host: 'packages-12-west.internal.npmjs.com',
+47 silly resolved        tmp: 'tmp/concat-files-0.1.1.tgz_1481794905522_0.6821307698264718' },
+47 silly resolved     directories: {},
+47 silly resolved     _resolved: 'https://registry.npmjs.org/concat-files/-/concat-files-0.1.1.tgz' } ]
+48 info install concat-files@0.1.1 into /usr/lib
+49 info installOne concat-files@0.1.1
+50 verbose lib/node_modules/concat-files unbuild
+51 verbose tar unpack /home/patrick/.npm/concat-files/0.1.1/package.tgz
+52 silly lockFile f86a622d-sr-lib-node-modules-concat-files tar:///usr/lib/node_modules/concat-files
+53 verbose lock tar:///usr/lib/node_modules/concat-files /home/patrick/.npm/f86a622d-sr-lib-node-modules-concat-files.lock
+54 silly lockFile 94454f62-m-concat-files-0-1-1-package-tgz tar:///home/patrick/.npm/concat-files/0.1.1/package.tgz
+55 verbose lock tar:///home/patrick/.npm/concat-files/0.1.1/package.tgz /home/patrick/.npm/94454f62-m-concat-files-0-1-1-package-tgz.lock
+56 silly gunzTarPerm modes [ '775', '664' ]
+57 error Error: EACCES, mkdir '/usr/lib/node_modules/concat-files'
+57 error  { [Error: EACCES, mkdir '/usr/lib/node_modules/concat-files']
+57 error   errno: 3,
+57 error   code: 'EACCES',
+57 error   path: '/usr/lib/node_modules/concat-files',
+57 error   fstream_type: 'Directory',
+57 error   fstream_path: '/usr/lib/node_modules/concat-files',
+57 error   fstream_class: 'DirWriter',
+57 error   fstream_stack:
+57 error    [ '/usr/lib/node_modules/npm/node_modules/fstream/lib/dir-writer.js:36:23',
+57 error      '/usr/lib/node_modules/npm/node_modules/mkdirp/index.js:46:53',
+57 error      'Object.oncomplete (fs.js:108:15)' ] }
+58 error Please try running this command again as root/Administrator.
+59 error System Linux 3.2.0-126-generic
+60 error command "/usr/bin/node" "/usr/bin/npm" "install" "-g" "concat-files"
+61 error cwd /home/patrick/Documents/projects/mvc-framework
+62 error node -v v0.10.37
+63 error npm -v 1.4.28
+64 error path /usr/lib/node_modules/concat-files
+65 error fstream_path /usr/lib/node_modules/concat-files
+66 error fstream_type Directory
+67 error fstream_class DirWriter
+68 error code EACCES
+69 error errno 3
+70 error stack Error: EACCES, mkdir '/usr/lib/node_modules/concat-files'
+71 error fstream_stack /usr/lib/node_modules/npm/node_modules/fstream/lib/dir-writer.js:36:23
+71 error fstream_stack /usr/lib/node_modules/npm/node_modules/mkdirp/index.js:46:53
+71 error fstream_stack Object.oncomplete (fs.js:108:15)
+72 verbose exit [ 3, true ]
