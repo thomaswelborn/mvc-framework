@@ -1,0 +1,6 @@
+AutoSuggest.Templates.AutoSuggest = function(data, view) {
+  var template = Array(
+    '<div>','</div>'
+  ).join('');
+  return document.createRange().createContextualFragment(template);
+};
