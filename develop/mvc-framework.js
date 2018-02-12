@@ -121,7 +121,6 @@ class Model extends Events {
     return (key) ? this.data[key] : this._data;
   }
 }
-
 class View extends Events {
   constructor(settings) {
     super();
@@ -193,7 +192,6 @@ class View extends Events {
     return this;
   }
 }
-
 class Controller extends Events {
   constructor(settings) {
     super();
@@ -224,7 +222,6 @@ class Controller extends Events {
     }.bind(this));
   }
 }
-
 class Router extends Events {
   constructor(settings) {
     super();
