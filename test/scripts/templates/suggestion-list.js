@@ -1,5 +1,5 @@
 AutoSuggest.Templates.SuggestionList = function(data) {
-  var template = Array(
+  var template = Array.prototype.concat(
     '<ul>',
     '</ul>'
   ).join('');

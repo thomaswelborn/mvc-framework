@@ -1,14 +1,21 @@
 AutoSuggest.Controllers.SuggestionList = function(settings) {
-  var mainUIModel = new Model();
-  var mainDataModel = new Model();
-  var mainView = new View();
+  var uiModel = new Model();
+  var dataModel = new Model();
+  var view = new View({
+    elementName: 'div',
+    attributes: {
+      'data-view-id': 'suggestion-list',
+    },
+    template: AutoSuggest.Templates.SuggestionList,
+  });
+  view.render();
   return new Controller(Object.assign(settings || {}, {
     models: {
-      'ui': mainUIModel,
-      'data': mainDataModel,
+      'ui': uiModel,
+      'data': dataModel,
     },
     views: {
-      'main': mainView,
+      'main': view,
     },
     modelEvents: {},
     viewEvents: {},

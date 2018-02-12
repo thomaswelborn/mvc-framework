@@ -31,6 +31,7 @@ AutoSuggest.Controllers.QueryString = function(settings) {
     onInputFocus: function(event) {},
     onInputBlur: function(event) {},
   });
+  view.render();
   return new Controller(Object.assign(settings || {}, {
     models: {
       'ui': uiModel,

@@ -27,5 +27,9 @@ AutoSuggest.Controllers.AutoSuggest = function(settings) {
   controller.views.main.render();
   $parentElement.innerHTML = '';
   $parentElement.append(controller.views.main.element);
+  controller.views.main.element.append(
+    queryStringController.views.main.element,
+    suggestionListController.views.main.element
+  );
   return controller;
 };

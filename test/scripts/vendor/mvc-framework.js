@@ -186,7 +186,7 @@ class View extends Events {
   render(data) {
     if(typeof this.template === 'object') {
       this.element.innerHTML = '';
-      this.element.append(this.template(data || {}, this));
+      this.element.append(this.template(data || {}));
     }
     this.trigger('render', this);
     return this;
