@@ -178,7 +178,7 @@ class View extends Events {
     var element;
     element = (selector.match('@')) ? this.ui[selector.replace('@', '')] : this.element.querySelectorAll(selector);
     element.forEach(function(elementInstance) {
-      var elementCallback = (typeof uiEvent[1] === 'function') ? uiEvent[1] : this[uiEvent[1]].bind(this);
+      var elementCallback = (typeof uiEvent[1] === 'function') ? uiEvent[1].bind(this) : this[uiEvent[1]].bind(this);
       elementActions.forEach(function(elementAction) {
         elementInstance.addEventListener(elementAction, elementCallback);
       }.bind(this));

@@ -24,12 +24,21 @@ AutoSuggest.Controllers.QueryString = function(settings) {
     uiEvents: {
       '@input focus': 'onInputFocus',
       '@input blur': 'onInputBlur',
-      '@input keyup': 'onInputKeyUp',
+      '@input keyup': 'onInputKeyup',
     },
     template: AutoSuggest.Templates.QueryString,
-    onInputKeyUp: function(event) {},
-    onInputFocus: function(event) {},
-    onInputBlur: function(event) {},
+    onInputKeyup: function(event) {
+      switch(charCode) {
+        default:
+          break;
+      }
+    },
+    onInputFocus: function(event) {
+      this.trigger('input:focus', this);
+    },
+    onInputBlur: function(event) {
+      this.trigger('input:blur', this);
+    },
   });
   view.render();
   return new Controller(Object.assign(settings || {}, {
@@ -48,7 +57,7 @@ AutoSuggest.Controllers.QueryString = function(settings) {
     },
     onMainInputValueChange: function() {},
     onMainInputArrowVertical: function() {},
-    onMainInputFocus: function() {},
+    onMainInputFocus: function(event) { console.log('event', event); },
     onMainInputBlur: function() {},
   }));
 };

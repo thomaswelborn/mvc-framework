@@ -1,7 +1,5 @@
 var AutoSuggest = {
-    Constants: {
-      // 
-    },
+    Constants: {},
     Templates: {},
     Views: {},
     Models: {},
