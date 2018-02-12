@@ -13,6 +13,10 @@ class Controller extends Events {
       typeof this.models !== 'undefined' && 
       typeof this.modelEvents !== 'undefined'
     ) this.bindEvents(this.models, this.modelEvents);
+    if(
+      typeof this.controllers !== 'undefined' && 
+      typeof this.controllerEvents !== 'undefined'
+    ) this.bindEvents(this.controllers, this.controllerEvents);
   }
   bindEvents(target, events) {
     Object.entries(events).forEach(function(event) {
