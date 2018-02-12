@@ -1,15 +1,15 @@
 AutoSuggest.Controllers.AutoSuggest = function(settings) {
-  var mainUIModel = new Model();
-  var mainDataModel = new Model();
-  var mainView = new View();
+  var $parentElement = settings.$parentElement || document.querySelector('body');
+  var mainView = new View({
+    elementName: 'div',
+    attributes: {
+      'data-view-id': 'auto-suggest'
+    },
+  });
   var queryStringController = AutoSuggest.Controllers.QueryString();
   var suggestionListController = AutoSuggest.Controllers.SuggestionList();
-  
-  return new Controller(Object.assign(settings || {}, {
-    models: {
-      'mainUI': mainUIModel,
-      'mainData': mainDataModel,
-    },
+  var controller = new Controller(Object.assign(settings || {}, {
+    $parentElement: $parentElement,
     views: {
       'main': mainView,
     },
@@ -23,5 +23,9 @@ AutoSuggest.Controllers.AutoSuggest = function(settings) {
     },
     onQueryStringChangeValue: function() {},
     onSuggestionListChangeIndex: function() {},
-  });
+  }));
+  controller.views.main.render();
+  $parentElement.innerHTML = '';
+  $parentElement.append(controller.views.main.element);
+  return controller;
 };

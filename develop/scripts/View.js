@@ -17,7 +17,7 @@ class View extends Events {
     } else if(typeof this.element === 'string') {
       this.element = document.querySelector(this.element); 
     }
-    if(typeof this.attributes !== 'object') this.setElementAttributes(this.element, this.attributes);
+    if(typeof this.attributes === 'object') this.setElementAttributes(this.element, this.attributes);
   }
   setElementAttributes(element, attributes) {
     for(var attribute in attributes) {

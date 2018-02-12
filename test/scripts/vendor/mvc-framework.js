@@ -141,7 +141,7 @@ class View extends Events {
     } else if(typeof this.element === 'string') {
       this.element = document.querySelector(this.element); 
     }
-    if(typeof this.attributes !== 'object') this.setElementAttributes(this.element, this.attributes);
+    if(typeof this.attributes === 'object') this.setElementAttributes(this.element, this.attributes);
   }
   setElementAttributes(element, attributes) {
     for(var attribute in attributes) {
@@ -192,14 +192,22 @@ class View extends Events {
     return this;
   }
 }
+
 class Controller extends Events {
   constructor(settings) {
+    super();
     this.settings = settings;
     for(var key in this.settings) {
       this[key] = this.settings[key];
     }
-    this.bindEvents(this.views, this.viewEvents);
-    this.bindEvents(this.models, this.modelEvents);
+    if(
+      typeof this.views !== 'undefined' && 
+      typeof this.viewEvents !== 'undefined'
+    ) this.bindEvents(this.views, this.viewEvents);
+    if(
+      typeof this.models !== 'undefined' && 
+      typeof this.modelEvents !== 'undefined'
+    ) this.bindEvents(this.models, this.modelEvents);
   }
   bindEvents(target, events) {
     Object.entries(events).forEach(function(event) {

@@ -1,11 +1,18 @@
 class Controller extends Events {
   constructor(settings) {
+    super();
     this.settings = settings;
     for(var key in this.settings) {
       this[key] = this.settings[key];
     }
-    this.bindEvents(this.views, this.viewEvents);
-    this.bindEvents(this.models, this.modelEvents);
+    if(
+      typeof this.views !== 'undefined' && 
+      typeof this.viewEvents !== 'undefined'
+    ) this.bindEvents(this.views, this.viewEvents);
+    if(
+      typeof this.models !== 'undefined' && 
+      typeof this.modelEvents !== 'undefined'
+    ) this.bindEvents(this.models, this.modelEvents);
   }
   bindEvents(target, events) {
     Object.entries(events).forEach(function(event) {
