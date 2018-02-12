@@ -13,10 +13,10 @@ class Events {
     if(currentEventIndex >= 0) currentEvents.splice(currentEventIndex, 1);
   }
   trigger(eventName, data) {
-    this.events[eventName].forEach(function(callback) {
-      try {
-        callback(data);
-      } catch(error) {}
-    });
+    try {
+      this.events[eventName].forEach(function(callback) {
+          callback(data);
+      });
+    } catch(error) {}
   }
 }
