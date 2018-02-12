@@ -13,11 +13,11 @@ class Events {
     if(currentEventIndex >= 0) currentEvents.splice(currentEventIndex, 1);
   }
   trigger(eventName, data) {
-    this.events[eventName].forEach(function(callback) {
-      try {
-        callback(data);
-      } catch(error) {}
-    });
+    try {
+      this.events[eventName].forEach(function(callback) {
+          callback(data);
+      });
+    } catch(error) {}
   }
 }
 class AJAX {
@@ -209,6 +209,10 @@ class Controller extends Events {
       typeof this.models !== 'undefined' && 
       typeof this.modelEvents !== 'undefined'
     ) this.bindEvents(this.models, this.modelEvents);
+    if(
+      typeof this.controllers !== 'undefined' && 
+      typeof this.controllerEvents !== 'undefined'
+    ) this.bindEvents(this.controllers, this.controllerEvents);
   }
   bindEvents(target, events) {
     Object.entries(events).forEach(function(event) {
