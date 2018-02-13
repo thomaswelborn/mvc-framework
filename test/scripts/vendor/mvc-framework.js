@@ -9,17 +9,25 @@ class Events {
   off(eventName, callback) {
     var currentEvents = this.events[eventName];
     if(typeof currentEvents === 'undefined' || currentEvents.length === 0) return;
-    var currentEventIndex = currentEvents.indexOf(callback);
-    if(currentEventIndex >= 0) currentEvents.splice(currentEventIndex, 1);
+    var currentEventIndices = Object.entries(currentEvents).map(function(currentEvent, currentEventIndex) {
+      if(
+        (typeof callback === 'string' && callback === currentEvent[1].name) || 
+        (typeof callback === 'function' && callback.name === currentEvent[1].name)
+      ) return currentEventIndex;
+    }.bind(this));
+    for(var key = currentEventIndices.length; key > 0; key--) {
+      currentEvents.splice(currentEventIndices[key - 1], 1);
+    }
   }
   trigger(eventName, data) {
-    this.events[eventName].forEach(function(callback) {
-      try {
-        callback(data);
-      } catch(error) {}
-    });
+    try {
+      this.events[eventName].forEach(function(callback) {
+          callback(data);
+      });
+    } catch(error) {}
   }
 }
+
 class AJAX {
   constructor(type, url, settings) {
     this.responseTypes = ['', 'arraybuffer', 'blob', 'document', 'json', 'text'];
@@ -180,7 +188,11 @@ class View extends Events {
     element.forEach(function(elementInstance) {
       var elementCallback = (typeof uiEvent[1] === 'function') ? uiEvent[1].bind(this) : this[uiEvent[1]].bind(this);
       elementActions.forEach(function(elementAction) {
-        elementInstance.addEventListener(elementAction, elementCallback);
+        console.log('elementInstance', elementInstance);
+        elementInstance.addEventListener(elementAction, function(event) {
+          elementCallback(event);
+          this.trigger('ui:event', Object.assign(event, { data: this }));
+        }.bind(this));
       }.bind(this));
     }.bind(this));
   }
@@ -209,6 +221,10 @@ class Controller extends Events {
       typeof this.models !== 'undefined' && 
       typeof this.modelEvents !== 'undefined'
     ) this.bindEvents(this.models, this.modelEvents);
+    if(
+      typeof this.controllers !== 'undefined' && 
+      typeof this.controllerEvents !== 'undefined'
+    ) this.bindEvents(this.controllers, this.controllerEvents);
   }
   bindEvents(target, events) {
     Object.entries(events).forEach(function(event) {

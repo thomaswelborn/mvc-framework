@@ -27,6 +27,7 @@ class Events {
     } catch(error) {}
   }
 }
+
 class AJAX {
   constructor(type, url, settings) {
     this.responseTypes = ['', 'arraybuffer', 'blob', 'document', 'json', 'text'];
@@ -128,6 +129,7 @@ class Model extends Events {
     return (key) ? this.data[key] : this._data;
   }
 }
+
 class View extends Events {
   constructor(settings) {
     super();
@@ -186,7 +188,10 @@ class View extends Events {
     element.forEach(function(elementInstance) {
       var elementCallback = (typeof uiEvent[1] === 'function') ? uiEvent[1].bind(this) : this[uiEvent[1]].bind(this);
       elementActions.forEach(function(elementAction) {
-        elementInstance.addEventListener(elementAction, elementCallback);
+        elementInstance.addEventListener(elementAction, function(event) {
+          elementCallback(event);
+          this.trigger('ui:event', Object.assign(event, { data: this }));
+        }.bind(this));
       }.bind(this));
     }.bind(this));
   }
@@ -199,6 +204,7 @@ class View extends Events {
     return this;
   }
 }
+
 class Controller extends Events {
   constructor(settings) {
     super();
@@ -229,6 +235,7 @@ class Controller extends Events {
     }.bind(this));
   }
 }
+
 class Router extends Events {
   constructor(settings) {
     super();
