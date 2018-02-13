@@ -188,7 +188,6 @@ class View extends Events {
     element.forEach(function(elementInstance) {
       var elementCallback = (typeof uiEvent[1] === 'function') ? uiEvent[1].bind(this) : this[uiEvent[1]].bind(this);
       elementActions.forEach(function(elementAction) {
-        console.log('elementInstance', elementInstance);
         elementInstance.addEventListener(elementAction, function(event) {
           elementCallback(event);
           this.trigger('ui:event', Object.assign(event, { data: this }));
