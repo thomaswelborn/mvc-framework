@@ -17,6 +17,9 @@ class Controller extends Events {
       typeof this.controllers !== 'undefined' && 
       typeof this.controllerEvents !== 'undefined'
     ) this.bindEvents(this.controllers, this.controllerEvents);
+    try {
+      this.initialize();
+    } catch(error) {}
   }
   bindEvents(target, events) {
     Object.entries(events).forEach(function(event) {
