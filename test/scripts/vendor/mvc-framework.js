@@ -183,8 +183,7 @@ class View extends Events {
     }
   }
   setUIEvent(selector, elementActions, uiEvent) {
-    var element;
-    element = (selector.match('@')) ? this.ui[selector.replace('@', '')] : this.element.querySelectorAll(selector);
+    var element = (selector.match('@')) ? this.ui[selector.replace('@', '')] : this.element.querySelectorAll(selector);
     element.forEach(function(elementInstance) {
       var elementCallback = (typeof uiEvent[1] === 'function') ? uiEvent[1].bind(this) : this[uiEvent[1]].bind(this);
       elementActions.forEach(function(elementAction) {
@@ -212,6 +211,7 @@ class Controller extends Events {
     for(var key in this.settings) {
       this[key] = this.settings[key];
     }
+    console.log(typeof this.initialize);
     if(
       typeof this.views !== 'undefined' && 
       typeof this.viewEvents !== 'undefined'
@@ -224,6 +224,9 @@ class Controller extends Events {
       typeof this.controllers !== 'undefined' && 
       typeof this.controllerEvents !== 'undefined'
     ) this.bindEvents(this.controllers, this.controllerEvents);
+    try {
+      this.initialize();
+    } catch(error) {}
   }
   bindEvents(target, events) {
     Object.entries(events).forEach(function(event) {

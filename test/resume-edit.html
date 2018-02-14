@@ -30,8 +30,12 @@
   <script src="scripts/templates/resume-profile.js"></script>
   <script src="scripts/templates/resume-experience.js"></script>
   <script src="scripts/templates/resume-education.js"></script>
-  <script type="text/javascript">
-    var $body = document.querySelectorAll('body');
+  <script>
+    document.addEventListener('DOMContentLoaded', function(event) {
+      var body = document.querySelectorAll('body');
+      var resumeEdit = Resume.Controllers.Edit();
+      body[0].prepend(resumeEdit.views.main.render().element);
+    });
   </script>
 </body>
 </html>
