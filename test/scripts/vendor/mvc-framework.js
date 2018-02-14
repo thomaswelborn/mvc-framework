@@ -231,7 +231,10 @@ class Controller extends Events {
       var element = event[0][0].replace('@', '');
       var elementEvent = event[0][1];
       var elementEventCallback = event[1];
-      target[element].on(elementEvent, this[elementEventCallback]);
+      target[element].on(elementEvent, function(event) {
+        this[elementEventCallback](event);
+        this.trigger('controller:event', Object.assign(event, { data: this }));
+      });
     }.bind(this));
   }
 }
