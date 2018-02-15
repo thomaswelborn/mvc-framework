@@ -44,7 +44,7 @@ class Events {
               targets[eventKey].forEach(function(target) {
                 target.addEventListener(eventName, function(event) {
                   callback(event);
-                  this.trigger('ui:event', this);
+                  this.trigger('ui:event', Object.assign(event, { data: this }));
                 }.bind(this));
               }.bind(this));
             }
