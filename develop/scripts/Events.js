@@ -22,8 +22,8 @@ class Events {
   trigger(eventName, data) {
     try {
       this.events[eventName].forEach(function(callback) {
-          callback(data);
-      });
+        callback(data);
+      }.bind(this));
     } catch(error) {}
   }
   bindEvents(targets, events) {
