@@ -38,7 +38,15 @@ class Events {
           eventName = eventName[1]; 
           callback = (typeof callback === 'function') ? callback : this[callback];
           try {
-            (typeof targets[eventKey].on === 'function') ? targets[eventKey].on(eventName, callback) : targets[eventKey].addEventListener(eventName, callback);
+            if(typeof targets[eventKey].on === 'function') {
+              targets[eventKey].on(eventName, callback);
+            } else {
+              targets[eventKey].forEach(function(target) {
+                target.addEventListener(eventName, function() {
+                  callback();
+                });
+              }.bind(this));
+            }
           } catch(error) {}
         }.bind(this));
       }.bind(this));
@@ -79,7 +87,7 @@ class AJAX {
 class Model extends Events {
   constructor(settings) {
     super();
-    Object.assign(this, this.settings, { settings: settings });
+    Object.assign(this, settings, { settings: settings });
     this.data = {};
     this._data = this.settings.data;
     this.setAll(this._data);
@@ -147,7 +155,7 @@ class Model extends Events {
 class View extends Events {
   constructor(settings) {
     super();
-    Object.assign(this, this.settings, { settings: settings });
+    Object.assign(this, settings, { settings: settings });
     this.setElement();
     this.setEvents();
     try {
@@ -172,12 +180,10 @@ class View extends Events {
   }
   setUIElements() {
     this.ui = this.ui || {};
-    if(typeof this.uiElements === 'object') {
-      Object.entries(this.uiElements).forEach(function(element) {
-        this.ui[element[0]] = this.element.querySelectorAll(element[1]);
-      }.bind(this));
-      this.bindEvents(this.ui, this.uiElements);
-    }
+    Object.entries(this.uiElements).forEach(function(element) {
+      this.ui[element[0]] = this.element.querySelectorAll(element[1]);
+    }.bind(this));
+    this.bindEvents(this.ui, this.uiEvents);
   }
   render(data) {
     if(typeof this.template !== 'undefined') {
@@ -192,7 +198,7 @@ class View extends Events {
 class Controller extends Events {
   constructor(settings) {
     super();
-    Object.assign(this, this.settings, { settings: settings });
+    Object.assign(this, settings, { settings: settings });
     if(
       typeof this.views !== 'undefined' && 
       typeof this.viewEvents !== 'undefined'
@@ -214,7 +220,7 @@ class Controller extends Events {
 class Router extends Events {
   constructor(settings) {
     super();
-    Object.assign(this, this.settings, { settings: settings });
+    Object.assign(this, settings, { settings: settings });
     this.setRoutes(this.routes, this.controllers);
     this.setEvents();
     this.start();

@@ -38,7 +38,16 @@ class Events {
           eventName = eventName[1]; 
           callback = (typeof callback === 'function') ? callback : this[callback];
           try {
-            (typeof targets[eventKey].on === 'function') ? targets[eventKey].on(eventName, callback) : targets[eventKey].addEventListener(eventName, callback);
+            if(typeof targets[eventKey].on === 'function') {
+              targets[eventKey].on(eventName, callback);
+            } else {
+              targets[eventKey].forEach(function(target) {
+                target.addEventListener(eventName, function(event) {
+                  callback(event);
+                  this.trigger('ui:event', this);
+                }.bind(this));
+              }.bind(this));
+            }
           } catch(error) {}
         }.bind(this));
       }.bind(this));

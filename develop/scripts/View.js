@@ -26,12 +26,10 @@ class View extends Events {
   }
   setUIElements() {
     this.ui = this.ui || {};
-    if(typeof this.uiElements === 'object') {
-      Object.entries(this.uiElements).forEach(function(element) {
-        this.ui[element[0]] = this.element.querySelectorAll(element[1]);
-      }.bind(this));
-      this.bindEvents(this.ui, this.uiElements);
-    }
+    Object.entries(this.uiElements).forEach(function(element) {
+      this.ui[element[0]] = this.element.querySelectorAll(element[1]);
+    }.bind(this));
+    this.bindEvents(this.ui, this.uiEvents);
   }
   render(data) {
     if(typeof this.template !== 'undefined') {
