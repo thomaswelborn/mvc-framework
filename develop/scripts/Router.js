@@ -1,11 +1,8 @@
 class Router extends Events {
   constructor(settings) {
     super();
-    this.settings = settings;
-    for(var setting in this.settings) {
-      this[setting] = this.settings[setting];
-    }
-    this.setRoutes(this.settings.routes, this.settings.controllers);
+    Object.assign(this, settings, { settings: settings });
+    this.setRoutes(this.routes, this.controllers);
     this.setEvents();
     this.start();
     try {

@@ -1,10 +1,7 @@
 class View extends Events {
   constructor(settings) {
     super();
-    this.settings = settings || {};
-    for(var setting in this.settings) {
-      this[setting] = this.settings[setting];
-    }
+    Object.assign(this, settings, { settings: settings });
     this.setElement();
     this.setEvents();
     try {
@@ -25,10 +22,7 @@ class View extends Events {
     }
   }
   setEvents() {
-    this.on('render', function() {
-      this.setUIElements();
-      this.setUIEvents();
-    }.bind(this));
+    this.on('render', this.setUIElements.bind(this));
   }
   setUIElements() {
     this.ui = this.ui || {};
@@ -36,31 +30,8 @@ class View extends Events {
       Object.entries(this.uiElements).forEach(function(element) {
         this.ui[element[0]] = this.element.querySelectorAll(element[1]);
       }.bind(this));
+      this.bindEvents(this.ui, this.uiElements);
     }
-  }
-  setUIEvents() {
-    if(typeof this.uiEvents === 'object') {
-      Object.entries(this.uiEvents).forEach(function(uiEvent) {
-        var uiEventKey = uiEvent[0].split(' ');
-        var elementSelectors = uiEventKey[0].split(',');
-        var elementActions = uiEventKey[1].split(',');
-        elementSelectors.forEach(function(selector) {
-          this.setUIEvent(selector, elementActions, uiEvent);
-        }.bind(this));
-      }.bind(this));
-    }
-  }
-  setUIEvent(selector, elementActions, uiEvent) {
-    var element = (selector.match('@')) ? this.ui[selector.replace('@', '')] : this.element.querySelectorAll(selector);
-    element.forEach(function(elementInstance) {
-      var elementCallback = (typeof uiEvent[1] === 'function') ? uiEvent[1].bind(this) : this[uiEvent[1]].bind(this);
-      elementActions.forEach(function(elementAction) {
-        elementInstance.addEventListener(elementAction, function(event) {
-          elementCallback(event);
-          this.trigger('ui:event', Object.assign(event, { data: this }));
-        }.bind(this));
-      }.bind(this));
-    }.bind(this));
   }
   render(data) {
     if(typeof this.template !== 'undefined') {

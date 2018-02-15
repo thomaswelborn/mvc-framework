@@ -26,4 +26,22 @@ class Events {
       });
     } catch(error) {}
   }
+  bindEvents(targets, events) {
+    Object.entries(events).forEach(function(event) {
+      event[0] = event[0].split(' ');
+      var eventKeys = event[0][0].split(',');
+      var eventNames = event[0][1].split(',');
+      var callback = event[1];
+      Object.entries(eventKeys).forEach(function(eventKey) {
+        eventKey = eventKey[1].replace('@', '');
+        Object.entries(eventNames).forEach(function(eventName) {
+          eventName = eventName[1]; 
+          callback = (typeof callback === 'function') ? callback : this[callback];
+          try {
+            (typeof targets[eventKey].on === 'function') ? targets[eventKey].on(eventName, callback) : targets[eventKey].addEventListener(eventName, callback);
+          } catch(error) {}
+        }.bind(this));
+      }.bind(this));
+    }.bind(this));
+  }
 }

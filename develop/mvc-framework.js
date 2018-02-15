@@ -26,6 +26,24 @@ class Events {
       });
     } catch(error) {}
   }
+  bindEvents(targets, events) {
+    Object.entries(events).forEach(function(event) {
+      event[0] = event[0].split(' ');
+      var eventKeys = event[0][0].split(',');
+      var eventNames = event[0][1].split(',');
+      var callback = event[1];
+      Object.entries(eventKeys).forEach(function(eventKey) {
+        eventKey = eventKey[1].replace('@', '');
+        Object.entries(eventNames).forEach(function(eventName) {
+          eventName = eventName[1]; 
+          callback = (typeof callback === 'function') ? callback : this[callback];
+          try {
+            (typeof targets[eventKey].on === 'function') ? targets[eventKey].on(eventName, callback) : targets[eventKey].addEventListener(eventName, callback);
+          } catch(error) {}
+        }.bind(this));
+      }.bind(this));
+    }.bind(this));
+  }
 }
 
 class AJAX {
@@ -61,14 +79,10 @@ class AJAX {
 class Model extends Events {
   constructor(settings) {
     super();
-    this.settings = settings || {};
+    Object.assign(this, this.settings, { settings: settings });
     this.data = {};
     this._data = this.settings.data;
-    delete this.settings.data;
     this.setAll(this._data);
-    for(var key in this.settings) {
-      this[key] = this.settings[key];
-    }
     try {
       this.initialize();
     } catch(error) {}
@@ -133,10 +147,7 @@ class Model extends Events {
 class View extends Events {
   constructor(settings) {
     super();
-    this.settings = settings || {};
-    for(var setting in this.settings) {
-      this[setting] = this.settings[setting];
-    }
+    Object.assign(this, this.settings, { settings: settings });
     this.setElement();
     this.setEvents();
     try {
@@ -157,10 +168,7 @@ class View extends Events {
     }
   }
   setEvents() {
-    this.on('render', function() {
-      this.setUIElements();
-      this.setUIEvents();
-    }.bind(this));
+    this.on('render', this.setUIElements.bind(this));
   }
   setUIElements() {
     this.ui = this.ui || {};
@@ -168,31 +176,8 @@ class View extends Events {
       Object.entries(this.uiElements).forEach(function(element) {
         this.ui[element[0]] = this.element.querySelectorAll(element[1]);
       }.bind(this));
+      this.bindEvents(this.ui, this.uiElements);
     }
-  }
-  setUIEvents() {
-    if(typeof this.uiEvents === 'object') {
-      Object.entries(this.uiEvents).forEach(function(uiEvent) {
-        var uiEventKey = uiEvent[0].split(' ');
-        var elementSelectors = uiEventKey[0].split(',');
-        var elementActions = uiEventKey[1].split(',');
-        elementSelectors.forEach(function(selector) {
-          this.setUIEvent(selector, elementActions, uiEvent);
-        }.bind(this));
-      }.bind(this));
-    }
-  }
-  setUIEvent(selector, elementActions, uiEvent) {
-    var element = (selector.match('@')) ? this.ui[selector.replace('@', '')] : this.element.querySelectorAll(selector);
-    element.forEach(function(elementInstance) {
-      var elementCallback = (typeof uiEvent[1] === 'function') ? uiEvent[1].bind(this) : this[uiEvent[1]].bind(this);
-      elementActions.forEach(function(elementAction) {
-        elementInstance.addEventListener(elementAction, function(event) {
-          elementCallback(event);
-          this.trigger('ui:event', Object.assign(event, { data: this }));
-        }.bind(this));
-      }.bind(this));
-    }.bind(this));
   }
   render(data) {
     if(typeof this.template !== 'undefined') {
@@ -207,10 +192,7 @@ class View extends Events {
 class Controller extends Events {
   constructor(settings) {
     super();
-    this.settings = settings;
-    for(var key in this.settings) {
-      this[key] = this.settings[key];
-    }
+    Object.assign(this, settings, { settings: settings });
     if(
       typeof this.views !== 'undefined' && 
       typeof this.viewEvents !== 'undefined'
@@ -227,28 +209,13 @@ class Controller extends Events {
       this.initialize();
     } catch(error) {}
   }
-  bindEvents(target, events) {
-    Object.entries(events).forEach(function(event) {
-      event[0] = event[0].split(' ');
-      var element = event[0][0].replace('@', '');
-      var elementEvent = event[0][1];
-      var elementEventCallback = event[1];
-      target[element].on(elementEvent, function(event) {
-        this[elementEventCallback](event);
-        this.trigger('controller:event', Object.assign(event, { data: this }));
-      });
-    }.bind(this));
-  }
 }
 
 class Router extends Events {
   constructor(settings) {
     super();
-    this.settings = settings;
-    for(var setting in this.settings) {
-      this[setting] = this.settings[setting];
-    }
-    this.setRoutes(this.settings.routes, this.settings.controllers);
+    Object.assign(this, this.settings, { settings: settings });
+    this.setRoutes(this.routes, this.controllers);
     this.setEvents();
     this.start();
     try {

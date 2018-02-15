@@ -50,7 +50,7 @@ Resume.Controllers.Edit = function(settings) {
           console.log('event', event);
         },
       }),
-      education: Resume.Views.Education({
+      education: new View({
         name: 'education',
         template: Resume.Templates.Education,
         uiElements: {
@@ -65,7 +65,7 @@ Resume.Controllers.Edit = function(settings) {
       }),
     },
     viewEvents: {
-      // @profile ui:event:type onProfileUIEventType
+      '@profile,@experience,@education ui:event': function() {},
     },
     modelEvents: {
       // @profile change:property onProfileChangeProperty
@@ -74,6 +74,9 @@ Resume.Controllers.Edit = function(settings) {
     // onProfileChangeProperty function
     initialize: function() {
       console.log('initialize');
+    },
+    onUIEvent: function(event) {
+      console.log('onUIEvent', event);
     },
   }));
 };

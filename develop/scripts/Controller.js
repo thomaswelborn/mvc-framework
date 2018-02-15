@@ -1,10 +1,7 @@
 class Controller extends Events {
   constructor(settings) {
     super();
-    this.settings = settings;
-    for(var key in this.settings) {
-      this[key] = this.settings[key];
-    }
+    Object.assign(this, settings, { settings: settings });
     if(
       typeof this.views !== 'undefined' && 
       typeof this.viewEvents !== 'undefined'
@@ -20,17 +17,5 @@ class Controller extends Events {
     try {
       this.initialize();
     } catch(error) {}
-  }
-  bindEvents(target, events) {
-    Object.entries(events).forEach(function(event) {
-      event[0] = event[0].split(' ');
-      var element = event[0][0].replace('@', '');
-      var elementEvent = event[0][1];
-      var elementEventCallback = event[1];
-      target[element].on(elementEvent, function(event) {
-        this[elementEventCallback](event);
-        this.trigger('controller:event', Object.assign(event, { data: this }));
-      });
-    }.bind(this));
   }
 }

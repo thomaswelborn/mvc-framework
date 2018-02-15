@@ -1,14 +1,10 @@
 class Model extends Events {
   constructor(settings) {
     super();
-    this.settings = settings || {};
+    Object.assign(this, settings, { settings: settings });
     this.data = {};
     this._data = this.settings.data;
-    delete this.settings.data;
     this.setAll(this._data);
-    for(var key in this.settings) {
-      this[key] = this.settings[key];
-    }
     try {
       this.initialize();
     } catch(error) {}
