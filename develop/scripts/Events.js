@@ -37,17 +37,13 @@ class Events {
         Object.entries(eventNames).forEach(function(eventName) {
           eventName = eventName[1]; 
           callback = (typeof callback === 'function') ? callback : this[callback];
+          var triggerEventName = String.prototype.concat(this.constructor.name.toLowerCase(), ':', 'event');
+          var eventListenerName = (typeof targets[eventKey].on !== 'undefined') ? 'on' : 'addEventListener';
           try {
-            if(typeof targets[eventKey].on === 'function') {
-              targets[eventKey].on(eventName, callback);
-            } else {
-              targets[eventKey].forEach(function(target) {
-                target.addEventListener(eventName, function(event) {
-                  callback(event);
-                  this.trigger('ui:event', Object.assign(event, { data: this }));
-                }.bind(this));
-              }.bind(this));
-            }
+            targets[eventKey][eventListenerName](eventName, function(event) {
+              callback(event);
+              this.trigger(triggerEventName, Object.assign(event, { data: this }));
+            }.bind(this));
           } catch(error) {}
         }.bind(this));
       }.bind(this));
