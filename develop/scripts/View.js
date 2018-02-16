@@ -22,14 +22,14 @@ class View extends Events {
     }
   }
   setEvents() {
-    this.on('render', this.setUIElements.bind(this));
+    this.on('render', this.setViews.bind(this));
   }
-  setUIElements() {
-    this.ui = this.ui || {};
-    Object.entries(this.uiElements).forEach(function(element) {
-      this.ui[element[0]] = this.element.querySelectorAll(element[1]);
+  setViews() {
+    this.views = this.views || {};
+    Object.entries(this.views).forEach(function(view) {
+      this.views[view[0]] = this.element.querySelectorAll(view[1]);
     }.bind(this));
-    this.bindEvents(this.ui, this.uiEvents);
+    this.bindEvents(this.views, this.viewEvents);
   }
   render(data) {
     if(typeof this.template !== 'undefined') {
