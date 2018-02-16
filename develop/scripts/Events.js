@@ -1,3 +1,4 @@
+
 class Events {
   constructor() {
     this.events = {};
@@ -9,21 +10,22 @@ class Events {
   off(eventName, callback) {
     var currentEvents = this.events[eventName];
     if(typeof currentEvents === 'undefined' || currentEvents.length === 0) return;
-    var currentEventIndices = Object.entries(currentEvents).map(function(currentEvent, currentEventIndex) {
-      if(
+    var currentEventIndices = Object.entries(currentEvents).filter(function(currentEvent, currentEventIndex) {
+      return (
         (typeof callback === 'string' && callback === currentEvent[1].name) || 
         (typeof callback === 'function' && callback.name === currentEvent[1].name)
-      ) return currentEventIndex;
+      );
     }.bind(this));
     for(var key = currentEventIndices.length; key > 0; key--) {
-      currentEvents.splice(currentEventIndices[key - 1], 1);
+      currentEvents.splice(currentEventIndices[key - 1][0], 1);
     }
+    if(currentEvents.length === 0) delete this.events[eventName];
   }
   trigger(eventName, data) {
     try {
       this.events[eventName].forEach(function(callback) {
-        callback(data);
-      }.bind(this));
+          callback(data);
+      });
     } catch(error) {}
   }
   bindEvents(targets, events) {
