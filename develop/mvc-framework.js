@@ -8,16 +8,16 @@ class Events {
   }
   off(eventName, callback) {
     var currentEvents = this.events[eventName];
-    if(typeof currentEvents === 'undefined' || currentEvents.length === 0) return;
-    var currentEventIndices = Object.entries(currentEvents).map(function(currentEvent, currentEventIndex) {
-      if(
+    var currentEventIndices = Object.entries(currentEvents).filter(function(currentEvent, currentEventIndex) {
+      return (
         (typeof callback === 'string' && callback === currentEvent[1].name) || 
         (typeof callback === 'function' && callback.name === currentEvent[1].name)
-      ) return currentEventIndex;
+      );
     }.bind(this));
     for(var key = currentEventIndices.length; key > 0; key--) {
-      currentEvents.splice(currentEventIndices[key - 1], 1);
+      currentEvents.splice(currentEventIndices[key - 1][0], 1);
     }
+    if(currentEvents.length === 0) delete this.events[eventName];
   }
   trigger(eventName, data) {
     try {
@@ -38,13 +38,17 @@ class Events {
           eventName = eventName[1]; 
           callback = (typeof callback === 'function') ? callback : this[callback];
           var triggerEventName = String.prototype.concat(this.constructor.name.toLowerCase(), ':', 'event');
-          var eventListenerName = (typeof targets[eventKey].on !== 'undefined') ? 'on' : 'addEventListener';
-          try {
-            targets[eventKey][eventListenerName](eventName, function(event) {
-              callback(event);
-              this.trigger(triggerEventName, Object.assign(event, { data: this }));
+          var eventCallback = function(event) {
+            callback(event);
+            this.trigger(triggerEventName, this);
+          }.bind(this);
+          if(targets[eventKey].constructor.name === 'NodeList') {
+            targets[eventKey].forEach(function(target) {
+              target.addEventListener(eventName, eventCallback);
             }.bind(this));
-          } catch(error) {}
+          } else {
+            targets[eventKey].on(eventName, eventCallback);
+          }
         }.bind(this));
       }.bind(this));
     }.bind(this));
@@ -81,6 +85,7 @@ class AJAX {
     });
   }
 }
+
 class Model extends Events {
   constructor(settings) {
     super();
@@ -173,14 +178,14 @@ class View extends Events {
     }
   }
   setEvents() {
-    this.on('render', this.setUIElements.bind(this));
+    this.on('render', this.setViews.bind(this));
   }
-  setUIElements() {
-    this.ui = this.ui || {};
-    Object.entries(this.uiElements).forEach(function(element) {
-      this.ui[element[0]] = this.element.querySelectorAll(element[1]);
+  setViews() {
+    this.views = this.views || {};
+    Object.entries(this.views).forEach(function(view) {
+      this.views[view[0]] = this.element.querySelectorAll(view[1]);
     }.bind(this));
-    this.bindEvents(this.ui, this.uiEvents);
+    this.bindEvents(this.views, this.viewEvents);
   }
   render(data) {
     if(typeof this.template !== 'undefined') {
