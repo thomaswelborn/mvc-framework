@@ -38,11 +38,11 @@ class Model extends Events {
           _this._data[key] = value;
           _this.trigger('set', {
             original: original,
-            data: _this._data,
+            current: _this._data,
           });
           _this.trigger(String.prototype.concat('set', ':', key), {
             original: original[key],
-            data: _this._data[key],
+            current: _this._data[key],
           });
         },
       });
