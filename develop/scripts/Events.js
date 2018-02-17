@@ -1,4 +1,3 @@
-
 class Events {
   constructor() {
     this.events = {};
@@ -24,7 +23,7 @@ class Events {
   trigger(eventName, data) {
     try {
       this.events[eventName].forEach(function(callback) {
-          callback(data);
+        callback(data);
       });
     } catch(error) {}
   }

@@ -36,11 +36,11 @@ class Model extends Events {
         set(value) {
           var original = Object.assign({}, _this._data);
           _this._data[key] = value;
-          _this.trigger('change', {
+          _this.trigger('set', {
             original: original,
             data: _this._data,
           });
-          _this.trigger(String.prototype.concat('change', ':', key), {
+          _this.trigger(String.prototype.concat('set', ':', key), {
             original: original[key],
             data: _this._data[key],
           });

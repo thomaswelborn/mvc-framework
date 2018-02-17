@@ -9,22 +9,24 @@ class Events {
   off(eventName, callback) {
     var currentEvents = this.events[eventName];
     if(typeof currentEvents === 'undefined' || currentEvents.length === 0) return;
-    var currentEventIndices = Object.entries(currentEvents).map(function(currentEvent, currentEventIndex) {
-      if(
+    var currentEventIndices = Object.entries(currentEvents).filter(function(currentEvent, currentEventIndex) {
+      return (
         (typeof callback === 'string' && callback === currentEvent[1].name) || 
         (typeof callback === 'function' && callback.name === currentEvent[1].name)
-      ) return currentEventIndex;
+      );
     }.bind(this));
     for(var key = currentEventIndices.length; key > 0; key--) {
-      currentEvents.splice(currentEventIndices[key - 1], 1);
+      currentEvents.splice(currentEventIndices[key - 1][0], 1);
     }
+    if(currentEvents.length === 0) delete this.events[eventName];
   }
   trigger(eventName, data) {
     try {
       this.events[eventName].forEach(function(callback) {
-          callback(data);
+        console.log(typeof callback, callback.name);
+        callback(data);
       });
-    } catch(error) {}
+    } catch(error) { console.log('error', error); }
   }
   bindEvents(targets, events) {
     Object.entries(events).forEach(function(event) {
@@ -37,17 +39,13 @@ class Events {
         Object.entries(eventNames).forEach(function(eventName) {
           eventName = eventName[1]; 
           callback = (typeof callback === 'function') ? callback : this[callback];
+          var triggerEventName = String.prototype.concat(this.constructor.name.toLowerCase(), ':', 'event');
+          var eventListenerName = (typeof targets[eventKey].on !== 'undefined') ? 'on' : 'addEventListener';
           try {
-            if(typeof targets[eventKey].on === 'function') {
-              targets[eventKey].on(eventName, callback);
-            } else {
-              targets[eventKey].forEach(function(target) {
-                target.addEventListener(eventName, function(event) {
-                  callback(event);
-                  this.trigger('ui:event', Object.assign(event, { data: this }));
-                }.bind(this));
-              }.bind(this));
-            }
+            targets[eventKey][eventListenerName](eventName, function(event) {
+              callback(event);
+              this.trigger(triggerEventName, Object.assign(event, { data: this }));
+            }.bind(this));
           } catch(error) {}
         }.bind(this));
       }.bind(this));
@@ -123,11 +121,11 @@ class Model extends Events {
         set(value) {
           var original = Object.assign({}, _this._data);
           _this._data[key] = value;
-          _this.trigger('change', {
+          _this.trigger('set', {
             original: original,
             data: _this._data,
           });
-          _this.trigger(String.prototype.concat('change', ':', key), {
+          _this.trigger(String.prototype.concat('set', ':', key), {
             original: original[key],
             data: _this._data[key],
           });
@@ -177,20 +175,18 @@ class View extends Events {
     }
   }
   setEvents() {
-    this.on('render', this.setUIElements.bind(this));
+    this.on('render', this.setElements.bind(this));
   }
-  setUIElements() {
-    this.ui = this.ui || {};
-    Object.entries(this.uiElements).forEach(function(element) {
-      this.ui[element[0]] = this.element.querySelectorAll(element[1]);
+  setElements() {
+    this.elements = this.elements || {};
+    Object.entries(this.elements).forEach(function(element) {
+      this.elements[element[0]] = this.element.querySelectorAll(element[1]);
     }.bind(this));
-    this.bindEvents(this.ui, this.uiEvents);
+    this.bindEvents(this.elements, this.elementEvents);
   }
   render(data) {
-    if(typeof this.template !== 'undefined') {
-      this.element.innerHTML = '';
-      this.element.append(this.template(data || {}));
-    }
+    this.element.innerHTML = '';
+    if(typeof this.template === 'function') this.element.append(this.template(data || {}));
     this.trigger('render', this);
     return this;
   }

@@ -22,20 +22,18 @@ class View extends Events {
     }
   }
   setEvents() {
-    this.on('render', this.setViews.bind(this));
+    this.on('render', this.setElements.bind(this));
   }
-  setViews() {
-    this.views = this.views || {};
-    Object.entries(this.views).forEach(function(view) {
-      this.views[view[0]] = this.element.querySelectorAll(view[1]);
+  setElements() {
+    this.elements = this.elements || {};
+    Object.entries(this.elements).forEach(function(element) {
+      this.elements[element[0]] = this.element.querySelectorAll(element[1]);
     }.bind(this));
-    this.bindEvents(this.views, this.viewEvents);
+    this.bindEvents(this.elements, this.elementEvents);
   }
   render(data) {
-    if(typeof this.template !== 'undefined') {
-      this.element.innerHTML = '';
-      this.element.append(this.template(data || {}));
-    }
+    this.element.innerHTML = '';
+    if(typeof this.template === 'function') this.element.append(this.template(data || {}));
     this.trigger('render', this);
     return this;
   }

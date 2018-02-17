@@ -8,6 +8,7 @@ class Events {
   }
   off(eventName, callback) {
     var currentEvents = this.events[eventName];
+    if(typeof currentEvents === 'undefined' || currentEvents.length === 0) return;
     var currentEventIndices = Object.entries(currentEvents).filter(function(currentEvent, currentEventIndex) {
       return (
         (typeof callback === 'string' && callback === currentEvent[1].name) || 
@@ -22,7 +23,7 @@ class Events {
   trigger(eventName, data) {
     try {
       this.events[eventName].forEach(function(callback) {
-          callback(data);
+        callback(data);
       });
     } catch(error) {}
   }
@@ -38,17 +39,13 @@ class Events {
           eventName = eventName[1]; 
           callback = (typeof callback === 'function') ? callback : this[callback];
           var triggerEventName = String.prototype.concat(this.constructor.name.toLowerCase(), ':', 'event');
-          var eventCallback = function(event) {
-            callback(event);
-            this.trigger(triggerEventName, this);
-          }.bind(this);
-          if(targets[eventKey].constructor.name === 'NodeList') {
-            targets[eventKey].forEach(function(target) {
-              target.addEventListener(eventName, eventCallback);
+          var eventListenerName = (typeof targets[eventKey].on !== 'undefined') ? 'on' : 'addEventListener';
+          try {
+            targets[eventKey][eventListenerName](eventName, function(event) {
+              callback(event);
+              this.trigger(triggerEventName, Object.assign(event, { data: this }));
             }.bind(this));
-          } else {
-            targets[eventKey].on(eventName, eventCallback);
-          }
+          } catch(error) {}
         }.bind(this));
       }.bind(this));
     }.bind(this));
@@ -85,7 +82,6 @@ class AJAX {
     });
   }
 }
-
 class Model extends Events {
   constructor(settings) {
     super();
@@ -124,11 +120,11 @@ class Model extends Events {
         set(value) {
           var original = Object.assign({}, _this._data);
           _this._data[key] = value;
-          _this.trigger('change', {
+          _this.trigger('set', {
             original: original,
             data: _this._data,
           });
-          _this.trigger(String.prototype.concat('change', ':', key), {
+          _this.trigger(String.prototype.concat('set', ':', key), {
             original: original[key],
             data: _this._data[key],
           });
@@ -178,20 +174,18 @@ class View extends Events {
     }
   }
   setEvents() {
-    this.on('render', this.setViews.bind(this));
+    this.on('render', this.setElements.bind(this));
   }
-  setViews() {
-    this.views = this.views || {};
-    Object.entries(this.views).forEach(function(view) {
-      this.views[view[0]] = this.element.querySelectorAll(view[1]);
+  setElements() {
+    this.elements = this.elements || {};
+    Object.entries(this.elements).forEach(function(element) {
+      this.elements[element[0]] = this.element.querySelectorAll(element[1]);
     }.bind(this));
-    this.bindEvents(this.views, this.viewEvents);
+    this.bindEvents(this.elements, this.elementEvents);
   }
   render(data) {
-    if(typeof this.template !== 'undefined') {
-      this.element.innerHTML = '';
-      this.element.append(this.template(data || {}));
-    }
+    this.element.innerHTML = '';
+    if(typeof this.template === 'function') this.element.append(this.template(data || {}));
     this.trigger('render', this);
     return this;
   }
