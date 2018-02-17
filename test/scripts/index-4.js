@@ -26,8 +26,12 @@ document.addEventListener('DOMContentLoaded', function(event) {
       ).join('');
       return document.createRange().createContextualFragment(template);
     },
+    inputFocusBlur: function(event) { console.log('inputFocusBlur'); },
+  });
+  var bodyView = new View({
+    element: document.querySelector('body'),
   });
   view.on('render', function onRender(event) { console.log('render'); });
-  document.querySelector('body').prepend(view.render().element);
-  
+  view.on('view:event', function() { console.log('view:event'); });
+  bodyView.element.prepend(view.render().element);
 });

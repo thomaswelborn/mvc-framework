@@ -27,29 +27,6 @@ class Events {
       });
     } catch(error) {}
   }
-  bindEvents(targets, events) {
-    Object.entries(events).forEach(function(event) {
-      event[0] = event[0].split(' ');
-      var eventKeys = event[0][0].split(',');
-      var eventNames = event[0][1].split(',');
-      var callback = event[1];
-      Object.entries(eventKeys).forEach(function(eventKey) {
-        eventKey = eventKey[1].replace('@', '');
-        Object.entries(eventNames).forEach(function(eventName) {
-          eventName = eventName[1]; 
-          callback = (typeof callback === 'function') ? callback : this[callback];
-          var triggerEventName = String.prototype.concat(this.constructor.name.toLowerCase(), ':', 'event');
-          var eventListenerName = (typeof targets[eventKey].on !== 'undefined') ? 'on' : 'addEventListener';
-          try {
-            targets[eventKey][eventListenerName](eventName, function(event) {
-              callback(event);
-              this.trigger(triggerEventName, Object.assign(event, { data: this }));
-            }.bind(this));
-          } catch(error) {}
-        }.bind(this));
-      }.bind(this));
-    }.bind(this));
-  }
 }
 
 class AJAX {
@@ -161,10 +138,13 @@ class View extends Events {
     } catch(error) {}
   }
   setElement() {
-    if(typeof this.element === 'undefined') {
-      this.element = document.createElement(this.elementName || 'div');
-    } else if(typeof this.element === 'string') {
-      this.element = document.querySelector(this.element); 
+    switch(typeof this.element) {
+      case 'undefined': 
+        this.element = document.createElement(this.elementName || 'div');
+        break;
+      case 'string': 
+        this.element = document.querySelector(this.element); 
+        break;
     }
     if(typeof this.attributes === 'object') this.setElementAttributes(this.element, this.attributes);
   }
@@ -189,6 +169,29 @@ class View extends Events {
     this.trigger('render', this);
     return this;
   }
+  bindEvents(targets, events) {
+    Object.entries(events).forEach(function(event) {
+      event[0] = event[0].split(' ');
+      var eventKeys = event[0][0].split(',');
+      var eventNames = event[0][1].split(',');
+      var callback = event[1];
+      console.log(callback);
+      Object.entries(eventKeys).forEach(function(eventKey) {
+        eventKey = eventKey[1].replace('@', '');
+        Object.entries(eventNames).forEach(function(eventName) {
+          eventName = eventName[1]; 
+          callback = (typeof callback === 'function') ? callback : this[callback];
+          var triggerEventName = String.prototype.concat(this.constructor.name.toLowerCase(), ':', 'event');
+          targets[eventKey].forEach(function(target) {
+            target.addEventListener(eventName, function(event) {
+              callback(event);
+              this.trigger(triggerEventName, this);
+            }.bind(this));
+          }.bind(this));
+        }.bind(this));
+      }.bind(this));
+    }.bind(this));
+  }
 }
 
 class Controller extends Events {
@@ -210,6 +213,26 @@ class Controller extends Events {
     try {
       this.initialize();
     } catch(error) {}
+  }
+  bindEvents(targets, events) {
+    Object.entries(events).forEach(function(event) {
+      event[0] = event[0].split(' ');
+      var eventKeys = event[0][0].split(',');
+      var eventNames = event[0][1].split(',');
+      var callback = event[1];
+      Object.entries(eventKeys).forEach(function(eventKey) {
+        eventKey = eventKey[1].replace('@', '');
+        Object.entries(eventNames).forEach(function(eventName) {
+          eventName = eventName[1]; 
+          callback = (typeof callback === 'function') ? callback : this[callback];
+          var triggerEventName = String.prototype.concat(this.constructor.name.toLowerCase(), ':', 'event');
+          targets[eventKey].on(eventName, function(event) {
+            callback(event);
+            this.trigger(triggerEventName, this);
+          }.bind(this));
+        }.bind(this));
+      }.bind(this));
+    }.bind(this));
   }
 }
 
