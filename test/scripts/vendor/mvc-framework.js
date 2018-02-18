@@ -49,9 +49,9 @@ class AJAX {
     }.bind(this));
   }
   setResponseType(xhr, responseType) {
-    xhr.responseType = this.responseTypes.find(function(element) {
-      return element  === responseType;
-    });
+    xhr.responseType = this.responseTypes.find(function(responseTypeItem) {
+      return responseTypeItem === responseType;
+    }) || '';
   }
   setHeaders(xhr, headers) {
     headers.forEach(function(header) {
@@ -59,13 +59,12 @@ class AJAX {
     });
   }
 }
+
 class Model extends Events {
   constructor(settings) {
     super();
     Object.assign(this, settings, { settings: settings });
-    this.data = {};
-    this._data = this.settings.data;
-    this.setAll(this._data);
+    if(typeof this.data !== 'undefined') this.setAll(this.data);
     try {
       this.initialize();
     } catch(error) {}
@@ -83,8 +82,25 @@ class Model extends Events {
     return new AJAX('DELETE', url || this.url, settings || {});
   }
   setAll(data) {
-    for(var key in data) {
-      this.set(key, data[key]);
+    this.data = eval(Array('new', ' ', data.constructor.name, '()').join(''));
+    console.log(this.data);
+    this._data = data;
+    if(Array.isArray(data)) {
+      for(var key in data) {
+        if(data[key].constructor.name !== 'Model') {
+          var model = new Model({
+            data: data[key]
+          });
+          model.on('set', function(data) {
+            this.trigger('set', data);
+          }.bind(this));
+          this.data.push(model);
+        }
+      }
+    } else {
+      for(var key in data) {
+        this.set(key, data[key]);
+      }
     }
   }
   set(key, value) {
@@ -99,11 +115,11 @@ class Model extends Events {
           _this._data[key] = value;
           _this.trigger('set', {
             original: original,
-            data: _this._data,
+            current: _this._data,
           });
           _this.trigger(String.prototype.concat('set', ':', key), {
             original: original[key],
-            data: _this._data[key],
+            current: _this._data[key],
           });
         },
       });
@@ -120,6 +136,7 @@ class Model extends Events {
     if(typeof this.data[key] !== 'undefined') {
       delete this.data[key];
       delete this._data[key];
+      this.trigger(String.prototype.concat('unset', ':', key), this._data);
     }
   }
   get(key) {
@@ -175,7 +192,6 @@ class View extends Events {
       var eventKeys = event[0][0].split(',');
       var eventNames = event[0][1].split(',');
       var callback = event[1];
-      console.log(callback);
       Object.entries(eventKeys).forEach(function(eventKey) {
         eventKey = eventKey[1].replace('@', '');
         Object.entries(eventNames).forEach(function(eventName) {

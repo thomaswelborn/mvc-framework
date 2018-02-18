@@ -64,9 +64,8 @@ class Model extends Events {
   constructor(settings) {
     super();
     Object.assign(this, settings, { settings: settings });
-    this.data = {};
-    this._data = this.settings.data;
-    this.setAll(this._data);
+    console.log(typeof this.data);
+    if(typeof this.data !== 'undefined') this.setAll(this.data);
     try {
       this.initialize();
     } catch(error) {}
@@ -84,8 +83,25 @@ class Model extends Events {
     return new AJAX('DELETE', url || this.url, settings || {});
   }
   setAll(data) {
-    for(var key in data) {
-      this.set(key, data[key]);
+    this.data = eval(Array('new', ' ', data.constructor.name, '()').join(''));
+    console.log(this.data);
+    this._data = data;
+    if(Array.isArray(data)) {
+      for(var key in data) {
+        if(data[key].constructor.name !== 'Model') {
+          var model = new Model({
+            data: data[key]
+          });
+          model.on('set', function(data) {
+            this.trigger('set', data);
+          }.bind(this));
+          this.data.push(model);
+        }
+      }
+    } else {
+      for(var key in data) {
+        this.set(key, data[key]);
+      }
     }
   }
   set(key, value) {
