@@ -171,12 +171,11 @@ class View extends Events {
   }
   bindEvents(targets, events) {
     Object.entries(events).forEach(function(event) {
-    console.log(event);
       event[0] = event[0].split(' ');
       var eventKeys = event[0][0].split(',');
       var eventNames = event[0][1].split(',');
-      console.log(callback);
       var callback = event[1];
+      console.log(callback);
       Object.entries(eventKeys).forEach(function(eventKey) {
         eventKey = eventKey[1].replace('@', '');
         Object.entries(eventNames).forEach(function(eventName) {

@@ -49,9 +49,9 @@ class AJAX {
     }.bind(this));
   }
   setResponseType(xhr, responseType) {
-    xhr.responseType = this.responseTypes.find(function(element) {
-      return element  === responseType;
-    });
+    xhr.responseType = this.responseTypes.find(function(responseTypeItem) {
+      return responseTypeItem === responseType;
+    }) || '';
   }
   setHeaders(xhr, headers) {
     headers.forEach(function(header) {
@@ -59,6 +59,7 @@ class AJAX {
     });
   }
 }
+
 class Model extends Events {
   constructor(settings) {
     super();
@@ -99,11 +100,11 @@ class Model extends Events {
           _this._data[key] = value;
           _this.trigger('set', {
             original: original,
-            data: _this._data,
+            current: _this._data,
           });
           _this.trigger(String.prototype.concat('set', ':', key), {
             original: original[key],
-            data: _this._data[key],
+            current: _this._data[key],
           });
         },
       });
@@ -120,6 +121,7 @@ class Model extends Events {
     if(typeof this.data[key] !== 'undefined') {
       delete this.data[key];
       delete this._data[key];
+      this.trigger(String.prototype.concat('unset', ':', key), this._data);
     }
   }
   get(key) {
@@ -175,7 +177,6 @@ class View extends Events {
       var eventKeys = event[0][0].split(',');
       var eventNames = event[0][1].split(',');
       var callback = event[1];
-      console.log(callback);
       Object.entries(eventKeys).forEach(function(eventKey) {
         eventKey = eventKey[1].replace('@', '');
         Object.entries(eventNames).forEach(function(eventName) {
