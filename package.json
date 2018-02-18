@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/thomaswelborn/mvc-framework/issues"
   },
-  "homepage": "https://github.com/thomaswelborn/mvc-framework"
+  "homepage": "https://github.com/thomaswelborn/mvc-framework",
+  "devDependencies": {
+    "gulp-minify": "^2.1.0"
+  }
 }

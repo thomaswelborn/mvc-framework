@@ -277,7 +277,7 @@ class Router extends Events {
   start() {
     var location = this.getRoute();
     if(location === '') {
-      window.location.hash = '/';
+      this.navigate('/');
     }else {
       window.dispatchEvent(new Event('hashchange'));
     }
@@ -299,7 +299,7 @@ class Router extends Events {
     var route = this.getRoute();
     try {
       this.routes[route](event);
-      this.trigger('navigate', event);
+      this.trigger('navigate', this);
     } catch(error) {}
   }
   navigate(path) {

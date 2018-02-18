@@ -8,7 +8,10 @@ class Events {
   }
   off(eventName, callback) {
     var currentEvents = this.events[eventName];
-    if(typeof currentEvents === 'undefined' || currentEvents.length === 0) return;
+    if(
+      typeof currentEvents === 'undefined' || 
+      currentEvents.length === 0
+    ) return;
     var currentEventIndices = Object.entries(currentEvents).filter(function(currentEvent, currentEventIndex) {
       return (
         (typeof callback === 'string' && callback === currentEvent[1].name) || 
@@ -86,16 +89,14 @@ class Model extends Events {
       if(Array.isArray(data)) {
         for(var key in data) {
           if(data[key].constructor.name !== 'Model') {
-            var model = new Model({
+            data[key] = new Model({
               data: data[key]
             });
-            model.on('set', function(data) {
+            data[key].on('set', function(data) {
               this.trigger('set', data);
             }.bind(this));
-            this.data.push(model);
-          } else if(data[key].constructor.name === 'Model') {
-            this.data.push(data[key]);
           }
+          this.set(this.data.length, data[key]);
         }
       } else {
         for(var key in data) {
@@ -105,27 +106,31 @@ class Model extends Events {
     } 
   }
   set(key, value) {
-    if(typeof this.data[key] === 'undefined') {
-      var _this = this;
-      Object.defineProperty(this.data, key, {
-        get() {
-          return _this._data[key];
-        },
-        set(value) {
-          var original = Object.assign({}, _this._data);
-          _this._data[key] = value;
-          _this.trigger('set', {
-            original: original,
-            current: _this._data,
-          });
-          _this.trigger(String.prototype.concat('set', ':', key), {
-            original: original[key],
-            current: _this._data[key],
-          });
-        },
-      });
-    }
+    if(typeof this.data[key] === 'undefined') this.setProperty(this, key, value);
+    if(
+      typeof key === 'number' && 
+      value.constructor.name !== 'Model'
+    ) value = new Model({ data: value });
     this.data[key] = value;
+  }
+  setProperty(context, key, value) {
+    Object.defineProperty(context.data, key, {
+      get() {
+        return context._data[key];
+      },
+      set(value) {
+        var original = Object.assign({}, context._data);
+        context._data[key] = value;
+        context.trigger('set', {
+          original: original,
+          current: context._data,
+        });
+        context.trigger(String.prototype.concat('set', ':', key), {
+          original: original[key],
+          current: context._data[key],
+        });
+      },
+    });
   }
   unsetAll() {
     Object.entries(this._data).forEach(function(element) {
@@ -140,19 +145,19 @@ class Model extends Events {
     }
   }
   get(key) {
-    if(key) {
-      return this.data[key];
-    } else {
-      var data = eval(Array('new', ' ', this.data.constructor.name, '()').join(''));
-      for(var key in this._data) {
-        if(this.data[key].constructor.name === 'Model') {
-          data.push(this.data[key].get());
-        } else {
-          data[key] = this.data[key];
-        }
+    if(key) return this.data[key];
+    return this._data;
+  }
+  parse() {
+    var data = eval(Array('new', ' ', this.data.constructor.name, '()').join(''));
+    for(var key in this._data) {
+      if(this._data[key] instanceof Model) {
+        data[key] = this._data[key].parse();
+      } else {
+        data[key] = this._data[key];
       }
-      return data;
     }
+    return JSON.parse(JSON.stringify(data));
   }
 }
 

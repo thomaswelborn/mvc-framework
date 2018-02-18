@@ -1,8 +1,23 @@
 var gulp = require('gulp');
 var gulpConcat = require('gulp-concat');
+var gulpMinify = require('gulp-minify');
 
 var configuration = {
+  name: 'mvc-framework',
+  rootFile: function() {
+    return String.prototype.concat(
+      this.develop.root,
+      this.name, '.js'
+    );
+  },
+  minifiedFile: function() {
+    return String.prototype.concat(
+      this.develop.root,
+      this.name, '.min.js'
+    );
+  },
   develop: {
+    root: 'develop/',
     src: [
       'develop/scripts/Events.js',
       'develop/scripts/AJAX.js',
@@ -11,32 +26,39 @@ var configuration = {
       'develop/scripts/Controller.js',
       'develop/scripts/Router.js'
     ],
-    destination: 'develop/',
-    filename: 'mvc-framework.js',
   },
   test: {
-    destination: 'test/scripts/vendor',
+    root: 'test/scripts/vendor',
   },
 };
 
 var application = {
   concat: function() {
-    return gulp
+    gulp
       .src(configuration.develop.src)
-      .pipe(gulpConcat(configuration.develop.filename))
-      .pipe(gulp.dest(configuration.develop.destination));
+      .pipe(gulpConcat(configuration.rootFile()))
+      .pipe(gulp.dest(configuration.develop.root));
+  },
+  minify: function() {
+    gulp
+      .src(configuration.rootFile())
+      .pipe(gulpMinify({
+        ext: { min: '.min.js' } 
+      }))
+      .pipe(gulp.dest(configuration.develop.root));
   },
   copy: function() {
-    return gulp
-      .src(String.prototype.concat(
-        configuration.develop.destination,
-        configuration.develop.filename
-      ))
-      .pipe(gulp.dest(configuration.test.destination));
+    gulp
+      .src(configuration.rootFile())
+      .pipe(gulp.dest(configuration.test.root));
+    gulp
+      .src(configuration.minifiedFile())
+      .pipe(gulp.dest(configuration.test.root));
   },
 };
 
 gulp.task('develop', function() {
   application.concat();
+  application.minify();
   application.copy();
 });

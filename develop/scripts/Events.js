@@ -8,7 +8,10 @@ class Events {
   }
   off(eventName, callback) {
     var currentEvents = this.events[eventName];
-    if(typeof currentEvents === 'undefined' || currentEvents.length === 0) return;
+    if(
+      typeof currentEvents === 'undefined' || 
+      currentEvents.length === 0
+    ) return;
     var currentEventIndices = Object.entries(currentEvents).filter(function(currentEvent, currentEventIndex) {
       return (
         (typeof callback === 'string' && callback === currentEvent[1].name) || 

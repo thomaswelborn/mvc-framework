@@ -14,35 +14,42 @@ Model data is array containing nested objects:
 document.addEventListener('DOMContentLoaded', function(event) {
   
   // Model.data array of objects become Model instances. 
-  var model = new Model({
+  // Model.get returns Model.data.
+  // Model.parse returns Model._data (including nested). 
+  /*var model = new Model({
     data: [{ id: 1 },{ id: 2 },{ id: 3 },{ id: 4 },{ id: 5 }]
-  });
-  console.log('model', model.get());
-  console.log('model', model.parse());
+  });*/
+  // console.log('model', model.get());
+  // console.log('model', model.parse());
   
   // Model.data array can only contain plain objects or Model objects
-  var model2 = new Model({
+  /*var model2 = new Model({
     data: [0,1,2,3,4,5]
-  });
+  });*/
   // console.log('model2', model2.get());
   
-  // Model.data arrays may contain Model instances. 
-  var model3 = new Model({
+  // Model.data arrays may contain mixed plain object and Model instances. 
+  /*var model3 = new Model({
     data: [{ id: 1 }, new Model({ data: { id: 2 } }), { id: 3 }]
-  });
+  });*/
   // console.log('model3', model3.get());
+  // console.log('model3', model3.parse());
   
-  // Nested models will only be parsed when member of Model.data array
-  var model4 = new Model({
+  // Model.data model instances parsed only when member of Model.data array
+  /*var model4 = new Model({
     data: {
       'a': 'a',
       'b': 'b',
       'c': [1,2,3, new Model({ data: { id: 4 } })]
     }
-  });
+  });*/
   // console.log('model4', model4.get());
   
-  // Model.set function sets array index with Model instances. 
+  // Model.data array changes trigger "set" event
+  // Model.data array Model instance changes trigger "set" event
+  /*var model = new Model({
+    data: [{ id: 1 },{ id: 2 },{ id: 3 },{ id: 4 },{ id: 5 }]
+  });*/
   // model.on('set', function(data) { console.log('data', data); }); 
   // model.set('id', 100);
   // console.log(model.get(1));
