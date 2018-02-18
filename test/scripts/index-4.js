@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function(event) {
     },
     modelEvents: {
       '@main set': 'mainSet',
-      '@main set:a': 'mainSet'
+      '@main set:a': 'mainSet',
     },
     mainSet: function(data) {
       console.log('controller', 'main model', 'set', data);

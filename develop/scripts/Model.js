@@ -59,6 +59,7 @@ class Model extends Events {
     if(typeof this.data[key] !== 'undefined') {
       delete this.data[key];
       delete this._data[key];
+      this.trigger(String.prototype.concat('unset', ':', key), this._data);
     }
   }
   get(key) {

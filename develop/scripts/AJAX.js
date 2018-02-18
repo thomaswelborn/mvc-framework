@@ -18,9 +18,9 @@ class AJAX {
     }.bind(this));
   }
   setResponseType(xhr, responseType) {
-    xhr.responseType = this.responseTypes.find(function(element) {
-      return element  === responseType;
-    });
+    xhr.responseType = this.responseTypes.find(function(responseTypeItem) {
+      return responseTypeItem === responseType;
+    }) || '';
   }
   setHeaders(xhr, headers) {
     headers.forEach(function(header) {
