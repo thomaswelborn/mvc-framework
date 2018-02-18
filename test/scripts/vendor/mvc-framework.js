@@ -64,11 +64,8 @@ class Model extends Events {
   constructor(settings) {
     super();
     Object.assign(this, settings, { settings: settings });
-    console.log(typeof this.data);
-    if(typeof this.data !== 'undefined') this.setAll(this.data);
-    try {
-      this.initialize();
-    } catch(error) {}
+    if(typeof this.data === 'object') this.setAll(this.data);
+    if(typeof this.initialize === 'function') this.initialize();
   }
   fetch(settings, url) {
     return new AJAX('GET', url || this.url, settings || {});
@@ -83,26 +80,29 @@ class Model extends Events {
     return new AJAX('DELETE', url || this.url, settings || {});
   }
   setAll(data) {
-    this.data = eval(Array('new', ' ', data.constructor.name, '()').join(''));
-    console.log(this.data);
-    this._data = data;
-    if(Array.isArray(data)) {
-      for(var key in data) {
-        if(data[key].constructor.name !== 'Model') {
-          var model = new Model({
-            data: data[key]
-          });
-          model.on('set', function(data) {
-            this.trigger('set', data);
-          }.bind(this));
-          this.data.push(model);
+    if(typeof data === 'object') {
+      this.data = eval(Array('new', ' ', data.constructor.name, '()').join(''));
+      this._data = data;
+      if(Array.isArray(data)) {
+        for(var key in data) {
+          if(data[key].constructor.name !== 'Model') {
+            var model = new Model({
+              data: data[key]
+            });
+            model.on('set', function(data) {
+              this.trigger('set', data);
+            }.bind(this));
+            this.data.push(model);
+          } else if(data[key].constructor.name === 'Model') {
+            this.data.push(data[key]);
+          }
+        }
+      } else {
+        for(var key in data) {
+          this.set(key, data[key]);
         }
       }
-    } else {
-      for(var key in data) {
-        this.set(key, data[key]);
-      }
-    }
+    } 
   }
   set(key, value) {
     if(typeof this.data[key] === 'undefined') {
@@ -124,9 +124,8 @@ class Model extends Events {
           });
         },
       });
-    } else {
-      this.data[key] = value;
     }
+    this.data[key] = value;
   }
   unsetAll() {
     Object.entries(this._data).forEach(function(element) {
@@ -141,7 +140,19 @@ class Model extends Events {
     }
   }
   get(key) {
-    return (key) ? this.data[key] : this._data;
+    if(key) {
+      return this.data[key];
+    } else {
+      var data = eval(Array('new', ' ', this.data.constructor.name, '()').join(''));
+      for(var key in this._data) {
+        if(this.data[key].constructor.name === 'Model') {
+          data.push(this.data[key].get());
+        } else {
+          data[key] = this.data[key];
+        }
+      }
+      return data;
+    }
   }
 }
 
@@ -151,9 +162,7 @@ class View extends Events {
     Object.assign(this, settings, { settings: settings });
     this.setElement();
     this.setEvents();
-    try {
-      this.initialize();
-    } catch(error) {}
+    if(typeof this.initialize === 'function') this.initialize();
   }
   setElement() {
     switch(typeof this.element) {
@@ -227,9 +236,7 @@ class Controller extends Events {
       typeof this.controllers !== 'undefined' && 
       typeof this.controllerEvents !== 'undefined'
     ) this.bindEvents(this.controllers, this.controllerEvents);
-    try {
-      this.initialize();
-    } catch(error) {}
+    if(typeof this.initialize === 'function') this.initialize();
   }
   bindEvents(targets, events) {
     Object.entries(events).forEach(function(event) {
@@ -260,9 +267,7 @@ class Router extends Events {
     this.setRoutes(this.routes, this.controllers);
     this.setEvents();
     this.start();
-    try {
-      this.initialize();
-    } catch(error) {}
+    if(typeof this.initialize === 'function') this.initialize();
   }
   start() {
     var location = this.getRoute();
