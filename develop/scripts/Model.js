@@ -2,10 +2,8 @@ class Model extends Events {
   constructor(settings) {
     super();
     Object.assign(this, settings, { settings: settings });
-    if(typeof this.data !== 'undefined') this.setAll(this.data);
-    try {
-      this.initialize();
-    } catch(error) {}
+    if(typeof this.data === 'object') this.setAll(this.data);
+    if(typeof this.initialize === 'function') this.initialize();
   }
   fetch(settings, url) {
     return new AJAX('GET', url || this.url, settings || {});

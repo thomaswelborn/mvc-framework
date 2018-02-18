@@ -36,4 +36,11 @@ document.addEventListener('DOMContentLoaded', function(event) {
     }
   });
   console.log('model4', model4.get());
+  
+  // This will return Model data array index 1
+  console.log('model.get(1)', model.get(1).get());
+  model.on('set', function(data) { console.log('data', data); }); 
+  model.get(1).set('id', 100);
+  model.set(1, new Model({ data: { id: 1000 } }));
+  console.log(model.get(1))
 });

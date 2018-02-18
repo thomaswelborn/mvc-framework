@@ -4,9 +4,7 @@ class View extends Events {
     Object.assign(this, settings, { settings: settings });
     this.setElement();
     this.setEvents();
-    try {
-      this.initialize();
-    } catch(error) {}
+    if(typeof this.initialize === 'function') this.initialize();
   }
   setElement() {
     switch(typeof this.element) {

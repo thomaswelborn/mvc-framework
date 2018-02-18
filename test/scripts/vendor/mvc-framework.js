@@ -64,6 +64,7 @@ class Model extends Events {
   constructor(settings) {
     super();
     Object.assign(this, settings, { settings: settings });
+    console.log(typeof this.data);
     if(typeof this.data !== 'undefined') this.setAll(this.data);
     try {
       this.initialize();

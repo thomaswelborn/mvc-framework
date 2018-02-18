@@ -5,9 +5,7 @@ class Router extends Events {
     this.setRoutes(this.routes, this.controllers);
     this.setEvents();
     this.start();
-    try {
-      this.initialize();
-    } catch(error) {}
+    if(typeof this.initialize === 'function') this.initialize();
   }
   start() {
     var location = this.getRoute();
