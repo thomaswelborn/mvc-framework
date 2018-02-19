@@ -22,13 +22,13 @@ class Router extends Events {
     return;
   }
   setEvents() {
-    window.addEventListener('hashchange', this.onHashChange.bind(this));
+    window.addEventListener('hashchange', this.hashChange.bind(this));
     return;
   }
   getRoute() {
     return String(window.location.hash).split('#').pop();
   }
-  onHashChange(event) {
+  hashChange(event) {
     var route = this.getRoute();
     try {
       this.routes[route](event);

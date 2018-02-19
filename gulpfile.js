@@ -1,34 +1,39 @@
 var gulp = require('gulp');
 var gulpConcat = require('gulp-concat');
 var gulpMinify = require('gulp-minify');
+var path = require('path');
 
 var configuration = {
   name: 'mvc-framework',
-  rootFile: function() {
-    return String.prototype.concat(
-      this.develop.root,
-      this.name, '.js'
-    );
+  files: {
+    root: function() {
+      return path.join(
+        __dirname, 
+        this.paths.develop.root
+      ).concat(this.name, '.js');
+    },
+    minifiedRoot: function() {
+      return path.join(
+        __dirname, 
+        this.paths.develop.root
+      ).concat(this.name, '.min.js');
+    },
   },
-  minifiedFile: function() {
-    return String.prototype.concat(
-      this.develop.root,
-      this.name, '.min.js'
-    );
-  },
-  develop: {
-    root: 'develop/',
-    src: [
-      'develop/scripts/Events.js',
-      'develop/scripts/AJAX.js',
-      'develop/scripts/Model.js',
-      'develop/scripts/View.js',
-      'develop/scripts/Controller.js',
-      'develop/scripts/Router.js'
-    ],
-  },
-  test: {
-    root: 'test/scripts/vendor',
+  paths: {
+    develop: {
+      root: 'develop/',
+      src: [
+        'develop/scripts/Events.js',
+        'develop/scripts/AJAX.js',
+        'develop/scripts/Model.js',
+        'develop/scripts/View.js',
+        'develop/scripts/Controller.js',
+        'develop/scripts/Router.js'
+      ],
+    },
+    test: {
+      root: 'test/scripts/vendor',
+    },
   },
 };
 
@@ -49,10 +54,10 @@ var application = {
   },
   copy: function() {
     gulp
-      .src(configuration.rootFile())
+      .src(configuration.files.root())
       .pipe(gulp.dest(configuration.test.root));
     gulp
-      .src(configuration.minifiedFile())
+      .src(configuration.files.minifiedRoot())
       .pipe(gulp.dest(configuration.test.root));
   },
 };
