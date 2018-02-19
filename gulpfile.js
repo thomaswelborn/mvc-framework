@@ -7,14 +7,10 @@ var configuration = {
   name: 'mvc-framework',
   files: {
     root: function() {
-      return path.join(
-        this.paths.develop.root
-      ).concat(this.name, '.js');
+      return configuration.paths.develop.root.concat(configuration.name, '.js');
     },
     minifiedRoot: function() {
-      return path.join(
-        this.paths.develop.root
-      ).concat(this.name, '.min.js');
+      return configuration.paths.develop.root.concat(configuration.name, '.min.js');
     },
   },
   paths: {
@@ -37,14 +33,16 @@ var configuration = {
 
 var application = {
   concat: function() {
+    var relativeDirectory = path.relative(configuration.paths.develop.root, __dirname);
+    console.log(path.normalize(relativeDirectory, configuration.paths.develop.root));
     gulp
       .src(configuration.paths.develop.src)
-      .pipe(gulpConcat(configuration.files.rootFile()))
-      .pipe(gulp.dest(configuration.paths.develop.root));
+      .pipe(gulpConcat(configuration.files.root()))
+      .pipe(gulp.dest(path.normalize(relativeDirectory, configuration.paths.develop.root)));
   },
   minify: function() {
     gulp
-      .src(configuration.files.rootFile())
+      .src(configuration.files.root())
       .pipe(gulpMinify({
         ext: { min: '.min.js' } 
       }))
@@ -53,7 +51,7 @@ var application = {
   copy: function() {
     gulp
       .src(configuration.files.root())
-      .pipe(gulp.dest(configuration.paths.develop.root));
+      .pipe(gulp.dest(configuration.paths.test.root));
     gulp
       .src(configuration.files.minifiedRoot())
       .pipe(gulp.dest(configuration.paths.test.root));
