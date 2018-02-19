@@ -2,12 +2,12 @@
 Plain/Vanilla JavaScript MVC Pattern - Model, View, Controller pattern with Pub/Sub Events, AJAX class, and URL Hash Router. 
 
 Classes
- * **Events**
- * **Model**
- * **View**
- * **Controller**
- * **Router**
- * **AJAX**
+ * [Events](#events)
+ * [Model](#model)
+ * [View](#view)
+ * [Controller](#controller)
+ * [Router](#router)
+ * [AJAX](#ajax)
 
 
 ## Events
