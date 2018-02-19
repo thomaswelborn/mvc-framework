@@ -8,13 +8,11 @@ var configuration = {
   files: {
     root: function() {
       return path.join(
-        __dirname, 
         this.paths.develop.root
       ).concat(this.name, '.js');
     },
     minifiedRoot: function() {
       return path.join(
-        __dirname, 
         this.paths.develop.root
       ).concat(this.name, '.min.js');
     },
@@ -40,25 +38,25 @@ var configuration = {
 var application = {
   concat: function() {
     gulp
-      .src(configuration.develop.src)
-      .pipe(gulpConcat(configuration.rootFile()))
-      .pipe(gulp.dest(configuration.develop.root));
+      .src(configuration.paths.develop.src)
+      .pipe(gulpConcat(configuration.files.rootFile()))
+      .pipe(gulp.dest(configuration.paths.develop.root));
   },
   minify: function() {
     gulp
-      .src(configuration.rootFile())
+      .src(configuration.files.rootFile())
       .pipe(gulpMinify({
         ext: { min: '.min.js' } 
       }))
-      .pipe(gulp.dest(configuration.develop.root));
+      .pipe(gulp.dest(configuration.paths.develop.root));
   },
   copy: function() {
     gulp
       .src(configuration.files.root())
-      .pipe(gulp.dest(configuration.test.root));
+      .pipe(gulp.dest(configuration.paths.develop.root));
     gulp
       .src(configuration.files.minifiedRoot())
-      .pipe(gulp.dest(configuration.test.root));
+      .pipe(gulp.dest(configuration.paths.test.root));
   },
 };
 
