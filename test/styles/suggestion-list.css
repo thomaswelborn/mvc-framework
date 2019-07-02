@@ -1,8 +1,0 @@
-[data-view-id="suggestion-list"] {
-  padding: 5px;
-  background-color: purple;
-}
-[data-view-id="suggestion-list"][hide="true"] {
-  display: none;
-  visibility: hidden;
-}

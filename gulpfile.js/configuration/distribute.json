@@ -1,0 +1,29 @@
+{
+  "scripts": {
+    "mvc-framework": {
+      "src": [
+        "develop/scripts/Events.js",
+        "develop/scripts/AJAX.js",
+        "develop/scripts/Router.js",
+        "develop/scripts/Model.js",
+        "develop/scripts/View.js",
+        "develop/scripts/Controller.js"
+      ],
+      "concat": {
+        "file": {
+          "name": "mvc",
+          "extension": "js"
+        }
+      },
+      "minify": {
+        "options": {
+          "mangle": false,
+          "ext": {
+            "min": ".min.js"
+          }
+        }
+      },
+      "dest": "distribute"
+    }
+  }
+}

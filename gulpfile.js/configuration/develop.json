@@ -1,0 +1,21 @@
+{
+  "scripts": {
+    "mvc-framework": {
+      "src": [
+        "source/scripts/Events.js",
+        "source/scripts/AJAX.js",
+        "source/scripts/Router.js",
+        "source/scripts/Model.js",
+        "source/scripts/View.js",
+        "source/scripts/Controller.js"
+      ],
+      "concat": {
+        "file": {
+          "name": "mvc",
+          "extension": "js"
+        }
+      },
+      "dest": "distribute"
+    }
+  }
+}

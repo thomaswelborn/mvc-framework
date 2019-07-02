@@ -20,6 +20,12 @@
   },
   "homepage": "https://github.com/thomaswelborn/mvc-framework",
   "devDependencies": {
-    "gulp-minify": "^2.1.0"
+    "gulp-concat": "^2.6.1",
+    "gulp-minify": "^3.1.0",
+    "merge-stream": "^2.0.0",
+    "through2": "^3.0.1"
+  },
+  "dependencies": {
+    "gulp": "^4.0.2"
   }
 }
