@@ -1,4 +1,4 @@
-class AJAX {
+MVC.AJAX = class {
   constructor(type, url, settings) {
     this.responseTypes = ['', 'arraybuffer', 'blob', 'document', 'json', 'text'];
     this.defaultContentType = {'Content-Type': 'application/json'};

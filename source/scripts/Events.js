@@ -1,4 +1,4 @@
-class Events {
+MVC.Events = class {
   constructor() {
     this.events = {}
   }

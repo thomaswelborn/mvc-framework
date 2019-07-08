@@ -1,4 +1,4 @@
-class Router extends Events {
+MVC.Router = class extends Events {
   constructor(settings) {
     super();
     Object.assign(this, settings, { settings: settings });

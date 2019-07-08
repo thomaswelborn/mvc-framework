@@ -18,6 +18,7 @@ MVC.View = class extends Events() {
   }
   get ui() { return this._ui }
   set ui(data) {
+    let ui = {}
     for(let [key, value] of data) {
       switch(key) {
         case '@':
@@ -28,6 +29,7 @@ MVC.View = class extends Events() {
           break;
       }
     }
+    this._ui = ui
   }
   get events() { return this._events }
   set events(data) {

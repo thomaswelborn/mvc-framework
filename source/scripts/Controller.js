@@ -1,39 +1,39 @@
-class Controller extends Events {
+MVC.Controller = class extends MVC.Events {
   constructor(settings) {
-    super();
-    Object.assign(this, settings, { settings: settings });
-    if(
-      typeof this.views !== 'undefined' && 
-      typeof this.viewEvents !== 'undefined'
-    ) this.bindEvents(this.views, this.viewEvents);
-    if(
-      typeof this.models !== 'undefined' && 
-      typeof this.modelEvents !== 'undefined'
-    ) this.bindEvents(this.models, this.modelEvents);
-    if(
-      typeof this.controllers !== 'undefined' && 
-      typeof this.controllerEvents !== 'undefined'
-    ) this.bindEvents(this.controllers, this.controllerEvents);
-    if(typeof this.initialize === 'function') this.initialize();
+    super()
+    if(this.settings) this.settings = settings
   }
-  bindEvents(targets, events) {
-    Object.entries(events).forEach(function(event) {
-      event[0] = event[0].split(' ');
-      var eventKeys = event[0][0].split(',');
-      var eventNames = event[0][1].split(',');
-      var callback = event[1];
-      Object.entries(eventKeys).forEach(function(eventKey) {
-        eventKey = eventKey[1].replace('@', '');
-        Object.entries(eventNames).forEach(function(eventName) {
-          eventName = eventName[1]; 
-          callback = (typeof callback === 'function') ? callback : this[callback];
-          var triggerEventName = String.prototype.concat(this.constructor.name.toLowerCase(), ':', 'event');
-          targets[eventKey].on(eventName, function(event) {
-            callback(event);
-            this.trigger(triggerEventName, this);
-          }.bind(this));
-        }.bind(this));
-      }.bind(this));
-    }.bind(this));
+  get settings() { return this._settings }
+  set settings(settings) {
+    this._settings = settings
+    if(this.settings.models) this.models = models
+    if(this.settings.views) this.views = views
+    if(this.settings.controllers) this.controllers = controllers
+    if(this.settings.routers) this.routers = routers
+    if(this.settings.emitters) this.emitters = emitters
+    if(this.settings.callbacks) this.callbacks = callbacks
+    if(this.settings.events) this.events = events
+  }
+  get models() { return this._models }
+  set models(models) { this._models = models }
+  get views() { return this._views }
+  set views(views) { this._views = views }
+  get controllers() { return this._controllers }
+  set controllers(controllers) { this._controllers = controllers }
+  get routers() { return this._routers }
+  set routers(routers) { this._routers = routers }
+  get emitters() { return this._emitters }
+  set emitters(emitters) { this._emitters = emitters }
+  get callbacks() { return this._callbacks }
+  set callbacks(callbacks) { this._callbacks = callbacks }
+  get events() { return this._events }
+  set events(events) {
+    for(let [eventSettings, eventCallback] of Object.entries(events)) {
+      let eventData = eventSettings.split(' ')
+      let eventTarget = eventData[0].replace('@', '').split('.')
+      let eventName = eventData[1]
+      eventCallback = eventCallback.replace('@', '').split('.')
+      this[eventTarget].on(eventName, eventCallback)
+    }
   }
 }

@@ -1,4 +1,4 @@
-class Model extends Events {
+MVC.Model = class extends Events {
   constructor(settings) {
     super();
     Object.assign(this, settings, { settings: settings });
@@ -38,12 +38,12 @@ class Model extends Events {
           this.set(key, data[key]);
         }
       }
-    } 
+    }
   }
   set(key, value) {
     if(typeof this.data[key] === 'undefined') this.setProperty(this, key, value);
     if(
-      typeof key === 'number' && 
+      typeof key === 'number' &&
       value.constructor.name !== 'Model'
     ) value = new Model({ data: value });
     this.data[key] = value;

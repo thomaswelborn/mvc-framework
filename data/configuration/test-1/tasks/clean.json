@@ -1,0 +1,10 @@
+{
+  "templates": {
+    "src": {
+      "globs": [
+        "test/test-1/output/**/*.{htm,html,php,asp}",
+        "!test/test-1/output"
+      ]
+    }
+  }
+}
