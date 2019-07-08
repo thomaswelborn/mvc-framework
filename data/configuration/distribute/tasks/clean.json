@@ -1,0 +1,9 @@
+{
+  "templates": {
+    "src": {
+      "globs": [
+        "distribute"
+      ]
+    }
+  }
+}

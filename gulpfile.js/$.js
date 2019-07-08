@@ -18,6 +18,8 @@ global.$ = {
     path: require('path'),
     pluginError: require('plugin-error'),
     mergeStream: require('merge2'),
+    express: require('express'),
+    mongoose: require('mongoose'),
     through2: require('through2'),
     underscore: require('underscore'),
   },
