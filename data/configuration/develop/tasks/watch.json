@@ -13,7 +13,8 @@
   },
   "markup": {
     "globs": [
-      "source/templates/layouts/**/*.handlebars"
+      "source/templates/layouts/**/*.handlebars",
+      "source/templates/partials/**/*.hbs"
     ],
     "options": {},
     "task": {

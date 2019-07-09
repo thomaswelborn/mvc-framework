@@ -1,6 +1,7 @@
 [
   "clean",
-  "scripts",
   "templates:documents",
+  "scripts",
+  "browserSync",
   "watch"
 ]

@@ -3,12 +3,7 @@
     "src": {
       "globs": [
         "source/scripts/MVC.js",
-        "source/scripts/Events.js",
-        "source/scripts/AJAX.js",
-        "source/scripts/Model.js",
-        "source/scripts/View.js",
-        "source/scripts/Controller.js",
-        "source/scripts/Router.js"
+        "source/scripts/Events.js"
       ],
       "options": {}
     },
@@ -24,6 +19,9 @@
         "path": "mvc-framework.js"
       }
     },
-    "dest": "develop/scripts"
+    "dest": "develop/scripts",
+    "browserSync": {
+      "stream": true
+    }
   }
 }

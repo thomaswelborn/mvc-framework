@@ -12,6 +12,7 @@ module.exports = function(rootProcess, data) {
         .pipe($.lib.gulp.dest(packageSettings.dest))
       packageStream.add(task)
       $.tasks.subtasks.delSync(packageSettings.delSync)
+      if(packageSettings.browserSync.stream) $.lib.browserSync.stream()
     }
     return packageStream
   }
