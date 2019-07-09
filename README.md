@@ -33,7 +33,7 @@ function someOtherEvent(data) { console.log(data); };
 events.on('some:other:event', someOtherEvent);
 
 // Localized function
-class SomeClass extends Events {
+class Someclass extends MVC.Events {
   constructor() {
     super();
     this.on('yet:another:event', this.onYetAnotherEvent.bind(this));
@@ -71,20 +71,20 @@ someClass.off('more:event', 'moreEvent');
 Events.off removes events based on their callback function name, which can be provided by the callback function itself or a string name of the function. 
 
 
-### Events.trigger
+### Events.emit
 
-```Events.trigger(eventName, data)```
+```Events.emit(eventName, data)```
 
  * eventName - String
  * data - Any
  
 ```
 events.on('trigger:me', function(data) { console.log(data); });
-events.trigger('trigger:me', { name: 'trigger-test' });
+events.emit('trigger:me', { name: 'trigger-test' });
 // { name: 'trigger-test' }
 
 events.on('another:trigger', function(data) {console.log(data); });
-events.trigger('another:trigger', 42);
+events.emit('another:trigger', 42);
 // 42
 ```
 

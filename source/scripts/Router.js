@@ -1,41 +1,41 @@
-MVC.Router = class extends Events {
+MVC.Router = class extends MVC.Events {
   constructor(settings) {
-    super();
-    Object.assign(this, settings, { settings: settings });
-    this.setRoutes(this.routes, this.controllers);
-    this.setEvents();
-    this.start();
-    if(typeof this.initialize === 'function') this.initialize();
+    super()
+    Object.assign(this, settings, { settings: settings })
+    this.setRoutes(this.routes, this.controllers)
+    this.setEvents()
+    this.start()
+    if(typeof this.initialize === 'function') this.initialize()
   }
   start() {
-    var location = this.getRoute();
+    var location = this.getRoute()
     if(location === '') {
-      this.navigate('/');
+      this.navigate('/')
     }else {
-      window.dispatchEvent(new Event('hashchange'));
+      window.dispatchEvent(new Event('hashchange'))
     }
   }
   setRoutes(routes, controllers) {
     for(var route in routes) {
-      this.routes[route] = controllers[routes[route]];
+      this.routes[route] = controllers[routes[route]]
     }
-    return;
+    return
   }
   setEvents() {
-    window.addEventListener('hashchange', this.hashChange.bind(this));
-    return;
+    window.addEventListener('hashchange', this.hashChange.bind(this))
+    return
   }
   getRoute() {
-    return String(window.location.hash).split('#').pop();
+    return String(window.location.hash).split('#').pop()
   }
   hashChange(event) {
-    var route = this.getRoute();
+    var route = this.getRoute()
     try {
-      this.routes[route](event);
-      this.trigger('navigate', this);
+      this.routes[route](event)
+      this.emit('navigate', this)
     } catch(error) {}
   }
   navigate(path) {
-    window.location.hash = path;
+    window.location.hash = path
   }
 }

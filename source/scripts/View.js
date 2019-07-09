@@ -1,4 +1,4 @@
-MVC.View = class extends Events() {
+MVC.View = class extends MVC.Events {
   constructor() {
     super()
   }

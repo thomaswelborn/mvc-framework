@@ -3,7 +3,14 @@
     "src": {
       "globs": [
         "source/scripts/MVC.js",
-        "source/scripts/Events.js"
+        "source/scripts/AJAX.js",
+        "source/scripts/Events.js",
+        "source/scripts/Channels/Channels.js",
+        "source/scripts/Channels/Channel/Channel.js",
+        "source/scripts/Model.js",
+        "source/scripts/View.js",
+        "source/scripts/Controller.js",
+        "source/scripts/Router.js"
       ],
       "options": {}
     },
@@ -12,6 +19,18 @@
         "globs": [
           "develop/scripts/**/*.js"
         ]
+      }
+    },
+    "sourcemaps": {
+      "init": {
+        "options": {}
+      },
+      "write": {
+        "options": {
+          "sourceMappingURLPrefix": "http://localhost:3000",
+          "includeContent": false
+        },
+        "dest": "../.maps/scripts"
       }
     },
     "concat": {
