@@ -1,3 +1,3 @@
 module.exports = function(settings) {
-  $.lib.del.sync(settings.src.globs)
+  if(settings) return $.lib.del.sync(settings.src.globs)
 }

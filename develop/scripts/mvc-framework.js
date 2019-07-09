@@ -1,39 +1,74 @@
 var MVC = MVC || {}
 
 MVC.Events = class {
-  constructor() {
-    this.events = {}
+  constructor() {}
+  get callbacks() {
+    this._callbacks = (this._callbacks)
+      ? this._callbacks
+      : {
+          channels: {},
+          events: {},
+        }
+    return this._callbacks
   }
-  on(eventName, callback) {
-    this.events[eventName] = this.events[eventName] || []
-    this.events[eventName].push(callback)
+  set callbacks(callbacks) { this._callbacks = callbacks }
+  get channels() {
+    this._channels = (this._channels)
+      ? this._channels
+      : {}
+    return this._channels
   }
-  off(eventName, callback) {
-    var currentEvents = this.events[eventName]
-    if(
-      typeof currentEvents === 'undefined' ||
-      currentEvents.length === 0
-    ) return
-    var currentEventIndices = Object.entries(currentEvents)
-      .filter((currentEvent, currentEventIndex) => {
-        return (
-          (typeof callback === 'string' && callback === currentEvent[1].name) ||
-          (typeof callback === 'function' && callback.name === currentEvent[1].name)
-        )
-      })
-    for(var key = currentEventIndices.length; key > 0; key--) {
-      currentEvents.splice(currentEventIndices[key - 1][0], 1)
-    }
-    if(currentEvents.length === 0) delete this.events[eventName]
+  set channels(channels) { this._channels = channels }
+  channel(channelName) {
+    let channel = this.channels[channelName]
+    channel = (channel)
+      ? channel
+      : Object.defineProperties(
+        {},
+        {
+          request: {
+            configurable: false,
+            enumerable: true,
+            value: (eventName, eventData) => {
+              //
+            },
+            writable: false,
+          },
+          response: {
+            configurable: false,
+            enumerable: true,
+            value: (eventName, eventCallback) => {
+              //
+            },
+            writable: false,
+          },
+        }
+      )
   }
-  emit(eventName, data) {
-    try {
-      this.events[eventName].forEach(function(callback) {
-        callback(data)
-      })
-    } catch(error) {}
+  on(eventName, eventCallback) {
+
+  }
+  off(eventName, eventCallback) {
+
+  }
+  emit(eventName, eventData) {
+
   }
 }
+
+/*
+let events = new MVC.Events()
+let channel = new events.channel
+let callbacks = {
+  channels: {
+    getMeh() => {}
+  }
+}
+channel.response('get:meh', (data) => {
+  if(data.heh) return "heh"
+})
+channel.request('get:meh', { heh: true })
+*/
 
 MVC.AJAX = class {
   constructor(type, url, settings) {

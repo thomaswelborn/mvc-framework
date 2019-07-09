@@ -18,7 +18,6 @@ var Process = class {
   get tasks() { return _tasks }
   set tasks(tasks) {
     for(let [taskName, taskSettings] of Object.entries(tasks)) {
-      console.log(taskName, taskSettings)
       switch(taskName) {
         case 'templates':
           for(let [templateTaskName, templateTaskSettings] of Object.entries(taskSettings)) {

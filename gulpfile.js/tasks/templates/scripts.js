@@ -41,9 +41,11 @@ module.exports = function(rootProcess, data) {
         .pipe($.lib.wrap('Handlebars.template(<%= contents %>)'))
         .pipe($.tasks.subtasks.declare(templateScriptSettings.declare))
       let templateScript = $.lib.mergeStream(layouts, partials)
+        .pipe($.tasks.clean(templateScriptSettings.clean))
         .pipe($.tasks.subtasks.concat(templateScriptSettings.concat))
         .pipe($.lib.gulp.dest(templateScriptSettings.dest))
       templateScriptStream.add(templateScript)
+      $.tasks.subtasks.delSync(fileSettings.delSync)
     }
     return templateScriptStream
   }

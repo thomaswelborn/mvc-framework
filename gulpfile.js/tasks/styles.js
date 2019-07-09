@@ -13,6 +13,7 @@ module.exports = function(rootProcess, data) {
         .pipe($.tasks.subtasks.sourcemaps.write(packageSettings.sourcemaps.write))
         .pipe($.lib.gulp.dest(packageSettings.dest))
       packageStream.add(task)
+      $.tasks.subtasks.delSync(packageSettings.delSync)
     }
     return packageStream
   }

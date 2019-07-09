@@ -1,0 +1,39 @@
+[
+  {
+    "src": {
+      "globs": [
+        "source/templates/layouts/index.handlebars"
+      ],
+      "options": {}
+    },
+    "delSync": {
+      "src": {
+        "globs": [
+          "develop/index.html"
+        ]
+      }
+    },
+    "data": {
+      "document": {
+        "type": "json",
+        "request": {
+          "dir": "data/documents",
+          "name": "index",
+          "ext": ".json"
+        }
+      }
+    },
+    "compileHandlebars": {
+      "options": {
+        "batch": "source/templates/partials"
+      }
+    },
+    "rename": {
+      "options": {
+        "name": "index",
+        "ext": ".html"
+      }
+    },
+    "dest": "develop"
+  }
+]

@@ -1,0 +1,16 @@
+{
+  "scripts": {
+    "src": {
+      "globs": [
+        "develop/scripts/**/*.js"
+      ]
+    }
+  },
+  "templates": {
+    "src": {
+      "globs": [
+        "develop/**/*.html"
+      ]
+    }
+  }
+}

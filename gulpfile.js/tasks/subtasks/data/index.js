@@ -1,9 +1,14 @@
 module.exports = function(settings) {
-  let data
-  switch(settings.type) {
-    case 'json':
-      data = require('./json.js')(settings.request)
-      break
+  let data = {}
+  for(let [dataName, dataSettings] of Object.entries(settings)) {
+    switch(dataSettings.type) {
+      case 'json':
+        data[dataName] = require('./json.js')(dataSettings)
+        break
+    }
   }
-  return data
+  console.log(data)
+  return $.lib.data((file) => {
+    return data
+  })
 }

@@ -6,9 +6,9 @@ module.exports = function(rootProcess, data) {
         packageSettings.task.tasks[taskNameIndex] = [
           rootProcess, ':', taskName
         ].join('')
-        packageSettings.task = $.lib.gulp[packageSettings.task.type](packageSettings.task.tasks)
-        $.lib.gulp.watch(packageSettings.globs, packageSettings.options, packageSettings.task)
       }
+      let task = $.lib.gulp[packageSettings.task.type](packageSettings.task.tasks)
+      $.lib.gulp.watch(packageSettings.globs, packageSettings.options, task)
     }
   }
   return Watch

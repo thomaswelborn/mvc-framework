@@ -1,0 +1,26 @@
+{
+  "scripts": {
+    "globs": [
+      "source/scripts/**/*.js"
+    ],
+    "options": {},
+    "task": {
+      "type": "series",
+      "tasks": [
+        "scripts"
+      ]
+    }
+  },
+  "markup": {
+    "globs": [
+      "source/templates/layouts/**/*.handlebars"
+    ],
+    "options": {},
+    "task": {
+      "type": "series",
+      "tasks": [
+        "templates:documents"
+      ]
+    }
+  }
+}
