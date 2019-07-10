@@ -386,5 +386,3 @@ MVC.Router = class extends MVC.Events {
     window.location.hash = path
   }
 }
-
-//# sourceMappingURL=http://localhost:3000/.maps/scripts/mvc-framework.js.map

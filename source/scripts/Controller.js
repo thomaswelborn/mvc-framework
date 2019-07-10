@@ -6,28 +6,28 @@ MVC.Controller = class extends MVC.Events {
   get settings() { return this._settings }
   set settings(settings) {
     this._settings = settings
-    if(this.settings.models) this.models = models
-    if(this.settings.views) this.views = views
-    if(this.settings.controllers) this.controllers = controllers
-    if(this.settings.routers) this.routers = routers
-    if(this.settings.emitters) this.emitters = emitters
-    if(this.settings.callbacks) this.callbacks = callbacks
-    if(this.settings.events) this.events = events
+    if(this.settings.models) this._models = models
+    if(this.settings.views) this._views = views
+    if(this.settings.controllers) this._controllers = controllers
+    if(this.settings.routers) this._routers = routers
+    if(this.settings.emitters) this._emitters = emitters
+    if(this.settings.callbacks) this._callbacks = callbacks
+    if(this.settings.events) this._events = events
   }
-  get models() { return this._models }
-  set models(models) { this._models = models }
-  get views() { return this._views }
-  set views(views) { this._views = views }
-  get controllers() { return this._controllers }
-  set controllers(controllers) { this._controllers = controllers }
-  get routers() { return this._routers }
-  set routers(routers) { this._routers = routers }
-  get emitters() { return this._emitters }
-  set emitters(emitters) { this._emitters = emitters }
-  get callbacks() { return this._callbacks }
-  set callbacks(callbacks) { this._callbacks = callbacks }
-  get events() { return this._events }
-  set events(events) {
+  get _models() { return this.models || {} }
+  set _models(models) { this.models = models }
+  get _views() { return this.views || {} }
+  set _views(views) { this.views = views }
+  get _controllers() { return this.controllers || {} }
+  set _controllers(controllers) { this.controllers = controllers }
+  get _routers() { return this.routers || {} }
+  set _routers(routers) { this.routers = routers }
+  get _emitters() { return this.emitters || {} }
+  set _emitters(emitters) { this.emitters = emitters }
+  get _callbacks() { return this.callbacks || {} }
+  set _callbacks(callbacks) { this.callbacks = callbacks }
+  get _events() { return this.events || {} }
+  set _events(events) {
     for(let [eventSettings, eventCallback] of Object.entries(events)) {
       let eventData = eventSettings.split(' ')
       let eventTarget = eventData[0].replace('@', '').split('.')

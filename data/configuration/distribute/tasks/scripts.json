@@ -4,7 +4,9 @@
       "globs": [
         "source/scripts/MVC.js",
         "source/scripts/Events.js",
-        "source/scripts/AJAX.js",
+        "source/scripts/Service.js",
+        "source/scripts/Channels/Channels.js",
+        "source/scripts/Channels/Channel/Channel.js",
         "source/scripts/Model.js",
         "source/scripts/View.js",
         "source/scripts/Controller.js",

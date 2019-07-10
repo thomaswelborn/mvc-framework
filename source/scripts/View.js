@@ -2,51 +2,55 @@ MVC.View = class extends MVC.Events {
   constructor() {
     super()
   }
-  get elementName() { return this.element.tagName }
-  set elementName(data) {
-    if(!this.element) this.element = document.createElement(data)
+  get _elementName() { return this._element.tagName }
+  set _elementName(elementName) {
+    if(!this._element) this._element = document.createElement(elementName)
   }
-  get element() { return this._element }
-  set element(data) {
-    let element
-    if(data instanceof HTMLElement) {
-      element = data
-    } else if(typeof data === 'string') {
-      element = document.querySelector(data)
+  get _element() { return this.element }
+  set _element(element) {
+    if(element instanceof HTMLElement) {
+      this.element = element
+    } else if(typeof element === 'string') {
+      this.element = document.querySelector(element)
     }
-    this._element = element
   }
-  get ui() { return this._ui }
-  set ui(data) {
-    let ui = {}
-    for(let [key, value] of data) {
+  get _attributes() { return this.attributes || {} }
+  set _attributes(attributes) {
+    for(let [attributeKey, attributeValue] of Object.entries(attributes)) {
+      this._element.setAttribute(attributeKey, attributeValue)
+    }
+    this.attributes = this._element.attributes
+  }
+  get _ui() { return this.ui || {} }
+  set _ui(ui) {
+    for(let [key, value] of ui) {
       switch(key) {
         case '@':
-          ui[key] = this.element
+          this.ui[key] = this.element
           break
         default:
-          ui[key] = this.element.querySelectorAll(value)
+          this.ui[key] = this.element.querySelectorAll(value)
           break;
       }
     }
-    this._ui = ui
+    this.ui = ui
   }
-  get events() { return this._events }
-  set events(data) {
-    for(let [key, value] of data) {
-      let eventData = key.split[' ']
+  get _events() { return this.events || {} }
+  set _events(events) {
+    for(let [eventKey, eventValue] of events) {
+      let eventData = eventKey.split[' ']
       let eventTarget = this[
         eventData[0].replace('@', '')
       ]
       let eventName = eventData[1]
       let eventCallback = this[
-        value.replace('@', '')
+        eventValue.replace('@', '')
       ]
       eventTarget.on(eventName, eventCallback)
     }
   }
-  get callbacks() { return this._callbacks }
-  set callbacks(data) { this._callbacks = data }
-  get emitters() { return this._emitters }
-  set emitters(data) { this._emitters = data }
+  get _callbacks() { return this.callbacks || {} }
+  set _callbacks(callbacks) { this.callbacks = callbacks }
+  get _emitters() { return this.emitters || {} }
+  set _emitters(emitters) { this.emitters = emitters }
 }

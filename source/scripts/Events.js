@@ -1,39 +1,40 @@
 MVC.Events = class {
   constructor() {}
-  get events() {
-    this._events = (this._events)
-      ? this._events
-      : {}
-    return this._events
+  get _events() { return this.events || {} }
+  eventCallbacks(eventName) { return this._events[eventName] || {} }
+  eventCallbackName(eventCallback) {
+    return (eventCallback.name.length)
+      ? eventCallback.name
+      : 'anonymousFunction'
   }
-  event(eventName) {
-    this.events[eventName] = (this.events[eventName])
-      ? this.events[eventName]
-      : {}
-    return this.events[eventName]
-  }
+  eventCallbackGroup(eventCallbacks, eventCallbackName) { return eventCallbacks[eventCallbackName] || [] }
   on(eventName, eventCallback) {
-    let event = this.event(eventName)
-    let eventCallbackName = eventCallback.constructor.name
-    event[eventCallbackName] = (event[eventCallbackName])
-      ? event[eventCallbackName]
-      : []
-    event[eventCallbackName].push(eventCallback)
+    let eventCallbacks = this.eventCallbacks(eventName)
+    let eventCallbackName = this.eventCallbackName(eventCallback)
+    let eventCallbackGroup = this.eventCallbackGroup(eventCallbacks, eventCallbackName)
+    eventCallbackGroup.push(eventCallback)
+    eventCallbacks[eventCallbackName] = eventCallbackGroup
+    this._events[eventName] = eventCallbacks
   }
-  off(eventName, eventCallback) {
-    let event = this.event(eventName)
-    if(eventCallback) {
-      let eventCallbackName = eventCallback.constructor.name
-      delete this.events[eventName][eventCallbackName]
-    } else {
-      delete this.events[eventName]
+  off() {
+    switch(arguments.length) {
+      case 1:
+        var eventName = arguments[0]
+        delete this._events[eventName]
+        break
+      case 2:
+        var eventName = arguments[0]
+        var eventCallback = arguments[1]
+        var eventCallbackName = this.eventCallbackName(eventCallback)
+        delete this._events[eventName][eventCallbackName]
+        break
     }
   }
   emit(eventName, eventData) {
-    let event = this.event(eventName)
-    for(let [callbackName, callbacks] of Object.entries(event)) {
-      for(let callback of callbacks) {
-        callback(eventData)
+    let eventCallbacks = this.eventCallbacks(eventName)
+    for(let [eventCallbackGroupName, eventCallbackGroup] of Object.entries(eventCallbacks)) {
+      for(let eventCallback of eventCallbackGroup) {
+        eventCallback(eventData)
       }
     }
   }

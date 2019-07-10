@@ -1,0 +1,11 @@
+{
+  "gulp-boilerplate": {
+    "src": {
+      "globs": [
+        "distribute/mvc-framework.js"
+      ],
+      "options": {}
+    },
+    "dest": "../gulp-boilerplate/node_modules/mvc-framework/distribute"
+  }
+}
