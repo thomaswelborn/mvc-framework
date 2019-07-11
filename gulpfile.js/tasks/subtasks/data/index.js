@@ -7,7 +7,6 @@ module.exports = function(settings) {
         break
     }
   }
-  console.log(data)
   return $.lib.data((file) => {
     return data
   })

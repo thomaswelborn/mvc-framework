@@ -1,4 +1,5 @@
 module.exports = {
+  babel: require('./babel.js'),
   compileHandlebars: require('./compile-handlebars.js'),
   concat: require('./concat.js'),
   data: require('./data'),

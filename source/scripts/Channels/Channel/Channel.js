@@ -1,29 +1,24 @@
 MVC.Channels.Channel = class {
   constructor() {}
-  get responses() {
-    this._responses = (this._responses)
-      ? this._responses
-      : {}
-    return this._responses
-  }
+  get _responses() { return this.responses || {} }
   response(responseName, responseCallback) {
     if(responseCallback) {
-      this.responses[responseName] = responseCallback
+      this._responses[responseName] = responseCallback
     } else {
-      return this.responses[response]
+      return this._responses[response]
     }
   }
   request(responseName, requestData) {
-    if(this.responses[responseName]) {
-      return this.responses[responseName](requestData)
+    if(this._responses[responseName]) {
+      return this._responses[responseName](requestData)
     }
   }
   off(responseName) {
     if(responseName) {
-      delete this.responses[responseName]
+      delete this._responses[responseName]
     } else {
-      for(let [responseName] of Object.keys(this.responses)) {
-        delete this.responses[responseName]
+      for(let [responseName] of Object.keys(this._responses)) {
+        delete this._responses[responseName]
       }
     }
   }

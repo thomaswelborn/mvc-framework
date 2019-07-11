@@ -1,6 +1,7 @@
 global.$ = {
   libraries: {
     gulp: require('gulp'),
+    babel: require('gulp-babel'),
     compileHandlebars: require('gulp-compile-handlebars'),
     concat: require('gulp-concat'),
     data: require('gulp-data'),

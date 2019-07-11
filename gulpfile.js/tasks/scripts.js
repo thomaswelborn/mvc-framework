@@ -6,6 +6,7 @@ module.exports = function(rootProcess, data) {
       packageSettings.sourcemaps = packageSettings.sourcemaps || {}
       let task = $.lib.gulp.src(packageSettings.src.globs, packageSettings.src.options)
         .pipe($.tasks.subtasks.sourcemaps.init(packageSettings.sourcemaps.init))
+          .pipe($.tasks.subtasks.babel(packageSettings.babel))
           .pipe($.tasks.subtasks.concat(packageSettings.concat))
           .pipe($.tasks.subtasks.minify(packageSettings.minify))
         .pipe($.tasks.subtasks.sourcemaps.write(packageSettings.sourcemaps.write))
