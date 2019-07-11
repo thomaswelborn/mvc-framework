@@ -3,17 +3,21 @@ MVC.Controller = class extends MVC.Events {
     super()
     if(this.settings) this.settings = settings
   }
-  get settings() { return this._settings }
-  set settings(settings) {
-    this._settings = settings
-    if(this.settings.models) this._models = models
-    if(this.settings.views) this._views = views
-    if(this.settings.controllers) this._controllers = controllers
-    if(this.settings.routers) this._routers = routers
-    if(this.settings.emitters) this._emitters = emitters
-    if(this.settings.callbacks) this._callbacks = callbacks
-    if(this.settings.events) this._events = events
+  get _settings() { return this.settings }
+  set _settings(settings) {
+    this.settings = settings
+    if(this._settings.emitters) this._emitters = this._settings.emitters
+    if(this._settings.callbacks) this._callbacks = this._settings.callbacks
+    if(this._settings.models) this._models = this._settings.models
+    if(this._settings.views) this._views = this._settings.views
+    if(this._settings.controllers) this._controllers = this._settings.controllers
+    if(this._settings.routers) this._routers = this._settings.routers
+    if(this._settings.events) this._events = this._settings.events
   }
+  get _emitters() { return this.emitters || {} }
+  set _emitters(emitters) { this.emitters = emitters }
+  get _callbacks() { return this.callbacks || {} }
+  set _callbacks(callbacks) { this.callbacks = callbacks }
   get _models() { return this.models || {} }
   set _models(models) { this.models = models }
   get _views() { return this.views || {} }
@@ -22,10 +26,6 @@ MVC.Controller = class extends MVC.Events {
   set _controllers(controllers) { this.controllers = controllers }
   get _routers() { return this.routers || {} }
   set _routers(routers) { this.routers = routers }
-  get _emitters() { return this.emitters || {} }
-  set _emitters(emitters) { this.emitters = emitters }
-  get _callbacks() { return this.callbacks || {} }
-  set _callbacks(callbacks) { this.callbacks = callbacks }
   get _events() { return this.events || {} }
   set _events(events) {
     for(let [eventSettings, eventCallback] of Object.entries(events)) {

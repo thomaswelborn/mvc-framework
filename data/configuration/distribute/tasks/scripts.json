@@ -14,6 +14,11 @@
       ],
       "options": {}
     },
+    "babel": {
+      "options": {
+        "presets": ["@babel/env"]
+      }
+    },
     "concat": {
       "options": {
         "path": "mvc-framework.js"

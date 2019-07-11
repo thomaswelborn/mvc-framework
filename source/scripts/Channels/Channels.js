@@ -1,18 +1,13 @@
 MVC.Channels = class {
   constructor() {}
-  get channels() {
-    this._channels = (this._channels)
-      ? this._channels
-      : {}
-    return this._channels
-  }
+  get _channels() { return this.channels || {} }
   channel(channelName) {
-    this.channels[channelName] = (this.channels[channelName])
-      ? this.channels[channelName]
+    this._channels[channelName] = (this._channels[channelName])
+      ? this._channels[channelName]
       : new MVC.Channels.Channel()
-    return this.channels[channelName]
+    return this._channels[channelName]
   }
   off(channelName) {
-    delete this.channels[channelName]
+    delete this._channels[channelName]
   }
 }

@@ -21,6 +21,11 @@
         ]
       }
     },
+    "babel": {
+      "options": {
+        "presets": ["@babel/env"]
+      }
+    },
     "sourcemaps": {
       "init": {
         "options": {}
