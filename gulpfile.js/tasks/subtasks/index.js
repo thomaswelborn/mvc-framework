@@ -10,4 +10,6 @@ module.exports = {
   rename: require('./rename.js'),
   sass: require('./sass.js'),
   sourcemaps: require('./sourcemaps.js'),
+  string: require('./string'),
+  wrap: require('./wrap.js'),
 }

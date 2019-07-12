@@ -11,7 +11,7 @@
       ]
     }
   },
-  "markup": {
+  "documentTemplates": {
     "globs": [
       "source/templates/layouts/**/*.handlebars",
       "source/templates/partials/**/*.hbs"
@@ -21,6 +21,18 @@
       "type": "series",
       "tasks": [
         "templates:documents"
+      ]
+    }
+  },
+  "scriptTemplates": {
+    "globs": [
+      "source/scripts/**/*.hbs"
+    ],
+    "options": {},
+    "task": {
+      "type": "series",
+      "tasks": [
+        "templates:scripts"
       ]
     }
   }

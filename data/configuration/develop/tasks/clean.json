@@ -2,14 +2,14 @@
   "scripts": {
     "src": {
       "globs": [
-        "develop/scripts/**/*.js"
+        "develop/scripts/MVC/**/*.js"
       ]
     }
   },
   "templates": {
     "src": {
       "globs": [
-        "develop/**/*.html"
+        "develop/MVC/**/*.html"
       ]
     }
   }

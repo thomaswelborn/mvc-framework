@@ -1,16 +1,16 @@
 {
-  "mvc": {
+  "browser": {
     "src": {
       "globs": [
-        "source/scripts/MVC.js",
-        "source/scripts/Events.js",
-        "source/scripts/Service.js",
-        "source/scripts/Channels/Channels.js",
-        "source/scripts/Channels/Channel/Channel.js",
-        "source/scripts/Model.js",
-        "source/scripts/View.js",
-        "source/scripts/Controller.js",
-        "source/scripts/Router.js"
+        "source/scripts/MVC/MVC.js",
+        "source/scripts/MVC/Events.js",
+        "source/scripts/MVC/Service.js",
+        "source/scripts/MVC/Channels/Channels.js",
+        "source/scripts/MVC/Channels/Channel/Channel.js",
+        "source/scripts/MVC/Model.js",
+        "source/scripts/MVC/View.js",
+        "source/scripts/MVC/Controller.js",
+        "source/scripts/MVC/Router.js"
       ],
       "options": {}
     },
@@ -21,7 +21,7 @@
     },
     "concat": {
       "options": {
-        "path": "mvc-framework.js"
+        "path": "browser/mvc-framework.js"
       }
     },
     "dest": "distribute"

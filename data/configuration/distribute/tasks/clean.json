@@ -2,7 +2,8 @@
   "templates": {
     "src": {
       "globs": [
-        "distribute"
+        "distribute/node",
+        "distribute/scripts"
       ]
     }
   }
