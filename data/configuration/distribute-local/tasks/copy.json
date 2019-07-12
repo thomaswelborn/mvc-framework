@@ -2,7 +2,7 @@
   "gulp-boilerplate": {
     "src": {
       "globs": [
-        "distribute/mvc-framework.js"
+        "distribute/**/*"
       ],
       "options": {}
     },

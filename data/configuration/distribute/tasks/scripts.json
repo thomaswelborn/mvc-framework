@@ -25,5 +25,32 @@
       }
     },
     "dest": "distribute"
+  },
+  "node": {
+    "src": {
+      "globs": [
+        "source/scripts/MVC/MVC.js",
+        "source/scripts/MVC/Events.js",
+        "source/scripts/MVC/Service.js",
+        "source/scripts/MVC/Channels/Channels.js",
+        "source/scripts/MVC/Channels/Channel/Channel.js",
+        "source/scripts/MVC/Model.js",
+        "source/scripts/MVC/View.js",
+        "source/scripts/MVC/Controller.js",
+        "source/scripts/MVC/Router.js"
+      ],
+      "options": {}
+    },
+    "concat": {
+      "options": {
+        "path": "node/mvc-framework.js"
+      }
+    },
+    "wrap": {
+      "template": "<%= contents %>\nmodule.exports = MVC",
+      "data": {},
+      "options": {}
+    },
+    "dest": "distribute"
   }
 }

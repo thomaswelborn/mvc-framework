@@ -9,6 +9,7 @@ module.exports = function(rootProcess, data) {
         .src(packageSettings.src.globs, packageSettings.src.options)
           .pipe($.tasks.subtasks.babel(packageSettings.babel))
           .pipe($.tasks.subtasks.concat(packageSettings.concat))
+          .pipe($.tasks.subtasks.wrap(packageSettings.wrap))
           .pipe($.tasks.subtasks.minify(packageSettings.minify))
           .pipe($.tasks.subtasks.sourcemaps.write(
             packageSettings.sourcemaps.write

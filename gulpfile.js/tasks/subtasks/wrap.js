@@ -1,18 +1,20 @@
 module.exports = function(settings) {
-  if(settings.options) {
-    if(settings.options.imports) {
-      if(settings.options.imports.processPartialName) {
-        let processPartialName
-        let processPartialNameOptions = settings.options.imports.processPartialName
-        let processPartialNameFilePath = processPartialNameOptions.filePath
-        switch(typeof processPartialNameFilePath) {
-          case 'string':
+  console.log('settings', settings)
+  if(settings) {
+    if(settings.options) {
+      if(settings.options.imports) {
+        if(settings.options.imports.processPartialName) {
+          let processPartialName
+          let processPartialNameOptions = settings.options.imports.processPartialName
+          let processPartialNameFilePath = processPartialNameOptions.filePath
+          switch(typeof processPartialNameFilePath) {
+            case 'string':
             processPartialNameOptions = (
               processPartialNameFilePath === 'processPartialNameByPath'
             ) ? $.lib.declare.processPartialNameByPath
             : null
             break
-          case 'object':
+            case 'object':
             processPartialNameOptions = function(filePath) {
               if(processPartialNameFilePath.location === 'relative') {
                 filePath = $.lib.path.relative($.basedir, filePath)
@@ -32,8 +34,9 @@ module.exports = function(settings) {
               return JSON.stringify(filePath)
             }
             break
+          }
+          settings.options.imports.processPartialName = processPartialNameOptions
         }
-        settings.options.imports.processPartialName = processPartialNameOptions
       }
     }
     return $.lib.wrap(
