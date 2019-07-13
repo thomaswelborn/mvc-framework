@@ -7,6 +7,7 @@ module.exports = function(rootProcess, data) {
       $.tasks.subtasks.delSync(packageSettings.delSync)
       let task = $.lib.gulp
         .src(packageSettings.src.globs, packageSettings.src.options)
+          .pipe($.tasks.subtasks.sourcemaps.init(packageSettings.sourcemaps.init))
           .pipe($.tasks.subtasks.babel(packageSettings.babel))
           .pipe($.tasks.subtasks.concat(packageSettings.concat))
           .pipe($.tasks.subtasks.wrap(packageSettings.wrap))

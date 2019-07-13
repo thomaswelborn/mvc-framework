@@ -28,6 +28,7 @@
     "gulp-uglify": "^3.0.2",
     "gulp-wrap": "^0.15.0",
     "jsonfile": "^5.0.0",
+    "lodash": "^4.17.14",
     "merge2": "^1.2.3",
     "mongoose": "^5.6.3",
     "node-sass": "^4.12.0",

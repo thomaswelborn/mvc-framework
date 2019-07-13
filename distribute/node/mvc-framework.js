@@ -2,7 +2,12 @@ var MVC = MVC || {}
 
 MVC.Events = class {
   constructor() {}
-  get _events() { return this.events || {} }
+  get _events() {
+    this.events = (this.events)
+      ? this.events
+      : {}
+    return this.events
+  }
   eventCallbacks(eventName) { return this._events[eventName] || {} }
   eventCallbackName(eventCallback) {
     return (eventCallback.name.length)
@@ -143,19 +148,27 @@ MVC.Model = class extends MVC.Events {
   }
   get _settings() { return this.settings || {} }
   set _settings(settings) {
-    if(this.settings.histiogram) this._histiogram = this.settings.histiogram
-    if(this.settings.data) this._data = this.settings.data
+    if(settings) {
+      this.settings = settings
+      if(this.settings.histiogram) this._histiogram = this.settings.histiogram
+      if(this.settings.data) this.set(this.settings.data)
+    }
   }
   get _histiogram() { return this.histiogram || {
     length: 1
   } }
   set _histiogram(histiogram) {
     this.histiogram = Object.assign(
-      this.histiogram,
+      this._histiogram,
       histiogram
     )
   }
-  get _history() { return this.history || [] }
+  get _history() {
+    this.history = (this.history)
+      ? this.history
+      : []
+    return this.history
+  }
   set _history(data) {
     if(
       Object.keys(data).length
@@ -166,26 +179,30 @@ MVC.Model = class extends MVC.Events {
       }
     }
   }
-  get _data() { return this.data || {} }
+  get _data() {
+    this.data =  (this.data)
+      ? this.data
+      : {}
+    return this.data
+  }
   set() {
-    this._history = this._data
+    this._history = this.parse()
     switch(arguments.length) {
       case 1:
+        console.log(arguments.length)
         for(let [key, value] of Object.entries(arguments[0])) {
-          if(!this._data['_'.concat(key)]) this.addDataProperty(key, value)
-          this._data['_'.concat(key)] = value
+          this.setDataProperty(key, value)
         }
         break
       case 2:
         let key = arguments[0]
         let value = arguments[1]
-        if(!this._data['_'.concat(key)]) this.addDataProperty(key, value)
-        this._data['_'.concat(key)] = value
+        this.setDataProperty(key, value)
         break;
     }
   }
   unset() {
-    this._history = this._data
+    this._history = this.parse()
     switch(arguments.length) {
       case 0:
         for(let key of Object.keys(this._data)) {
@@ -200,42 +217,45 @@ MVC.Model = class extends MVC.Events {
         break
     }
   }
-  addDataProperty(key, value) {
-    let context = this
-    Object.defineProperties(
-      this._data,
-      {
-        ['_'.concat(key)]: {
-          configurable: true,
-          get() { return this[key] },
-          set(value) {
-            this[key] = value
-            let setValueEventName = ['set', ':', key].join('')
-            let setEventName = 'set'
-            context.emit(
-              setValueEventName,
-              {
-                name: setValueEventName,
-                key: key,
-                value: value,
-              }
-            )
-            context.emit(
-              setEventName,
-              {
-                name: setEventName,
-                key: key,
-                value: value,
-              }
-            )
+  setDataProperty(key, value) {
+    if(!this._data['_'.concat(key)]) {
+      let context = this
+      Object.defineProperties(
+        this._data,
+        {
+          ['_'.concat(key)]: {
+            configurable: true,
+            get() { return this[key] },
+            set(value) {
+              this[key] = value
+              let setValueEventName = ['set', ':', key].join('')
+              let setEventName = 'set'
+              context.emit(
+                setValueEventName,
+                {
+                  name: setValueEventName,
+                  key: key,
+                  value: value,
+                }
+              )
+              context.emit(
+                setEventName,
+                {
+                  name: setEventName,
+                  key: key,
+                  value: value,
+                }
+              )
+            }
           }
         }
-      }
-    )
+      )
+    }
+    this._data['_'.concat(key)] = value
   }
   parse(data) {
     data = data || this._data
-    return JSON.parse(JSON.stringify(data)) }
+    return JSON.parse(JSON.stringify(Object.assign({}, data))) }
 }
 
 MVC.View = class extends MVC.Events {
@@ -298,7 +318,7 @@ MVC.View = class extends MVC.Events {
 MVC.Controller = class extends MVC.Events {
   constructor(settings) {
     super()
-    if(this.settings) this.settings = settings
+    if(settings) this._settings = settings
   }
   get _settings() { return this.settings }
   set _settings(settings) {
@@ -311,26 +331,64 @@ MVC.Controller = class extends MVC.Events {
     if(this._settings.routers) this._routers = this._settings.routers
     if(this._settings.events) this._events = this._settings.events
   }
-  get _emitters() { return this.emitters || {} }
+  get _emitters() {
+    this.emitters = (this.emitters)
+      ? this.emitters
+      : {}
+  }
   set _emitters(emitters) { this.emitters = emitters }
-  get _callbacks() { return this.callbacks || {} }
+  get _callbacks() {
+    this.callbacks = (this.callbacks)
+      ? this.callbacks
+      : {}
+  }
   set _callbacks(callbacks) { this.callbacks = callbacks }
-  get _models() { return this.models || {} }
+  get _models() {
+    this.models = (this.models)
+      ? this.models
+      : {}
+  }
   set _models(models) { this.models = models }
-  get _views() { return this.views || {} }
+  get _views() {
+    this.views = (this.views)
+      ? this.views
+      : {}
+  }
   set _views(views) { this.views = views }
-  get _controllers() { return this.controllers || {} }
+  get _controllers() {
+    this.controllers = (this.controllers)
+      ? this.controllers
+      : {}
+  }
   set _controllers(controllers) { this.controllers = controllers }
-  get _routers() { return this.routers || {} }
+  get _routers() {
+    this.routers = (this.routers)
+      ? this.routers
+      : {}
+  }
   set _routers(routers) { this.routers = routers }
-  get _events() { return this.events || {} }
+  get _events() {
+    this.events = (this.events)
+      ? this.events
+      : {}
+  }
   set _events(events) {
-    for(let [eventSettings, eventCallback] of Object.entries(events)) {
-      let eventData = eventSettings.split(' ')
-      let eventTarget = eventData[0].replace('@', '').split('.')
-      let eventName = eventData[1]
-      eventCallback = eventCallback.replace('@', '').split('.')
-      this[eventTarget].on(eventName, eventCallback)
+    for(let [eventGroupName, eventGroup] of Object.entries(events)) {
+      for(let [eventSettings, eventCallback] of Object.entries(eventGroup)) {
+        let eventData = eventSettings.split(' ')
+        let eventTarget = eventData[0]
+          .replace('@', '')
+          .split('.')
+          .reduce((accumulator, currentValue) => accumulator[currentValue], this)
+        let eventName = eventData[1]
+        eventCallback = eventCallback
+          .replace('@', '')
+          .split('.')
+          .reduce((accumulator, currentValue) => accumulator[currentValue], this)
+        // console.log('eventCallback', eventCallback)
+        console.log('\n', eventTarget, '\n', eventName, '\n', eventCallback)
+        eventTarget.on(eventName, eventCallback)
+      }
     }
   }
 }

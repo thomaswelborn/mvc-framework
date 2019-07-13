@@ -1,6 +1,11 @@
 MVC.Events = class {
   constructor() {}
-  get _events() { return this.events || {} }
+  get _events() {
+    this.events = (this.events)
+      ? this.events
+      : {}
+    return this.events
+  }
   eventCallbacks(eventName) { return this._events[eventName] || {} }
   eventCallbackName(eventCallback) {
     return (eventCallback.name.length)

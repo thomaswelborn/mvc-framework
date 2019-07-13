@@ -25,9 +25,7 @@ module.exports = function(settings) {
             if(processNameFilePath.transform) {
               for(let transformSettings of processNameFilePath.transform) {
                 transformSettings['origin'] = filePath
-                console.log('\n', 'transformSettings', '\n', transformSettings, '\n')
                 filePath = $.tasks.subtasks.string.transform(transformSettings)
-                console.log('\n', 'filePath', '\n', filePath, '\n')
               }
             }
             return JSON.stringify(filePath)

@@ -11,6 +11,73 @@ function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = 
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
+MVC.Utils = {
+  getObjectFromDotNotationString: function getObjectFromDotNotationString(string, context) {
+    return string.replace('@', '').split('.').reduce(function (accumulator, currentValue) {
+      return accumulator[currentValue];
+    }, context);
+  },
+  toggleEventsForTargetObjects: function toggleEventsForTargetObjects(toggleMethod, events, targetObjects, callbacks) {
+    for (var _i = 0, _Object$entries = Object.entries(events); _i < _Object$entries.length; _i++) {
+      var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+          eventSettings = _Object$entries$_i[0],
+          eventCallback = _Object$entries$_i[1];
+
+      var eventData = eventSettings.split(' ');
+      var eventTargetName = eventData[0].replace('@', '');
+      var eventTarget = targetObjects[eventTargetName];
+      var eventMethodName = eventTarget instanceof HTMLElement ? toggleMethod === 'on' ? 'addEventListener' : 'removeEventListener' : toggleMethod === 'on' ? 'on' : 'off';
+      var eventName = eventData[1];
+      var eventCallbackName = eventCallback.replace('@', '');
+      eventCallback = callbacks[eventCallbackName];
+      eventTarget[eventMethodName](eventName, eventCallback);
+    }
+  },
+  bindEventsToTargetObjects: function bindEventsToTargetObjects() {
+    this.toggleEventsForTargetObjects.apply(this, ['on'].concat(Array.prototype.slice.call(arguments)));
+  },
+  unbindEventsFromTargetObjects: function unbindEventsFromTargetObjects() {
+    this.toggleEventsForTargetObjects.apply(this, ['off'].concat(Array.prototype.slice.call(arguments)));
+  },
+  addPropertiesToTargetObject: function addPropertiesToTargetObject() {
+    var targetObject;
+
+    switch (arguments.length) {
+      case 2:
+        var properties = arguments[0];
+        targetObject = arguments[1];
+
+        for (var _i2 = 0, _Object$entries2 = Object.entries(properties); _i2 < _Object$entries2.length; _i2++) {
+          var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
+              _propertyName = _Object$entries2$_i[0],
+              _propertyValue = _Object$entries2$_i[1];
+
+          targetObject[_propertyName] = _propertyValue;
+        }
+
+        break;
+
+      case 3:
+        var propertyName = arguments[0];
+        var propertyValue = arguments[1];
+        targetObject = arguments[2];
+        targetObject[propertyName] = propertyValue;
+        break;
+    }
+
+    return targetObject;
+  }
+};
+"use strict";
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -451,16 +518,14 @@ function (_MVC$Events) {
         case 0:
           for (var _i2 = 0, _Object$keys = Object.keys(this._data); _i2 < _Object$keys.length; _i2++) {
             var _key2 = _Object$keys[_i2];
-            delete this._data['_'.concat(_key2)];
-            delete this._data[_key2];
+            this.unsetDataProperty(_key2);
           }
 
           break;
 
         case 1:
           var key = arguments[0];
-          delete this._data['_'.concat(key)];
-          delete this._data[key];
+          this.unsetDataProperty(key);
           break;
       }
     }
@@ -493,6 +558,25 @@ function (_MVC$Events) {
       }
 
       this._data['_'.concat(key)] = value;
+    }
+  }, {
+    key: "unsetDataProperty",
+    value: function unsetDataProperty(key) {
+      var unsetValueEventName = ['unset', ':', key].join('');
+      var unsetEventName = 'unset';
+      var unsetValue = this._data[key];
+      delete this._data['_'.concat(key)];
+      delete this._data[key];
+      this.emit(unsetValueEventName, {
+        name: unsetValueEventName,
+        key: key,
+        value: unsetValue
+      });
+      this.emit(unsetEventName, {
+        name: unsetEventName,
+        key: key,
+        value: unsetValue
+      });
     }
   }, {
     key: "parse",
@@ -580,19 +664,47 @@ MVC.View =
 function (_MVC$Events) {
   _inherits(_class, _MVC$Events);
 
-  function _class() {
+  function _class(settings) {
+    var _this;
+
     _classCallCheck(this, _class);
 
-    return _possibleConstructorReturn(this, _getPrototypeOf(_class).call(this));
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).call(this));
+    _this._settings = settings;
+    return _this;
   }
 
   _createClass(_class, [{
+    key: "_settings",
+    get: function get() {
+      this.settings = this.settings ? this.settings : {};
+      return this.settings;
+    },
+    set: function set(settings) {
+      if (settings) {
+        this.settings = settings;
+        if (this.settings.elementName) this._elementName = this.settings.elementName;
+        if (this.settings.element) this._element = this.settings.element;
+        if (this.settings.attributes) this._attributes = this.settings.attributes;
+        this._ui = this.settings.ui || {};
+        if (this.settings.uiCallbacks) this._uiCallbacks = this.settings.uiCallbacks;
+        if (this.settings.uiEmitters) this._uiEmitters = this.settings.uiEmitters;
+        if (this.settings.uiEvents) this._uiEvents = this.settings.uiEvents;
+      } else {
+        this._elementName = 'div';
+      }
+    }
+  }, {
     key: "_elementName",
     get: function get() {
-      return this._element.tagName;
+      return this.elementName || 'div';
     },
     set: function set(elementName) {
-      if (!this._element) this._element = document.createElement(elementName);
+      if (!this._element) {
+        this._element = document.createElement(elementName);
+      }
+
+      this.elementName = this.element.tagName;
     }
   }, {
     key: "_element",
@@ -609,7 +721,7 @@ function (_MVC$Events) {
   }, {
     key: "_attributes",
     get: function get() {
-      return this.attributes || {};
+      this._element.attributes;
     },
     set: function set(attributes) {
       for (var _i = 0, _Object$entries = Object.entries(attributes); _i < _Object$entries.length; _i++) {
@@ -625,98 +737,40 @@ function (_MVC$Events) {
   }, {
     key: "_ui",
     get: function get() {
-      return this.ui || {};
+      this.ui = this.ui ? this.ui : {};
+      return this.ui;
     },
     set: function set(ui) {
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
+      this._ui['$'] = this.element;
 
-      try {
-        for (var _iterator = ui[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var _step$value = _slicedToArray(_step.value, 2),
-              key = _step$value[0],
-              value = _step$value[1];
+      for (var _i2 = 0, _Object$entries2 = Object.entries(ui); _i2 < _Object$entries2.length; _i2++) {
+        var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
+            key = _Object$entries2$_i[0],
+            value = _Object$entries2$_i[1];
 
-          switch (key) {
-            case '@':
-              this.ui[key] = this.element;
-              break;
-
-            default:
-              this.ui[key] = this.element.querySelectorAll(value);
-              break;
-          }
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-            _iterator["return"]();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-
-      this.ui = ui;
-    }
-  }, {
-    key: "_events",
-    get: function get() {
-      return this.events || {};
-    },
-    set: function set(events) {
-      var _iteratorNormalCompletion2 = true;
-      var _didIteratorError2 = false;
-      var _iteratorError2 = undefined;
-
-      try {
-        for (var _iterator2 = events[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-          var _step2$value = _slicedToArray(_step2.value, 2),
-              eventKey = _step2$value[0],
-              eventValue = _step2$value[1];
-
-          var eventData = eventKey.split[' '];
-          var eventTarget = this[eventData[0].replace('@', '')];
-          var eventName = eventData[1];
-          var eventCallback = this[eventValue.replace('@', '')];
-          eventTarget.on(eventName, eventCallback);
-        }
-      } catch (err) {
-        _didIteratorError2 = true;
-        _iteratorError2 = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
-            _iterator2["return"]();
-          }
-        } finally {
-          if (_didIteratorError2) {
-            throw _iteratorError2;
-          }
-        }
+        this._ui[key] = this.element.querySelectorAll(value);
       }
     }
   }, {
-    key: "_callbacks",
-    get: function get() {
-      return this.callbacks || {};
-    },
-    set: function set(callbacks) {
-      this.callbacks = callbacks;
+    key: "_uiEvents",
+    set: function set(uiEvents) {
+      MVC.Utils.bindEventsToTargetObjects(uiEvents, this.ui, this.uiCallbacks);
     }
   }, {
-    key: "_emitters",
+    key: "_uiCallbacks",
     get: function get() {
-      return this.emitters || {};
+      return this.uiCallbacks || {};
     },
-    set: function set(emitters) {
-      this.emitters = emitters;
+    set: function set(uiCallbacks) {
+      this.uiCallbacks = uiCallbacks;
+    }
+  }, {
+    key: "_uiEmitters",
+    get: function get() {
+      return this.uiEmitters || {};
+    },
+    set: function set(uiEmitters) {
+      this.uiEmitters = emitters;
     }
   }]);
 
@@ -725,14 +779,6 @@ function (_MVC$Events) {
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
-
-function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
-
-function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
-
-function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -773,90 +819,104 @@ function (_MVC$Events) {
     set: function set(settings) {
       this.settings = settings;
       if (this._settings.emitters) this._emitters = this._settings.emitters;
-      if (this._settings.callbacks) this._callbacks = this._settings.callbacks;
+      if (this._settings.modelCallbacks) this._modelCallbacks = this._settings.modelCallbacks;
+      if (this._settings.viewCallbacks) this._viewCallbacks = this._settings.viewCallbacks;
+      if (this._settings.controllerCallbacks) this._controllerCallbacks = this._settings.controllerCallbacks;
+      if (this._settings.routerCallbacks) this._routerCallbacks = this._settings.routerCallbacks;
       if (this._settings.models) this._models = this._settings.models;
       if (this._settings.views) this._views = this._settings.views;
       if (this._settings.controllers) this._controllers = this._settings.controllers;
       if (this._settings.routers) this._routers = this._settings.routers;
-      if (this._settings.events) this._events = this._settings.events;
+      if (this._settings.modelEvents) this._modelEvents = this._settings.modelEvents;
+      if (this._settings.viewEvents) this._viewEvents = this._settings.viewEvents;
+      if (this._settings.controllerEvents) this._controllerEvents = this._settings.controllerEvents;
     }
   }, {
     key: "_emitters",
     get: function get() {
-      this.emitters = this.emitters ? this.emitters : {};
+      return this.emitters || {};
     },
     set: function set(emitters) {
-      this.emitters = emitters;
+      this.emitters = MVC.Utils.addPropertiesToTargetObject(emitters, this._emitters);
     }
   }, {
-    key: "_callbacks",
+    key: "_modelCallbacks",
     get: function get() {
-      this.callbacks = this.callbacks ? this.callbacks : {};
+      return this.modelCallbacks || {};
     },
-    set: function set(callbacks) {
-      this.callbacks = callbacks;
+    set: function set(modelCallbacks) {
+      this.modelCallbacks = MVC.Utils.addPropertiesToTargetObject(modelCallbacks, this._modelCallbacks);
+    }
+  }, {
+    key: "_viewCallbacks",
+    get: function get() {
+      return this.viewCallbacks || {};
+    },
+    set: function set(viewCallbacks) {
+      this.viewCallbacks = MVC.Utils.addPropertiesToTargetObject(viewCallbacks, this._viewCallbacks);
+    }
+  }, {
+    key: "_controllerCallbacks",
+    get: function get() {
+      return this.controllerCallbacks || {};
+    },
+    set: function set(controllerCallbacks) {
+      this.controllerCallbacks = MVC.Utils.addPropertiesToTargetObject(controllerCallbacks, this._controllerCallbacks);
+    }
+  }, {
+    key: "_routerCallbacks",
+    get: function get() {
+      return this.routerCallbacks || {};
+    },
+    set: function set(routerCallbacks) {
+      this.routerCallbacks = MVC.Utils.addPropertiesToTargetObject(routerCallbacks, this._routerCallbacks);
     }
   }, {
     key: "_models",
     get: function get() {
-      this.models = this.models ? this.models : {};
+      return this.models || {};
     },
     set: function set(models) {
-      this.models = models;
+      this.models = MVC.Utils.addPropertiesToTargetObject(models, this._models);
     }
   }, {
     key: "_views",
     get: function get() {
-      this.views = this.views ? this.views : {};
+      return this.views || {};
     },
     set: function set(views) {
-      this.views = views;
+      this.views = MVC.Utils.addPropertiesToTargetObject(views, this._views);
     }
   }, {
     key: "_controllers",
     get: function get() {
-      this.controllers = this.controllers ? this.controllers : {};
+      return this.controllers || {};
     },
     set: function set(controllers) {
-      this.controllers = controllers;
+      this.controllers = MVC.Utils.addPropertiesToTargetObject(controllers, this._controllers);
     }
   }, {
     key: "_routers",
     get: function get() {
-      this.routers = this.routers ? this.routers : {};
+      return this.routers || {};
     },
     set: function set(routers) {
-      this.routers = routers;
+      this.routers = MVC.Utils.addPropertiesToTargetObject(routers, this._routers);
     }
   }, {
-    key: "_events",
-    get: function get() {
-      this.events = this.events ? this.events : {};
-    },
-    set: function set(events) {
-      for (var _i = 0, _Object$entries = Object.entries(events); _i < _Object$entries.length; _i++) {
-        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
-            eventGroupName = _Object$entries$_i[0],
-            eventGroup = _Object$entries$_i[1];
-
-        for (var _i2 = 0, _Object$entries2 = Object.entries(eventGroup); _i2 < _Object$entries2.length; _i2++) {
-          var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
-              eventSettings = _Object$entries2$_i[0],
-              eventCallback = _Object$entries2$_i[1];
-
-          var eventData = eventSettings.split(' ');
-          var eventTarget = eventData[0].replace('@', '').split('.').reduce(function (accumulator, currentValue) {
-            return accumulator[currentValue];
-          }, this);
-          var eventName = eventData[1];
-          eventCallback = eventCallback.replace('@', '').split('.').reduce(function (accumulator, currentValue) {
-            return accumulator[currentValue];
-          }, this); // console.log('eventCallback', eventCallback)
-
-          console.log('\n', eventTarget, '\n', eventName, '\n', eventCallback);
-          eventTarget.on(eventName, eventCallback);
-        }
-      }
+    key: "_modelEvents",
+    set: function set(modelEvents) {
+      MVC.Utils.bindEventsToTargetObjects(modelEvents, this.models, this.modelCallbacks);
+    }
+  }, {
+    key: "_viewEvents",
+    set: function set(viewEvents) {
+      MVC.Utils.bindEventsToTargetObjects(viewEvents, this.views);
+    }
+  }, {
+    key: "_controllerEvents",
+    set: function set(controllerEvents) {
+      MVC.Utils.bindEventsToTargetObjects(controllerEvents, this.controllers, this.controllerCallbacks);
     }
   }]);
 
@@ -957,3 +1017,4 @@ function (_MVC$Events) {
 
   return _class;
 }(MVC.Events);
+//# sourceMappingURL=http://localhost:3000/.maps/scripts/mvc-framework.js.map

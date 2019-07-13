@@ -8,7 +8,6 @@ module.exports = function StringTransform(settings) {
           .split('-')
           .map((caseSegment, caseSegmentIndex) => {
             if(settings.options) {
-              console.log('\n', 'caseSegment', '\n', '-----', '\n', caseSegment, '\n')
               let caseSegmentCharacters = caseSegment.split('')
               switch(settings.options.first) {
                 case 'upperCase':

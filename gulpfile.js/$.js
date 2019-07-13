@@ -8,6 +8,7 @@ global.$ = {
     declare: require('gulp-declare'),
     flatten: require('gulp-flatten'),
     handlebars: require('gulp-handlebars'),
+    lodash: require('lodash'),
     rename: require('gulp-rename'),
     sass: require('gulp-sass'),
     sourcemaps: require('gulp-sourcemaps'),

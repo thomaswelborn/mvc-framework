@@ -3,6 +3,7 @@
     "src": {
       "globs": [
         "source/scripts/MVC/MVC.js",
+        "source/scripts/MVC/Utils.js",
         "source/scripts/MVC/Events.js",
         "source/scripts/MVC/Service.js",
         "source/scripts/MVC/Channels/Channels.js",

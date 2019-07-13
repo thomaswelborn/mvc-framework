@@ -1,10 +1,36 @@
 MVC.View = class extends MVC.Events {
-  constructor() {
+  constructor(settings) {
     super()
+    this._settings = settings
   }
-  get _elementName() { return this._element.tagName }
+  get _settings() {
+    this.settings = (this.settings)
+      ? this.settings
+      : {}
+    return this.settings
+  }
+  set _settings(settings) {
+    if(settings) {
+      this.settings = settings
+      if(this.settings.elementName) this._elementName = this.settings.elementName
+      if(this.settings.element) this._element = this.settings.element
+      if(this.settings.attributes) this._attributes = this.settings.attributes
+      this._ui = this.settings.ui || {}
+      if(this.settings.uiCallbacks) this._uiCallbacks = this.settings.uiCallbacks
+      if(this.settings.uiEmitters) this._uiEmitters = this.settings.uiEmitters
+      if(this.settings.uiEvents) this._uiEvents = this.settings.uiEvents
+    } else {
+      this._elementName = 'div'
+    }
+  }
+  get _elementName() {
+    return this.elementName || 'div'
+  }
   set _elementName(elementName) {
-    if(!this._element) this._element = document.createElement(elementName)
+    if(!this._element) {
+      this._element = document.createElement(elementName)
+    }
+    this.elementName = this.element.tagName
   }
   get _element() { return this.element }
   set _element(element) {
@@ -14,43 +40,28 @@ MVC.View = class extends MVC.Events {
       this.element = document.querySelector(element)
     }
   }
-  get _attributes() { return this.attributes || {} }
+  get _attributes() { this._element.attributes }
   set _attributes(attributes) {
     for(let [attributeKey, attributeValue] of Object.entries(attributes)) {
       this._element.setAttribute(attributeKey, attributeValue)
     }
     this.attributes = this._element.attributes
   }
-  get _ui() { return this.ui || {} }
+  get _ui() {
+    this.ui = (this.ui)
+      ? this.ui
+      : {}
+    return this.ui
+  }
   set _ui(ui) {
-    for(let [key, value] of ui) {
-      switch(key) {
-        case '@':
-          this.ui[key] = this.element
-          break
-        default:
-          this.ui[key] = this.element.querySelectorAll(value)
-          break;
-      }
-    }
-    this.ui = ui
-  }
-  get _events() { return this.events || {} }
-  set _events(events) {
-    for(let [eventKey, eventValue] of events) {
-      let eventData = eventKey.split[' ']
-      let eventTarget = this[
-        eventData[0].replace('@', '')
-      ]
-      let eventName = eventData[1]
-      let eventCallback = this[
-        eventValue.replace('@', '')
-      ]
-      eventTarget.on(eventName, eventCallback)
+    this._ui['$'] = this.element
+    for(let [key, value] of Object.entries(ui)) {
+      this._ui[key] = this.element.querySelectorAll(value)
     }
   }
-  get _callbacks() { return this.callbacks || {} }
-  set _callbacks(callbacks) { this.callbacks = callbacks }
-  get _emitters() { return this.emitters || {} }
-  set _emitters(emitters) { this.emitters = emitters }
+  set _uiEvents(uiEvents) { MVC.Utils.bindEventsToTargetObjects(uiEvents, this.ui, this.uiCallbacks) }
+  get _uiCallbacks() { return this.uiCallbacks || {} }
+  set _uiCallbacks(uiCallbacks) { this.uiCallbacks = uiCallbacks }
+  get _uiEmitters() { return this.uiEmitters || {} }
+  set _uiEmitters(uiEmitters) { this.uiEmitters = emitters }
 }

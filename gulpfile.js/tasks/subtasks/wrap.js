@@ -1,5 +1,4 @@
 module.exports = function(settings) {
-  console.log('settings', settings)
   if(settings) {
     if(settings.options) {
       if(settings.options.imports) {
