@@ -1,7 +1,6 @@
 MVC.Utils = {
   getObjectFromDotNotationString: function(string, context) {
     return string
-      .replace('@', '')
       .split('.')
       .reduce((accumulator, currentValue) => accumulator[currentValue], context)
   },
@@ -18,8 +17,11 @@ MVC.Utils = {
           ? 'on'
           : 'off'
       let eventName = eventData[1]
-      let eventCallbackName = eventCallback.replace('@', '')
-      eventCallback = callbacks[eventCallbackName]
+      eventCallback = (eventCallback.match('@'))
+        ? callbacks[eventCallback.replace('@', '')]
+        : (typeof eventCallback === 'string')
+          ? MVC.Utils.getObjectFromDotNotationString(eventCallback, window)
+          : eventCallback
       eventTarget[eventMethodName](eventName, eventCallback)
     }
   },

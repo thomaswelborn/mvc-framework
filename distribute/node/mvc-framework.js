@@ -1,5 +1,59 @@
 var MVC = MVC || {}
 
+MVC.Utils = {
+  getObjectFromDotNotationString: function(string, context) {
+    return string
+      .split('.')
+      .reduce((accumulator, currentValue) => accumulator[currentValue], context)
+  },
+  toggleEventsForTargetObjects: function(toggleMethod, events, targetObjects, callbacks) {
+    for(let [eventSettings, eventCallback] of Object.entries(events)) {
+      let eventData = eventSettings.split(' ')
+      let eventTargetName = eventData[0].replace('@', '')
+      let eventTarget = targetObjects[eventTargetName]
+      let eventMethodName = (eventTarget instanceof HTMLElement)
+        ? (toggleMethod === 'on')
+          ? 'addEventListener'
+          : 'removeEventListener'
+        : (toggleMethod === 'on')
+          ? 'on'
+          : 'off'
+      let eventName = eventData[1]
+      eventCallback = (eventCallback.match('@'))
+        ? callbacks[eventCallback.replace('@', '')]
+        : (typeof eventCallback === 'string')
+          ? MVC.Utils.getObjectFromDotNotationString(eventCallback, window)
+          : eventCallback
+      eventTarget[eventMethodName](eventName, eventCallback)
+    }
+  },
+  bindEventsToTargetObjects: function() {
+    this.toggleEventsForTargetObjects('on', ...arguments)
+  },
+  unbindEventsFromTargetObjects: function() {
+    this.toggleEventsForTargetObjects('off', ...arguments)
+  },
+  addPropertiesToTargetObject: function() {
+    let targetObject
+    switch(arguments.length) {
+      case 2:
+        let properties = arguments[0]
+        targetObject = arguments[1]
+        for(let [propertyName, propertyValue] of Object.entries(properties)) {
+          targetObject[propertyName] = propertyValue
+        }
+        break
+      case 3:
+        let propertyName = arguments[0]
+        let propertyValue = arguments[1]
+        targetObject = arguments[2]
+        targetObject[propertyName] = propertyValue
+        break
+    }
+    return targetObject
+  },
+}
+
 MVC.Events = class {
   constructor() {}
   get _events() {
@@ -141,6 +195,108 @@ MVC.Channels.Channel = class {
   }
 }
 
+MVC.Observers = class {}
+
+MVC.Observers.Observer = class {
+  constructor(settings) {
+    this._settings = settings
+    this._observer.observe(this.target, this.options)
+  }
+  get _settings() {
+    this.settings = (this.settings)
+      ? this.settings
+      : {}
+    return this.settings
+  }
+  set _settings(settings) {
+    if(settings) {
+      this.settings = settings
+      if(this.settings.context) this._context = this.settings.context
+      if(this.settings.target) this._target = (this.settings.target instanceof NodeList)
+        ? this.settings.target[0]
+        : this.settings.target
+      if(this.settings.options) this._options = this.settings.options
+      if(this.settings.mutations) this._mutations = this.settings.mutations
+    }
+  }
+  get _context() { return this.context }
+  set _context(context) { this.context = context }
+  get _target() { return this.target }
+  set _target(target) { this.target = target }
+  get _options() { return this.options }
+  set _options(options) { this.options = options }
+  get _observer() {
+    this.observer = (this.observer)
+      ? this.observer
+      : new MutationObserver(this.observerCallback.bind(this))
+    return this.observer
+  }
+  get _mutations() {
+    this.mutations = (this.mutations)
+      ? this.mutations
+      : []
+    return this.mutations
+  }
+  set _mutations(mutations) {
+    for(let [mutationSettings, mutationCallback] of Object.entries(mutations)) {
+      let mutation
+      let mutationData = mutationSettings.split(' ')
+      let mutationTarget = MVC.Utils.getObjectFromDotNotationString(
+        mutationData[0].replace('@', ''),
+        this.context.ui
+      )
+      let mutationEventName = mutationData[1]
+      let mutationEventData = mutationData[2]
+      mutationCallback = (mutationCallback.match('@'))
+        ? this.context.observerCallbacks[mutationCallback.replace('@', '')]
+        : (typeof mutationCallback === 'string')
+          ? MVC.Utils.getObjectFromDotNotationString(mutationCallback, window)
+          : mutationCallback
+      mutation = {
+        target: mutationTarget,
+        name: mutationEventName,
+        callback: mutationCallback,
+      }
+      if(mutationEventData) mutation.data = mutationEventData
+      this._mutations.push(mutation)
+    }
+  }
+  observerCallback(mutationRecordList, observer) {
+    for(let [mutationRecordIndex, mutationRecord] of Object.entries(mutationRecordList)) {
+      switch(mutationRecord.type) {
+        case 'childList':
+          let mutationRecordCategories = ['addedNodes', 'removedNodes']
+          for(let mutationRecordCategory of mutationRecordCategories) {
+            if(mutationRecord[mutationRecordCategory].length) {
+              for(let [nodeIndex, node] of Object.entries(mutationRecord[mutationRecordCategory])) {
+                let mutation = this.mutations.filter((_mutation) => _mutation.target === node)[0]
+                if(mutation) {
+                  mutation.callback({
+                    mutation: mutation,
+                    mutationRecord: mutationRecord,
+                  })
+                }
+              }
+            }
+          }
+          break
+        case 'attributes':
+          let mutation = this.mutations.filter((_mutation) => (
+            _mutation.name === mutationRecord.type &&
+            _mutation.data === mutationRecord.attributeName
+          ))[0]
+          if(mutation) {
+            mutation.callback({
+              mutation: mutation,
+              mutationRecord: mutationRecord,
+            })
+          }
+          break
+      }
+    }
+  }
+}
+
 MVC.Model = class extends MVC.Events {
   constructor(settings) {
     super()
@@ -206,14 +362,12 @@ MVC.Model = class extends MVC.Events {
     switch(arguments.length) {
       case 0:
         for(let key of Object.keys(this._data)) {
-          delete this._data['_'.concat(key)]
-          delete this._data[key]
+          this.unsetDataProperty(key)
         }
         break
       case 1:
         let key = arguments[0]
-        delete this._data['_'.concat(key)]
-        delete this._data[key]
+        this.unsetDataProperty(key)
         break
     }
   }
@@ -253,14 +407,62 @@ MVC.Model = class extends MVC.Events {
     }
     this._data['_'.concat(key)] = value
   }
+  unsetDataProperty(key) {
+    let unsetValueEventName = ['unset', ':', key].join('')
+    let unsetEventName = 'unset'
+    let unsetValue = this._data[key]
+    delete this._data['_'.concat(key)]
+    delete this._data[key]
+    this.emit(
+      unsetValueEventName,
+      {
+        name: unsetValueEventName,
+        key: key,
+        value: unsetValue,
+      }
+    )
+    this.emit(
+      unsetEventName,
+      {
+        name: unsetEventName,
+        key: key,
+        value: unsetValue,
+      }
+    )
+  }
   parse(data) {
     data = data || this._data
     return JSON.parse(JSON.stringify(Object.assign({}, data))) }
 }
 
 MVC.View = class extends MVC.Events {
-  constructor() {
+  constructor(settings) {
     super()
+    this._settings = settings
+  }
+  get _settings() {
+    this.settings = (this.settings)
+      ? this.settings
+      : {}
+    return this.settings
+  }
+  set _settings(settings) {
+    if(settings) {
+      this.settings = settings
+      if(this.settings.elementName) this._elementName = this.settings.elementName
+      if(this.settings.element) this._element = this.settings.element
+      if(this.settings.attributes) this._attributes = this.settings.attributes
+      this._ui = this.settings.ui || {}
+      if(this.settings.uiCallbacks) this._uiCallbacks = this.settings.uiCallbacks
+      if(this.settings.observerCallbacks) this._observerCallbacks = this.settings.observerCallbacks
+      if(this.settings.uiEmitters) this._uiEmitters = this.settings.uiEmitters
+      if(this.settings.uiEvents) this._uiEvents = this.settings.uiEvents
+      if(this.settings.observers) this._observers = this.settings.observers
+      if(this.settings.template) this._template = this.settings.template
+      if(this.settings.insert) this._insert = this.settings.insert
+    } else {
+      this._elementName = 'div'
+    }
   }
   get _elementName() { return this._element.tagName }
   set _elementName(elementName) {
@@ -274,45 +476,83 @@ MVC.View = class extends MVC.Events {
       this.element = document.querySelector(element)
     }
   }
-  get _attributes() { return this.attributes || {} }
+  get _attributes() { return this._element.attributes }
   set _attributes(attributes) {
     for(let [attributeKey, attributeValue] of Object.entries(attributes)) {
-      this._element.setAttribute(attributeKey, attributeValue)
+      if(typeof attributeValue === 'undefined') {
+        this._element.removeAttribute(attributeKey)
+      } else {
+        this._element.setAttribute(attributeKey, attributeValue)
+      }
     }
     this.attributes = this._element.attributes
   }
-  get _ui() { return this.ui || {} }
+  get _ui() {
+    this.ui = (this.ui)
+      ? this.ui
+      : {}
+    return this.ui
+  }
   set _ui(ui) {
-    for(let [key, value] of ui) {
-      switch(key) {
-        case '@':
-          this.ui[key] = this.element
-          break
-        default:
-          this.ui[key] = this.element.querySelectorAll(value)
-          break;
+    this._ui['$'] = this.element
+    for(let [uiKey, uiSelector] of Object.entries(ui)) {
+      if(typeof uiSelector === 'undefined') {
+        delete this._ui[uiKey]
+      } else {
+        this._ui[uiKey] = this._element.querySelectorAll(uiSelector)
       }
     }
-    this.ui = ui
   }
-  get _events() { return this.events || {} }
-  set _events(events) {
-    for(let [eventKey, eventValue] of events) {
-      let eventData = eventKey.split[' ']
-      let eventTarget = this[
-        eventData[0].replace('@', '')
-      ]
-      let eventName = eventData[1]
-      let eventCallback = this[
-        eventValue.replace('@', '')
-      ]
-      eventTarget.on(eventName, eventCallback)
+  set _uiEvents(uiEvents) {
+    MVC.Utils.bindEventsToTargetObjects(uiEvents, this.ui, this.uiCallbacks)
+  }
+  get _uiCallbacks() { return this.uiCallbacks || {} }
+  set _uiCallbacks(uiCallbacks) { this.uiCallbacks = uiCallbacks }
+  get _observerCallbacks() { return this.observerCallbacks || {} }
+  set _observerCallbacks(observerCallbacks) { this.observerCallbacks = observerCallbacks }
+  get _uiEmitters() { return this.uiEmitters || {} }
+  set _uiEmitters(uiEmitters) { this.uiEmitters = emitters }
+  get _observers() {
+    this.observers = (this.observers)
+      ? this.observers
+      : {}
+    return this.observers
+  }
+  set _observers(observers) {
+    for(let [observerConfiguration, mutationSettings] of Object.entries(observers)) {
+      let observerConfigurationData = observerConfiguration.split(' ')
+      let observerName = observerConfigurationData[0]
+      let observerTarget = (observerName.match('@', ''))
+        ? MVC.Utils.getObjectFromDotNotationString(
+            observerName.replace('@', ''),
+            this.ui
+          )
+        : document.querySelectorAll(observerName)
+      let observerOptions = (observerConfigurationData[1])
+        ? observerConfigurationData[1]
+          .split(',')
+          .reduce((accumulator, currentValue) => {
+            accumulator[currentValue] = true
+            return accumulator
+          }, {})
+        : {}
+      // if(observerOptions)  = observerOptions
+      let observer = new MVC.Observers.Observer({
+        context: this,
+        target: observerTarget,
+        options: observerOptions,
+        mutations: mutationSettings
+      })
+      this._observers[observerName] = observer
     }
   }
-  get _callbacks() { return this.callbacks || {} }
-  set _callbacks(callbacks) { this.callbacks = callbacks }
-  get _emitters() { return this.emitters || {} }
-  set _emitters(emitters) { this.emitters = emitters }
+  set _insert(insert) {
+    if(this.element.parentElement) this.remove()
+    let insertMethod = insert.method
+    let parentElement = document.querySelector(insert.element)
+    parentElement.insertAdjacentElement(insertMethod, this.element)
+  }
+  remove() { this.element.parentElement.removeChild(this.element) }
 }
 
 MVC.Controller = class extends MVC.Events {
@@ -320,76 +560,134 @@ MVC.Controller = class extends MVC.Events {
     super()
     if(settings) this._settings = settings
   }
-  get _settings() { return this.settings }
+  get _settings() {
+    this.settings = (this.settings)
+      ? this.settings
+      : {}
+    return this.settings
+  }
   set _settings(settings) {
     this.settings = settings
     if(this._settings.emitters) this._emitters = this._settings.emitters
-    if(this._settings.callbacks) this._callbacks = this._settings.callbacks
+    if(this._settings.modelCallbacks) this._modelCallbacks = this._settings.modelCallbacks
+    if(this._settings.viewCallbacks) this._viewCallbacks = this._settings.viewCallbacks
+    if(this._settings.controllerCallbacks) this._controllerCallbacks = this._settings.controllerCallbacks
+    if(this._settings.routerCallbacks) this._routerCallbacks = this._settings.routerCallbacks
     if(this._settings.models) this._models = this._settings.models
     if(this._settings.views) this._views = this._settings.views
     if(this._settings.controllers) this._controllers = this._settings.controllers
     if(this._settings.routers) this._routers = this._settings.routers
-    if(this._settings.events) this._events = this._settings.events
+    if(this._settings.modelEvents) this._modelEvents = this._settings.modelEvents
+    if(this._settings.viewEvents) this._viewEvents = this._settings.viewEvents
+    if(this._settings.controllerEvents) this._controllerEvents = this._settings.controllerEvents
   }
   get _emitters() {
     this.emitters = (this.emitters)
       ? this.emitters
       : {}
+    return this.emitters
   }
-  set _emitters(emitters) { this.emitters = emitters }
-  get _callbacks() {
-    this.callbacks = (this.callbacks)
-      ? this.callbacks
+  set _emitters(emitters) {
+    this.emitters = MVC.Utils.addPropertiesToTargetObject(
+      emitters, this._emitters
+    )
+  }
+  get _modelCallbacks() {
+    this.modelCallbacks = (this.modelCallbacks)
+      ? this.modelCallbacks
       : {}
+    return this.modelCallbacks
   }
-  set _callbacks(callbacks) { this.callbacks = callbacks }
+  set _modelCallbacks(modelCallbacks) {
+    this.modelCallbacks = MVC.Utils.addPropertiesToTargetObject(
+      modelCallbacks, this._modelCallbacks
+    )
+  }
+  get _viewCallbacks() {
+    this.viewCallbacks = (this.viewCallbacks)
+      ? this.viewCallbacks
+      : {}
+    return this.viewCallbacks
+  }
+  set _viewCallbacks(viewCallbacks) {
+    this.viewCallbacks = MVC.Utils.addPropertiesToTargetObject(
+      viewCallbacks, this._viewCallbacks
+    )
+  }
+  get _controllerCallbacks() {
+    this.controllerCallbacks = (this.controllerCallbacks)
+      ? this.controllerCallbacks
+      : {}
+    return this.controllerCallbacks
+  }
+  set _controllerCallbacks(controllerCallbacks) {
+    this.controllerCallbacks = MVC.Utils.addPropertiesToTargetObject(
+      controllerCallbacks, this._controllerCallbacks
+    )
+  }
+  get _routerCallbacks() {
+    this.routerCallbacks = (this.routerCallbacks)
+      ? this.routerCallbacks
+      : {}
+    return this.routerCallbacks
+  }
+  set _routerCallbacks(routerCallbacks) {
+    this.routerCallbacks = MVC.Utils.addPropertiesToTargetObject(
+      routerCallbacks, this._routerCallbacks
+    )
+  }
   get _models() {
     this.models = (this.models)
       ? this.models
       : {}
+    return this.models
   }
-  set _models(models) { this.models = models }
+  set _models(models) {
+    this.models = MVC.Utils.addPropertiesToTargetObject(
+      models, this._models
+    )
+  }
   get _views() {
     this.views = (this.views)
       ? this.views
       : {}
+    return this.views
   }
-  set _views(views) { this.views = views }
+  set _views(views) {
+    this.views = MVC.Utils.addPropertiesToTargetObject(
+      views, this._views
+    )
+  }
   get _controllers() {
     this.controllers = (this.controllers)
       ? this.controllers
       : {}
+    return this.controllers
   }
-  set _controllers(controllers) { this.controllers = controllers }
+  set _controllers(controllers) {
+    this.controllers = MVC.Utils.addPropertiesToTargetObject(
+      controllers, this._controllers
+    )
+  }
   get _routers() {
     this.routers = (this.routers)
       ? this.routers
       : {}
+    return this.routers
   }
-  set _routers(routers) { this.routers = routers }
-  get _events() {
-    this.events = (this.events)
-      ? this.events
-      : {}
+  set _routers(routers) {
+    this.routers = MVC.Utils.addPropertiesToTargetObject(
+      routers, this._routers
+    )
   }
-  set _events(events) {
-    for(let [eventGroupName, eventGroup] of Object.entries(events)) {
-      for(let [eventSettings, eventCallback] of Object.entries(eventGroup)) {
-        let eventData = eventSettings.split(' ')
-        let eventTarget = eventData[0]
-          .replace('@', '')
-          .split('.')
-          .reduce((accumulator, currentValue) => accumulator[currentValue], this)
-        let eventName = eventData[1]
-        eventCallback = eventCallback
-          .replace('@', '')
-          .split('.')
-          .reduce((accumulator, currentValue) => accumulator[currentValue], this)
-        // console.log('eventCallback', eventCallback)
-        console.log('\n', eventTarget, '\n', eventName, '\n', eventCallback)
-        eventTarget.on(eventName, eventCallback)
-      }
-    }
+  set _modelEvents(modelEvents) {
+    MVC.Utils.bindEventsToTargetObjects(modelEvents, this._models, this._modelCallbacks)
+  }
+  set _viewEvents(viewEvents) {
+    MVC.Utils.bindEventsToTargetObjects(viewEvents, this._views)
+  }
+  set _controllerEvents(controllerEvents) {
+    MVC.Utils.bindEventsToTargetObjects(controllerEvents, this._controllers, this._controllerCallbacks)
   }
 }
 

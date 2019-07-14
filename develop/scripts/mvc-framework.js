@@ -13,7 +13,7 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 MVC.Utils = {
   getObjectFromDotNotationString: function getObjectFromDotNotationString(string, context) {
-    return string.replace('@', '').split('.').reduce(function (accumulator, currentValue) {
+    return string.split('.').reduce(function (accumulator, currentValue) {
       return accumulator[currentValue];
     }, context);
   },
@@ -28,8 +28,7 @@ MVC.Utils = {
       var eventTarget = targetObjects[eventTargetName];
       var eventMethodName = eventTarget instanceof HTMLElement ? toggleMethod === 'on' ? 'addEventListener' : 'removeEventListener' : toggleMethod === 'on' ? 'on' : 'off';
       var eventName = eventData[1];
-      var eventCallbackName = eventCallback.replace('@', '');
-      eventCallback = callbacks[eventCallbackName];
+      eventCallback = eventCallback.match('@') ? callbacks[eventCallback.replace('@', '')] : typeof eventCallback === 'string' ? MVC.Utils.getObjectFromDotNotationString(eventCallback, window) : eventCallback;
       eventTarget[eventMethodName](eventName, eventCallback);
     }
   },
@@ -440,6 +439,186 @@ function () {
 }();
 "use strict";
 
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+MVC.Observers =
+/*#__PURE__*/
+function () {
+  function _class() {
+    _classCallCheck(this, _class);
+  }
+
+  return _class;
+}();
+"use strict";
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+MVC.Observers.Observer =
+/*#__PURE__*/
+function () {
+  function _class(settings) {
+    _classCallCheck(this, _class);
+
+    this._settings = settings;
+
+    this._observer.observe(this.target, this.options);
+  }
+
+  _createClass(_class, [{
+    key: "observerCallback",
+    value: function observerCallback(mutationRecordList, observer) {
+      var _this = this;
+
+      var _loop = function _loop() {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+            mutationRecordIndex = _Object$entries$_i[0],
+            mutationRecord = _Object$entries$_i[1];
+
+        switch (mutationRecord.type) {
+          case 'childList':
+            var mutationRecordCategories = ['addedNodes', 'removedNodes'];
+
+            for (var _i2 = 0, _mutationRecordCatego = mutationRecordCategories; _i2 < _mutationRecordCatego.length; _i2++) {
+              var mutationRecordCategory = _mutationRecordCatego[_i2];
+
+              if (mutationRecord[mutationRecordCategory].length) {
+                var _loop2 = function _loop2() {
+                  var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i3], 2),
+                      nodeIndex = _Object$entries2$_i[0],
+                      node = _Object$entries2$_i[1];
+
+                  var mutation = _this.mutations.filter(function (_mutation) {
+                    return _mutation.target === node;
+                  })[0];
+
+                  if (mutation) {
+                    mutation.callback({
+                      mutation: mutation,
+                      mutationRecord: mutationRecord
+                    });
+                  }
+                };
+
+                for (var _i3 = 0, _Object$entries2 = Object.entries(mutationRecord[mutationRecordCategory]); _i3 < _Object$entries2.length; _i3++) {
+                  _loop2();
+                }
+              }
+            }
+
+            break;
+
+          case 'attributes':
+            var mutation = _this.mutations.filter(function (_mutation) {
+              return _mutation.name === mutationRecord.type && _mutation.data === mutationRecord.attributeName;
+            })[0];
+
+            if (mutation) {
+              mutation.callback({
+                mutation: mutation,
+                mutationRecord: mutationRecord
+              });
+            }
+
+            break;
+        }
+      };
+
+      for (var _i = 0, _Object$entries = Object.entries(mutationRecordList); _i < _Object$entries.length; _i++) {
+        _loop();
+      }
+    }
+  }, {
+    key: "_settings",
+    get: function get() {
+      this.settings = this.settings ? this.settings : {};
+      return this.settings;
+    },
+    set: function set(settings) {
+      if (settings) {
+        this.settings = settings;
+        if (this.settings.context) this._context = this.settings.context;
+        if (this.settings.target) this._target = this.settings.target instanceof NodeList ? this.settings.target[0] : this.settings.target;
+        if (this.settings.options) this._options = this.settings.options;
+        if (this.settings.mutations) this._mutations = this.settings.mutations;
+      }
+    }
+  }, {
+    key: "_context",
+    get: function get() {
+      return this.context;
+    },
+    set: function set(context) {
+      this.context = context;
+    }
+  }, {
+    key: "_target",
+    get: function get() {
+      return this.target;
+    },
+    set: function set(target) {
+      this.target = target;
+    }
+  }, {
+    key: "_options",
+    get: function get() {
+      return this.options;
+    },
+    set: function set(options) {
+      this.options = options;
+    }
+  }, {
+    key: "_observer",
+    get: function get() {
+      this.observer = this.observer ? this.observer : new MutationObserver(this.observerCallback.bind(this));
+      return this.observer;
+    }
+  }, {
+    key: "_mutations",
+    get: function get() {
+      this.mutations = this.mutations ? this.mutations : [];
+      return this.mutations;
+    },
+    set: function set(mutations) {
+      for (var _i4 = 0, _Object$entries3 = Object.entries(mutations); _i4 < _Object$entries3.length; _i4++) {
+        var _Object$entries3$_i = _slicedToArray(_Object$entries3[_i4], 2),
+            mutationSettings = _Object$entries3$_i[0],
+            mutationCallback = _Object$entries3$_i[1];
+
+        var mutation = void 0;
+        var mutationData = mutationSettings.split(' ');
+        var mutationTarget = MVC.Utils.getObjectFromDotNotationString(mutationData[0].replace('@', ''), this.context.ui);
+        var mutationEventName = mutationData[1];
+        var mutationEventData = mutationData[2];
+        mutationCallback = mutationCallback.match('@') ? this.context.observerCallbacks[mutationCallback.replace('@', '')] : typeof mutationCallback === 'string' ? MVC.Utils.getObjectFromDotNotationString(mutationCallback, window) : mutationCallback;
+        mutation = {
+          target: mutationTarget,
+          name: mutationEventName,
+          callback: mutationCallback
+        };
+        if (mutationEventData) mutation.data = mutationEventData;
+
+        this._mutations.push(mutation);
+      }
+    }
+  }]);
+
+  return _class;
+}();
+"use strict";
+
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
@@ -675,6 +854,11 @@ function (_MVC$Events) {
   }
 
   _createClass(_class, [{
+    key: "remove",
+    value: function remove() {
+      this.element.parentElement.removeChild(this.element);
+    }
+  }, {
     key: "_settings",
     get: function get() {
       this.settings = this.settings ? this.settings : {};
@@ -688,8 +872,10 @@ function (_MVC$Events) {
         if (this.settings.attributes) this._attributes = this.settings.attributes;
         this._ui = this.settings.ui || {};
         if (this.settings.uiCallbacks) this._uiCallbacks = this.settings.uiCallbacks;
+        if (this.settings.observerCallbacks) this._observerCallbacks = this.settings.observerCallbacks;
         if (this.settings.uiEmitters) this._uiEmitters = this.settings.uiEmitters;
         if (this.settings.uiEvents) this._uiEvents = this.settings.uiEvents;
+        if (this.settings.observers) this._observers = this.settings.observers;
         if (this.settings.template) this._template = this.settings.template;
         if (this.settings.insert) this._insert = this.settings.insert;
       } else {
@@ -771,6 +957,14 @@ function (_MVC$Events) {
       this.uiCallbacks = uiCallbacks;
     }
   }, {
+    key: "_observerCallbacks",
+    get: function get() {
+      return this.observerCallbacks || {};
+    },
+    set: function set(observerCallbacks) {
+      this.observerCallbacks = observerCallbacks;
+    }
+  }, {
     key: "_uiEmitters",
     get: function get() {
       return this.uiEmitters || {};
@@ -779,12 +973,38 @@ function (_MVC$Events) {
       this.uiEmitters = emitters;
     }
   }, {
+    key: "_observers",
+    get: function get() {
+      this.observers = this.observers ? this.observers : {};
+      return this.observers;
+    },
+    set: function set(observers) {
+      for (var _i3 = 0, _Object$entries3 = Object.entries(observers); _i3 < _Object$entries3.length; _i3++) {
+        var _Object$entries3$_i = _slicedToArray(_Object$entries3[_i3], 2),
+            observerConfiguration = _Object$entries3$_i[0],
+            mutationSettings = _Object$entries3$_i[1];
+
+        var observerConfigurationData = observerConfiguration.split(' ');
+        var observerName = observerConfigurationData[0];
+        var observerTarget = observerName.match('@', '') ? MVC.Utils.getObjectFromDotNotationString(observerName.replace('@', ''), this.ui) : document.querySelectorAll(observerName);
+        var observerOptions = observerConfigurationData[1] ? observerConfigurationData[1].split(',').reduce(function (accumulator, currentValue) {
+          accumulator[currentValue] = true;
+          return accumulator;
+        }, {}) : {}; // if(observerOptions)  = observerOptions
+
+        var observer = new MVC.Observers.Observer({
+          context: this,
+          target: observerTarget,
+          options: observerOptions,
+          mutations: mutationSettings
+        });
+        this._observers[observerName] = observer;
+      }
+    }
+  }, {
     key: "_insert",
     set: function set(insert) {
-      if (this.element.parentElement) {
-        this.element.parentElement.removeChild(this.element);
-      }
-
+      if (this.element.parentElement) this.remove();
       var insertMethod = insert.method;
       var parentElement = document.querySelector(insert.element);
       parentElement.insertAdjacentElement(insertMethod, this.element);

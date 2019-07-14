@@ -17,8 +17,10 @@ MVC.View = class extends MVC.Events {
       if(this.settings.attributes) this._attributes = this.settings.attributes
       this._ui = this.settings.ui || {}
       if(this.settings.uiCallbacks) this._uiCallbacks = this.settings.uiCallbacks
+      if(this.settings.observerCallbacks) this._observerCallbacks = this.settings.observerCallbacks
       if(this.settings.uiEmitters) this._uiEmitters = this.settings.uiEmitters
       if(this.settings.uiEvents) this._uiEvents = this.settings.uiEvents
+      if(this.settings.observers) this._observers = this.settings.observers
       if(this.settings.template) this._template = this.settings.template
       if(this.settings.insert) this._insert = this.settings.insert
     } else {
@@ -69,14 +71,49 @@ MVC.View = class extends MVC.Events {
   }
   get _uiCallbacks() { return this.uiCallbacks || {} }
   set _uiCallbacks(uiCallbacks) { this.uiCallbacks = uiCallbacks }
+  get _observerCallbacks() { return this.observerCallbacks || {} }
+  set _observerCallbacks(observerCallbacks) { this.observerCallbacks = observerCallbacks }
   get _uiEmitters() { return this.uiEmitters || {} }
   set _uiEmitters(uiEmitters) { this.uiEmitters = emitters }
-  set _insert(insert) {
-    if(this.element.parentElement) {
-      this.element.parentElement.removeChild(this.element)
+  get _observers() {
+    this.observers = (this.observers)
+      ? this.observers
+      : {}
+    return this.observers
+  }
+  set _observers(observers) {
+    for(let [observerConfiguration, mutationSettings] of Object.entries(observers)) {
+      let observerConfigurationData = observerConfiguration.split(' ')
+      let observerName = observerConfigurationData[0]
+      let observerTarget = (observerName.match('@', ''))
+        ? MVC.Utils.getObjectFromDotNotationString(
+            observerName.replace('@', ''),
+            this.ui
+          )
+        : document.querySelectorAll(observerName)
+      let observerOptions = (observerConfigurationData[1])
+        ? observerConfigurationData[1]
+          .split(',')
+          .reduce((accumulator, currentValue) => {
+            accumulator[currentValue] = true
+            return accumulator
+          }, {})
+        : {}
+      // if(observerOptions)  = observerOptions
+      let observer = new MVC.Observers.Observer({
+        context: this,
+        target: observerTarget,
+        options: observerOptions,
+        mutations: mutationSettings
+      })
+      this._observers[observerName] = observer
     }
+  }
+  set _insert(insert) {
+    if(this.element.parentElement) this.remove()
     let insertMethod = insert.method
     let parentElement = document.querySelector(insert.element)
     parentElement.insertAdjacentElement(insertMethod, this.element)
   }
+  remove() { this.element.parentElement.removeChild(this.element) }
 }

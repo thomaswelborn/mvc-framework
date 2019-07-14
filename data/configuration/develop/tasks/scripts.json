@@ -8,6 +8,8 @@
         "source/scripts/MVC/Service.js",
         "source/scripts/MVC/Channels/Channels.js",
         "source/scripts/MVC/Channels/Channel/Channel.js",
+        "source/scripts/MVC/Observers/Observers.js",
+        "source/scripts/MVC/Observers/Observer/Observer.js",
         "source/scripts/MVC/Model.js",
         "source/scripts/MVC/View.js",
         "source/scripts/MVC/Controller.js",

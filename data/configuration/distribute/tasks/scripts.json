@@ -3,10 +3,13 @@
     "src": {
       "globs": [
         "source/scripts/MVC/MVC.js",
+        "source/scripts/MVC/Utils.js",
         "source/scripts/MVC/Events.js",
         "source/scripts/MVC/Service.js",
         "source/scripts/MVC/Channels/Channels.js",
         "source/scripts/MVC/Channels/Channel/Channel.js",
+        "source/scripts/MVC/Observers/Observers.js",
+        "source/scripts/MVC/Observers/Observer/Observer.js",
         "source/scripts/MVC/Model.js",
         "source/scripts/MVC/View.js",
         "source/scripts/MVC/Controller.js",
@@ -24,16 +27,22 @@
         "path": "browser/mvc-framework.js"
       }
     },
+    "minify": {
+      "options": {}
+    },
     "dest": "distribute"
   },
   "node": {
     "src": {
       "globs": [
         "source/scripts/MVC/MVC.js",
+        "source/scripts/MVC/Utils.js",
         "source/scripts/MVC/Events.js",
         "source/scripts/MVC/Service.js",
         "source/scripts/MVC/Channels/Channels.js",
         "source/scripts/MVC/Channels/Channel/Channel.js",
+        "source/scripts/MVC/Observers/Observers.js",
+        "source/scripts/MVC/Observers/Observer/Observer.js",
         "source/scripts/MVC/Model.js",
         "source/scripts/MVC/View.js",
         "source/scripts/MVC/Controller.js",

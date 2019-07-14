@@ -1,0 +1,1 @@
+MVC.Observers = class {}
