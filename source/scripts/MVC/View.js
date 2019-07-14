@@ -19,18 +19,15 @@ MVC.View = class extends MVC.Events {
       if(this.settings.uiCallbacks) this._uiCallbacks = this.settings.uiCallbacks
       if(this.settings.uiEmitters) this._uiEmitters = this.settings.uiEmitters
       if(this.settings.uiEvents) this._uiEvents = this.settings.uiEvents
+      if(this.settings.template) this._template = this.settings.template
+      if(this.settings.insert) this._insert = this.settings.insert
     } else {
       this._elementName = 'div'
     }
   }
-  get _elementName() {
-    return this.elementName || 'div'
-  }
+  get _elementName() { return this._element.tagName }
   set _elementName(elementName) {
-    if(!this._element) {
-      this._element = document.createElement(elementName)
-    }
-    this.elementName = this.element.tagName
+    if(!this._element) this._element = document.createElement(elementName)
   }
   get _element() { return this.element }
   set _element(element) {
@@ -40,10 +37,14 @@ MVC.View = class extends MVC.Events {
       this.element = document.querySelector(element)
     }
   }
-  get _attributes() { this._element.attributes }
+  get _attributes() { return this._element.attributes }
   set _attributes(attributes) {
     for(let [attributeKey, attributeValue] of Object.entries(attributes)) {
-      this._element.setAttribute(attributeKey, attributeValue)
+      if(typeof attributeValue === 'undefined') {
+        this._element.removeAttribute(attributeKey)
+      } else {
+        this._element.setAttribute(attributeKey, attributeValue)
+      }
     }
     this.attributes = this._element.attributes
   }
@@ -55,13 +56,27 @@ MVC.View = class extends MVC.Events {
   }
   set _ui(ui) {
     this._ui['$'] = this.element
-    for(let [key, value] of Object.entries(ui)) {
-      this._ui[key] = this.element.querySelectorAll(value)
+    for(let [uiKey, uiSelector] of Object.entries(ui)) {
+      if(typeof uiSelector === 'undefined') {
+        delete this._ui[uiKey]
+      } else {
+        this._ui[uiKey] = this._element.querySelectorAll(uiSelector)
+      }
     }
   }
-  set _uiEvents(uiEvents) { MVC.Utils.bindEventsToTargetObjects(uiEvents, this.ui, this.uiCallbacks) }
+  set _uiEvents(uiEvents) {
+    MVC.Utils.bindEventsToTargetObjects(uiEvents, this.ui, this.uiCallbacks)
+  }
   get _uiCallbacks() { return this.uiCallbacks || {} }
   set _uiCallbacks(uiCallbacks) { this.uiCallbacks = uiCallbacks }
   get _uiEmitters() { return this.uiEmitters || {} }
   set _uiEmitters(uiEmitters) { this.uiEmitters = emitters }
+  set _insert(insert) {
+    if(this.element.parentElement) {
+      this.element.parentElement.removeChild(this.element)
+    }
+    let insertMethod = insert.method
+    let parentElement = document.querySelector(insert.element)
+    parentElement.insertAdjacentElement(insertMethod, this.element)
+  }
 }

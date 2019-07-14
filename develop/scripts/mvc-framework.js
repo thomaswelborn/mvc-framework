@@ -690,6 +690,8 @@ function (_MVC$Events) {
         if (this.settings.uiCallbacks) this._uiCallbacks = this.settings.uiCallbacks;
         if (this.settings.uiEmitters) this._uiEmitters = this.settings.uiEmitters;
         if (this.settings.uiEvents) this._uiEvents = this.settings.uiEvents;
+        if (this.settings.template) this._template = this.settings.template;
+        if (this.settings.insert) this._insert = this.settings.insert;
       } else {
         this._elementName = 'div';
       }
@@ -697,14 +699,10 @@ function (_MVC$Events) {
   }, {
     key: "_elementName",
     get: function get() {
-      return this.elementName || 'div';
+      return this._element.tagName;
     },
     set: function set(elementName) {
-      if (!this._element) {
-        this._element = document.createElement(elementName);
-      }
-
-      this.elementName = this.element.tagName;
+      if (!this._element) this._element = document.createElement(elementName);
     }
   }, {
     key: "_element",
@@ -721,7 +719,7 @@ function (_MVC$Events) {
   }, {
     key: "_attributes",
     get: function get() {
-      this._element.attributes;
+      return this._element.attributes;
     },
     set: function set(attributes) {
       for (var _i = 0, _Object$entries = Object.entries(attributes); _i < _Object$entries.length; _i++) {
@@ -729,7 +727,11 @@ function (_MVC$Events) {
             attributeKey = _Object$entries$_i[0],
             attributeValue = _Object$entries$_i[1];
 
-        this._element.setAttribute(attributeKey, attributeValue);
+        if (typeof attributeValue === 'undefined') {
+          this._element.removeAttribute(attributeKey);
+        } else {
+          this._element.setAttribute(attributeKey, attributeValue);
+        }
       }
 
       this.attributes = this._element.attributes;
@@ -745,10 +747,14 @@ function (_MVC$Events) {
 
       for (var _i2 = 0, _Object$entries2 = Object.entries(ui); _i2 < _Object$entries2.length; _i2++) {
         var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
-            key = _Object$entries2$_i[0],
-            value = _Object$entries2$_i[1];
+            uiKey = _Object$entries2$_i[0],
+            uiSelector = _Object$entries2$_i[1];
 
-        this._ui[key] = this.element.querySelectorAll(value);
+        if (typeof uiSelector === 'undefined') {
+          delete this._ui[uiKey];
+        } else {
+          this._ui[uiKey] = this._element.querySelectorAll(uiSelector);
+        }
       }
     }
   }, {
@@ -771,6 +777,17 @@ function (_MVC$Events) {
     },
     set: function set(uiEmitters) {
       this.uiEmitters = emitters;
+    }
+  }, {
+    key: "_insert",
+    set: function set(insert) {
+      if (this.element.parentElement) {
+        this.element.parentElement.removeChild(this.element);
+      }
+
+      var insertMethod = insert.method;
+      var parentElement = document.querySelector(insert.element);
+      parentElement.insertAdjacentElement(insertMethod, this.element);
     }
   }]);
 
@@ -814,6 +831,7 @@ function (_MVC$Events) {
   _createClass(_class, [{
     key: "_settings",
     get: function get() {
+      this.settings = this.settings ? this.settings : {};
       return this.settings;
     },
     set: function set(settings) {
@@ -834,7 +852,8 @@ function (_MVC$Events) {
   }, {
     key: "_emitters",
     get: function get() {
-      return this.emitters || {};
+      this.emitters = this.emitters ? this.emitters : {};
+      return this.emitters;
     },
     set: function set(emitters) {
       this.emitters = MVC.Utils.addPropertiesToTargetObject(emitters, this._emitters);
@@ -842,7 +861,8 @@ function (_MVC$Events) {
   }, {
     key: "_modelCallbacks",
     get: function get() {
-      return this.modelCallbacks || {};
+      this.modelCallbacks = this.modelCallbacks ? this.modelCallbacks : {};
+      return this.modelCallbacks;
     },
     set: function set(modelCallbacks) {
       this.modelCallbacks = MVC.Utils.addPropertiesToTargetObject(modelCallbacks, this._modelCallbacks);
@@ -850,7 +870,8 @@ function (_MVC$Events) {
   }, {
     key: "_viewCallbacks",
     get: function get() {
-      return this.viewCallbacks || {};
+      this.viewCallbacks = this.viewCallbacks ? this.viewCallbacks : {};
+      return this.viewCallbacks;
     },
     set: function set(viewCallbacks) {
       this.viewCallbacks = MVC.Utils.addPropertiesToTargetObject(viewCallbacks, this._viewCallbacks);
@@ -858,7 +879,8 @@ function (_MVC$Events) {
   }, {
     key: "_controllerCallbacks",
     get: function get() {
-      return this.controllerCallbacks || {};
+      this.controllerCallbacks = this.controllerCallbacks ? this.controllerCallbacks : {};
+      return this.controllerCallbacks;
     },
     set: function set(controllerCallbacks) {
       this.controllerCallbacks = MVC.Utils.addPropertiesToTargetObject(controllerCallbacks, this._controllerCallbacks);
@@ -866,7 +888,8 @@ function (_MVC$Events) {
   }, {
     key: "_routerCallbacks",
     get: function get() {
-      return this.routerCallbacks || {};
+      this.routerCallbacks = this.routerCallbacks ? this.routerCallbacks : {};
+      return this.routerCallbacks;
     },
     set: function set(routerCallbacks) {
       this.routerCallbacks = MVC.Utils.addPropertiesToTargetObject(routerCallbacks, this._routerCallbacks);
@@ -874,7 +897,8 @@ function (_MVC$Events) {
   }, {
     key: "_models",
     get: function get() {
-      return this.models || {};
+      this.models = this.models ? this.models : {};
+      return this.models;
     },
     set: function set(models) {
       this.models = MVC.Utils.addPropertiesToTargetObject(models, this._models);
@@ -882,7 +906,8 @@ function (_MVC$Events) {
   }, {
     key: "_views",
     get: function get() {
-      return this.views || {};
+      this.views = this.views ? this.views : {};
+      return this.views;
     },
     set: function set(views) {
       this.views = MVC.Utils.addPropertiesToTargetObject(views, this._views);
@@ -890,7 +915,8 @@ function (_MVC$Events) {
   }, {
     key: "_controllers",
     get: function get() {
-      return this.controllers || {};
+      this.controllers = this.controllers ? this.controllers : {};
+      return this.controllers;
     },
     set: function set(controllers) {
       this.controllers = MVC.Utils.addPropertiesToTargetObject(controllers, this._controllers);
@@ -898,7 +924,8 @@ function (_MVC$Events) {
   }, {
     key: "_routers",
     get: function get() {
-      return this.routers || {};
+      this.routers = this.routers ? this.routers : {};
+      return this.routers;
     },
     set: function set(routers) {
       this.routers = MVC.Utils.addPropertiesToTargetObject(routers, this._routers);
@@ -906,17 +933,17 @@ function (_MVC$Events) {
   }, {
     key: "_modelEvents",
     set: function set(modelEvents) {
-      MVC.Utils.bindEventsToTargetObjects(modelEvents, this.models, this.modelCallbacks);
+      MVC.Utils.bindEventsToTargetObjects(modelEvents, this._models, this._modelCallbacks);
     }
   }, {
     key: "_viewEvents",
     set: function set(viewEvents) {
-      MVC.Utils.bindEventsToTargetObjects(viewEvents, this.views);
+      MVC.Utils.bindEventsToTargetObjects(viewEvents, this._views);
     }
   }, {
     key: "_controllerEvents",
     set: function set(controllerEvents) {
-      MVC.Utils.bindEventsToTargetObjects(controllerEvents, this.controllers, this.controllerCallbacks);
+      MVC.Utils.bindEventsToTargetObjects(controllerEvents, this._controllers, this._controllerCallbacks);
     }
   }]);
 
