@@ -1,0 +1,18 @@
+{
+  "mvc-framework": {
+    "src": {
+      "globs": [
+        "distribute/browser/mvc-framework.js"
+      ]
+    },
+    "dest": "develop/tests/test-1/scripts"
+  },
+  "vendor": {
+    "src": {
+      "globs": [
+        "node_modules/tressa/tressa.js"
+      ]
+    },
+    "dest": "develop/tests/test-1/scripts"
+  }
+}

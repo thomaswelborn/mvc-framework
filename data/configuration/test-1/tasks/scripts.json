@@ -1,0 +1,43 @@
+{
+  "mvc": {
+    "src": {
+      "globs": [
+        "tests/test-1/scripts/module.js"
+      ],
+      "options": {}
+    },
+    "delSync": {
+      "src": {
+        "globs": [
+          "develop/tests/test-1/scripts/**/*.js"
+        ]
+      }
+    },
+    "babel": {
+      "options": {
+        "presets": ["@babel/env"]
+      }
+    },
+    "sourcemaps": {
+      "init": {
+        "options": {}
+      },
+      "write": {
+        "options": {
+          "sourceMappingURLPrefix": "http://localhost:3000",
+          "includeContent": true
+        },
+        "dest": "../.maps/scripts"
+      }
+    },
+    "concat": {
+      "options": {
+        "path": "mvc-framework.js"
+      }
+    },
+    "dest": "develop/tests/test-1/scripts",
+    "browserSync": {
+      "stream": true
+    }
+  }
+}

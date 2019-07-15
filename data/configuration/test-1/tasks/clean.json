@@ -2,7 +2,7 @@
   "scripts": {
     "src": {
       "globs": [
-        "develop/scripts/modules/MVC/**/*.js"
+        "develop/tests/test-1/scripts/modules/MVC/**/*.js"
       ]
     }
   },

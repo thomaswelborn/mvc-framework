@@ -1620,6 +1620,13 @@ console-control-strings@^1.0.0, console-control-strings@~1.1.0:
   resolved "https://registry.yarnpkg.com/console-control-strings/-/console-control-strings-1.1.0.tgz#3d7cf4464db6446ea644bf4b39507f9851008e8e"
   integrity sha1-PXz0Rk22RG6mRL9LOVB/mFEAjo4=
 
+consolemd@^0.1.2:
+  version "0.1.3"
+  resolved "https://registry.yarnpkg.com/consolemd/-/consolemd-0.1.3.tgz#a9de3895f24e6bf62381ff39c714f51e78c45e96"
+  integrity sha512-UHKTgtvAtikE0UIvqP9Rj0b+rZ5AHIvbfL+GSjYhH2UOJWfnoIJ0+zygI/l/7cOB8p9JrGrIkC1BgQXBNzEQQA==
+  dependencies:
+    echomd "^0.1.2"
+
 consolidate@^0.15.1:
   version "0.15.1"
   resolved "https://registry.yarnpkg.com/consolidate/-/consolidate-0.15.1.tgz#21ab043235c71a07d45d9aad98593b0dba56bab7"
@@ -1965,6 +1972,11 @@ ecc-jsbn@~0.1.1:
   dependencies:
     jsbn "~0.1.0"
     safer-buffer "^2.1.0"
+
+echomd@^0.1.2:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/echomd/-/echomd-0.1.2.tgz#90d3cf0f9e459306f4c1d90a02b65e971923f6ff"
+  integrity sha1-kNPPD55Fkwb0wdkKArZelxkj9v8=
 
 ee-first@1.1.1:
   version "1.1.1"
@@ -5809,6 +5821,12 @@ tough-cookie@~2.4.3:
   dependencies:
     psl "^1.1.24"
     punycode "^1.4.1"
+
+"tressa@https://github.com/WebReflection/tressa":
+  version "0.4.0"
+  resolved "https://github.com/WebReflection/tressa#2e2e7ebe2ff55bdab9685f01df6025869ba3481e"
+  dependencies:
+    consolemd "^0.1.2"
 
 trim-newlines@^1.0.0:
   version "1.0.0"

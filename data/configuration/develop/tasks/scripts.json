@@ -2,18 +2,18 @@
   "mvc": {
     "src": {
       "globs": [
-        "source/scripts/MVC/MVC.js",
-        "source/scripts/MVC/Utils.js",
-        "source/scripts/MVC/Events.js",
-        "source/scripts/MVC/Service.js",
-        "source/scripts/MVC/Channels/Channels.js",
-        "source/scripts/MVC/Channels/Channel/Channel.js",
-        "source/scripts/MVC/Observers/Observers.js",
-        "source/scripts/MVC/Observers/Observer/Observer.js",
-        "source/scripts/MVC/Model.js",
-        "source/scripts/MVC/View.js",
-        "source/scripts/MVC/Controller.js",
-        "source/scripts/MVC/Router.js"
+        "source/scripts/modules/MVC/MVC.js",
+        "source/scripts/modules/MVC/Utils.js",
+        "source/scripts/modules/MVC/Events.js",
+        "source/scripts/modules/MVC/Service.js",
+        "source/scripts/modules/MVC/Channels/Channels.js",
+        "source/scripts/modules/MVC/Channels/Channel/Channel.js",
+        "source/scripts/modules/MVC/Observers/Observers.js",
+        "source/scripts/modules/MVC/Observers/Observer/Observer.js",
+        "source/scripts/modules/MVC/Model.js",
+        "source/scripts/modules/MVC/View.js",
+        "source/scripts/modules/MVC/Controller.js",
+        "source/scripts/modules/MVC/Router.js"
       ],
       "options": {}
     },

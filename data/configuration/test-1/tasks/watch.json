@@ -1,0 +1,39 @@
+{
+  "scripts": {
+    "globs": [
+      "tests/test-1/scripts/**/*.js"
+    ],
+    "options": {},
+    "task": {
+      "type": "series",
+      "tasks": [
+        "scripts"
+      ]
+    }
+  },
+  "documentTemplates": {
+    "globs": [
+      "tests/test-1/templates/layouts/**/*.handlebars",
+      "tests/test-1/templates/partials/**/*.hbs"
+    ],
+    "options": {},
+    "task": {
+      "type": "series",
+      "tasks": [
+        "templates:documents"
+      ]
+    }
+  },
+  "scriptTemplates": {
+    "globs": [
+      "tests/test-1/scripts/**/*.hbs"
+    ],
+    "options": {},
+    "task": {
+      "type": "series",
+      "tasks": [
+        "templates:scripts"
+      ]
+    }
+  }
+}

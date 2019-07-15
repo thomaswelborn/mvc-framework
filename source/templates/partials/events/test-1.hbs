@@ -4,5 +4,17 @@
 <script type="text/javascript">
   document.addEventListener('DOMContentLoaded', () => {
     let events = new MVC.Events()
+    let eventACallback = function(event) {
+      console.log(event)
+    }
+    events.on('event:a', eventACallback)
+    events.emit('event:a', {
+      name: 'event:a',
+      data: {
+        a: 1,
+        b: 2,
+        c: 3,
+      }
+    })
   })
 </script>
