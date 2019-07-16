@@ -4,5 +4,6 @@
   "templates:scripts",
   "scripts",
   "browserSync",
+  "copy",
   "watch"
 ]

@@ -13,6 +13,6 @@
         "node_modules/tressa/tressa.js"
       ]
     },
-    "dest": "develop/tests/test-1/scripts"
+    "dest": "develop/tests/test-1/scripts/vendor"
   }
 }

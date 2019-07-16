@@ -6,19 +6,12 @@
       ],
       "options": {}
     },
-    "delSync": {
-      "src": {
-        "globs": [
-          "develop/index.html"
-        ]
-      }
-    },
     "data": {
       "document": {
         "type": "json",
         "request": {
-          "dir": "data/documents",
-          "name": "index",
+          "dir": "data/documents/tests",
+          "name": "test-1",
           "ext": ".json"
         }
       }
@@ -34,7 +27,7 @@
         "ext": ".html"
       }
     },
-    "dest": "develop",
+    "dest": "develop/tests/test-1",
     "browserSync": {
       "stream": true
     }

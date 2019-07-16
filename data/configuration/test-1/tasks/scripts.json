@@ -1,17 +1,10 @@
 {
-  "mvc": {
+  "test-1": {
     "src": {
       "globs": [
         "tests/test-1/scripts/module.js"
       ],
       "options": {}
-    },
-    "delSync": {
-      "src": {
-        "globs": [
-          "develop/tests/test-1/scripts/**/*.js"
-        ]
-      }
     },
     "babel": {
       "options": {
@@ -32,7 +25,7 @@
     },
     "concat": {
       "options": {
-        "path": "mvc-framework.js"
+        "path": "test-1.js"
       }
     },
     "dest": "develop/tests/test-1/scripts",

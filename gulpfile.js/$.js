@@ -27,6 +27,7 @@ global.$ = {
   },
 }
 $.lib = $.libraries
+$.lib.lodash.mixin(require('../utils/scripts/lodash/mixins.js'))
 $.lib.sass.compiler = require('node-sass')
 $.basedir = $.lib.path.join(__dirname, '..')
 $.configuration = require('./configuration.js')

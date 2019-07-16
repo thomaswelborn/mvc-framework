@@ -1,0 +1,26 @@
+{
+  "title": "MVC Framework | Test 1",
+  "scripts": [
+    {
+      "elementName": "script",
+      "attributes": {
+        "src": "./scripts/vendor/tressa.js"
+      },
+      "closure": true
+    },
+    {
+      "elementName": "script",
+      "attributes": {
+        "src": "./scripts/mvc-framework.js"
+      },
+      "closure": true
+    },
+    {
+      "elementName": "script",
+      "attributes": {
+        "src": "./scripts/test-1.js"
+      },
+      "closure": true
+    }
+  ]
+}

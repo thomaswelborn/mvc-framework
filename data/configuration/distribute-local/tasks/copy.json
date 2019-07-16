@@ -7,5 +7,14 @@
       "options": {}
     },
     "dest": "../gulp-boilerplate/node_modules/mvc-framework/distribute"
+  },
+  "test-framework": {
+    "src": {
+      "globs": [
+        "distribute/**/*"
+      ],
+      "options": {}
+    },
+    "dest": "../test-framework/node_modules/test-framework/distribute"
   }
 }

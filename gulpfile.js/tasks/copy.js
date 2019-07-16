@@ -6,7 +6,7 @@ module.exports = function(rootProcess, data) {
         .pipe($.lib.gulp.dest(packageSettings.dest))
       stream.add(task)
     }
-    callback()
+    return stream
   }
   return Copy
 }
