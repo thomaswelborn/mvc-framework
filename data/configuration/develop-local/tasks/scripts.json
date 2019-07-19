@@ -1,0 +1,77 @@
+{
+  "browser": {
+    "src": {
+      "globs": [
+        "source/scripts/modules/MVC/MVC.js",
+        "source/scripts/modules/MVC/Utils.js",
+        "source/scripts/modules/MVC/Events.js",
+        "source/scripts/modules/MVC/Service.js",
+        "source/scripts/modules/MVC/Channels/Channels.js",
+        "source/scripts/modules/MVC/Channels/Channel/Channel.js",
+        "source/scripts/modules/MVC/Observers/Observers.js",
+        "source/scripts/modules/MVC/Observers/Observer/Observer.js",
+        "source/scripts/modules/MVC/Model.js",
+        "source/scripts/modules/MVC/View.js",
+        "source/scripts/modules/MVC/Controller.js",
+        "source/scripts/modules/MVC/Router.js"
+      ],
+      "options": {}
+    },
+    "babel": {
+      "options": {
+        "presets": ["@babel/env"]
+      }
+    },
+    "concat": {
+      "options": {
+        "path": "browser/mvc-framework.js"
+      }
+    },
+    "minify": {
+      "options": {}
+    },
+    "sourcemaps": {
+      "init": {
+        "options": {}
+      },
+      "write": {
+        "options": {
+          "sourceMappingURLPrefix": "http://localhost:3000",
+          "includeContent": true
+        },
+        "dest": "./.maps"
+      }
+    },
+    "dest": "distribute"
+  },
+  "node": {
+    "src": {
+      "globs": [
+        "source/scripts/modules/MVC/MVC.js",
+        "source/scripts/modules/MVC/Utils.js",
+        "source/scripts/modules/MVC/Events.js",
+        "source/scripts/modules/MVC/Service.js",
+        "source/scripts/modules/MVC/Channels/Channels.js",
+        "source/scripts/modules/MVC/Channels/Channel/Channel.js",
+        "source/scripts/modules/MVC/Observers/Observers.js",
+        "source/scripts/modules/MVC/Observers/Observer/Observer.js",
+        "source/scripts/modules/MVC/Model.js",
+        "source/scripts/modules/MVC/View.js",
+        "source/scripts/modules/MVC/Controller.js",
+        "source/scripts/modules/MVC/Router.js"
+      ],
+      "options": {}
+    },
+    "concat": {
+      "options": {
+        "path": "node/mvc-framework.js"
+      }
+    },
+    "wrap": {
+      "template": "<%= contents %>\nmodule.exports = MVC",
+      "data": {},
+      "options": {}
+    },
+    "dest": "distribute"
+  }
+}

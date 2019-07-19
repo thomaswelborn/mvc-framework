@@ -1,4 +1,6 @@
 global.$ = {
+  process: null,
+  argv: require('yargs').argv,
   libraries: {
     gulp: require('gulp'),
     babel: require('gulp-babel'),
@@ -6,15 +8,18 @@ global.$ = {
     compileHandlebars: require('gulp-compile-handlebars'),
     data: require('gulp-data'),
     declare: require('gulp-declare'),
+    file: require('gulp-file'),
     flatten: require('gulp-flatten'),
     handlebars: require('gulp-handlebars'),
     minify: require('gulp-minify'),
     rename: require('gulp-rename'),
     sass: require('gulp-sass'),
     sourcemaps: require('gulp-sourcemaps'),
+    spawn: require('child_process').spawnSync,
     wrap: require('gulp-wrap'),
     del: require('del'),
     fs: require('fs'),
+    beautify: require('js-beautify').js,
     path: require('path'),
     browserSync: require('browser-sync').create(),
     decache: require('decache'),
@@ -23,7 +28,9 @@ global.$ = {
     mergeStream: require('merge2'),
     mongoose: require('mongoose'),
     pluginError: require('plugin-error'),
+    prettyprint: require('js-object-pretty-print'),
     through2: require('through2'),
+    util: require('util'),
   },
 }
 $.lib = $.libraries

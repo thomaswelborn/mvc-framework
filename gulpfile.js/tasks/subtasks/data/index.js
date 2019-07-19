@@ -5,6 +5,9 @@ module.exports = function(settings) {
       case 'json':
         data[dataName] = require('./json.js')(dataSettings)
         break
+      default:
+        data[dataName] = dataSettings
+        break
     }
   }
   return $.lib.data((file) => {

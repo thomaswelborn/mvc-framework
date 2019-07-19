@@ -7,7 +7,6 @@ module.exports = function(settings) {
         let options = _arguments.splice(-1)[0]
         _arguments = _arguments[0]
         if(options.fn) {
-          console.log('_arguments', _arguments)
           let __ = ''
           for(let argument of _arguments) {
             __ = __.concat(options.fn(argument))
