@@ -9,6 +9,8 @@ MVC.Model = class extends MVC.Events {
       this.settings = settings
       if(this.settings.histiogram) this._histiogram = this.settings.histiogram
       if(this.settings.data) this.set(this.settings.data)
+      if(this.settings.dataCallbacks) this._dataCallbacks = this.settings.dataCallbacks
+      if(this.settings.dataEvents) this._dataEvents = this.settings.dataEvents
     }
   }
   get _histiogram() { return this.histiogram || {
@@ -42,11 +44,28 @@ MVC.Model = class extends MVC.Events {
       : {}
     return this.data
   }
+  set _dataEvents(dataEvents) {
+    MVC.Utils.bindEventsToTargetObjects(dataEvents, this, this.dataCallbacks)
+  }
+  get _dataCallbacks() {
+    this.dataCallbacks = (this.dataCallbacks)
+      ? this.dataCallbacks
+      : {}
+    return this.dataCallbacks
+  }
+  set _dataCallbacks(dataCallbacks) {
+    this.dataCallbacks = MVC.Utils.addPropertiesToTargetObject(
+      dataCallbacks, this._dataCallbacks
+    )
+  }
+  get() {
+    let property = arguments[0]
+    return this._data['_'.concat(property)]
+  }
   set() {
     this._history = this.parse()
     switch(arguments.length) {
       case 1:
-        console.log(arguments.length)
         for(let [key, value] of Object.entries(arguments[0])) {
           this.setDataProperty(key, value)
         }
@@ -89,17 +108,23 @@ MVC.Model = class extends MVC.Events {
                 setValueEventName,
                 {
                   name: setValueEventName,
-                  key: key,
-                  value: value,
-                }
+                  data: {
+                    key: key,
+                    value: value,
+                  },
+                },
+                context
               )
               context.emit(
                 setEventName,
                 {
                   name: setEventName,
-                  key: key,
-                  value: value,
-                }
+                  data: {
+                    key: key,
+                    value: value,
+                  },
+                },
+                context
               )
             }
           }
@@ -118,16 +143,20 @@ MVC.Model = class extends MVC.Events {
       unsetValueEventName,
       {
         name: unsetValueEventName,
-        key: key,
-        value: unsetValue,
+        data: {
+          key: key,
+          value: unsetValue,
+        }
       }
     )
     this.emit(
       unsetEventName,
       {
         name: unsetEventName,
-        key: key,
-        value: unsetValue,
+        data: {
+          key: key,
+          value: unsetValue,
+        }
       }
     )
   }

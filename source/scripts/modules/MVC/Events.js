@@ -12,7 +12,9 @@ MVC.Events = class {
       ? eventCallback.name
       : 'anonymousFunction'
   }
-  eventCallbackGroup(eventCallbacks, eventCallbackName) { return eventCallbacks[eventCallbackName] || [] }
+  eventCallbackGroup(eventCallbacks, eventCallbackName) {
+    return eventCallbacks[eventCallbackName] || []
+  }
   on(eventName, eventCallback) {
     let eventCallbacks = this.eventCallbacks(eventName)
     let eventCallbackName = this.eventCallbackName(eventCallback)
@@ -39,7 +41,8 @@ MVC.Events = class {
     let eventCallbacks = this.eventCallbacks(eventName)
     for(let [eventCallbackGroupName, eventCallbackGroup] of Object.entries(eventCallbacks)) {
       for(let eventCallback of eventCallbackGroup) {
-        eventCallback(eventData)
+        let additionalArguments = Object.values(arguments).splice(2)
+        eventCallback(eventData, ...additionalArguments)
       }
     }
   }

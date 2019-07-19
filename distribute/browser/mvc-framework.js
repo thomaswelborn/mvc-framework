@@ -13,23 +13,66 @@ function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 MVC.Utils = {
   getObjectFromDotNotationString: function getObjectFromDotNotationString(string, context) {
-    return string.split('.').reduce(function (accumulator, currentValue) {
-      return accumulator[currentValue];
-    }, context);
+    var object = string.split('.').reduce(function (accumulator, currentValue) {
+      currentValue = currentValue[0] === '/' ? new RegExp(currentValue.replace(new RegExp('/', 'g'), '')) : currentValue;
+
+      for (var _i = 0, _Object$entries = Object.entries(context); _i < _Object$entries.length; _i++) {
+        var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+            contextKey = _Object$entries$_i[0],
+            contextValue = _Object$entries$_i[1];
+
+        if (currentValue instanceof RegExp) {
+          if (currentValue.test(contextKey)) {
+            accumulator[contextKey] = contextValue;
+          }
+        } else {
+          if (currentValue === contextKey) {
+            accumulator[contextKey] = contextValue;
+          }
+        }
+      }
+
+      return accumulator;
+    }, {});
+    return object;
   },
   toggleEventsForTargetObjects: function toggleEventsForTargetObjects(toggleMethod, events, targetObjects, callbacks) {
-    for (var _i = 0, _Object$entries = Object.entries(events); _i < _Object$entries.length; _i++) {
-      var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
-          eventSettings = _Object$entries$_i[0],
-          eventCallback = _Object$entries$_i[1];
+    for (var _i2 = 0, _Object$entries2 = Object.entries(events); _i2 < _Object$entries2.length; _i2++) {
+      var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
+          eventSettings = _Object$entries2$_i[0],
+          eventCallback = _Object$entries2$_i[1];
 
       var eventData = eventSettings.split(' ');
-      var eventTargetName = eventData[0].replace('@', '');
-      var eventTarget = targetObjects[eventTargetName];
-      var eventMethodName = eventTarget instanceof HTMLElement ? toggleMethod === 'on' ? 'addEventListener' : 'removeEventListener' : toggleMethod === 'on' ? 'on' : 'off';
+      var eventTargetSettings = eventData[0];
       var eventName = eventData[1];
-      eventCallback = eventCallback.match('@') ? callbacks[eventCallback.replace('@', '')] : typeof eventCallback === 'string' ? MVC.Utils.getObjectFromDotNotationString(eventCallback, window) : eventCallback;
-      eventTarget[eventMethodName](eventName, eventCallback);
+      var eventTargets = void 0;
+
+      switch (eventTargetSettings[0] === '@') {
+        case true:
+          eventTargetSettings = eventTargetSettings.replace('@', '');
+          eventTargets = eventTargetSettings ? this.getObjectFromDotNotationString(eventTargetSettings, targetObjects) : {
+            0: targetObjects
+          };
+          break;
+
+        case false:
+          eventTargets = document.querySelectorAll(eventTargetSettings);
+          break;
+      }
+
+      for (var _i3 = 0, _Object$entries3 = Object.entries(eventTargets); _i3 < _Object$entries3.length; _i3++) {
+        var _Object$entries3$_i = _slicedToArray(_Object$entries3[_i3], 2),
+            eventTargetName = _Object$entries3$_i[0],
+            eventTarget = _Object$entries3$_i[1];
+
+        var eventTargetMethodName = toggleMethod === 'on' ? eventTarget instanceof HTMLElement ? 'addEventListener' : 'on' : eventTarget instanceof HTMLElement ? 'removeEventListener' : 'off';
+        var eventCallbacks = eventCallback.match('@') ? this.getObjectFromDotNotationString(eventCallback.replace('@', ''), callbacks) : window[eventCallback];
+
+        for (var _i4 = 0, _Object$values = Object.values(eventCallbacks); _i4 < _Object$values.length; _i4++) {
+          var _eventCallback = _Object$values[_i4];
+          eventTarget[eventTargetMethodName](eventName, _eventCallback);
+        }
+      }
     }
   },
   bindEventsToTargetObjects: function bindEventsToTargetObjects() {
@@ -46,10 +89,10 @@ MVC.Utils = {
         var properties = arguments[0];
         targetObject = arguments[1];
 
-        for (var _i2 = 0, _Object$entries2 = Object.entries(properties); _i2 < _Object$entries2.length; _i2++) {
-          var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
-              _propertyName = _Object$entries2$_i[0],
-              _propertyValue = _Object$entries2$_i[1];
+        for (var _i5 = 0, _Object$entries4 = Object.entries(properties); _i5 < _Object$entries4.length; _i5++) {
+          var _Object$entries4$_i = _slicedToArray(_Object$entries4[_i5], 2),
+              _propertyName = _Object$entries4$_i[0],
+              _propertyValue = _Object$entries4$_i[1];
 
           targetObject[_propertyName] = _propertyValue;
         }
@@ -68,6 +111,14 @@ MVC.Utils = {
   }
 };
 "use strict";
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
+
+function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
 
@@ -149,7 +200,8 @@ function () {
         try {
           for (var _iterator = eventCallbackGroup[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
             var eventCallback = _step.value;
-            eventCallback(eventData);
+            var additionalArguments = Object.values(arguments).splice(2);
+            eventCallback.apply(void 0, [eventData].concat(_toConsumableArray(additionalArguments)));
           }
         } catch (err) {
           _didIteratorError = true;
@@ -663,14 +715,18 @@ function (_MVC$Events) {
   }
 
   _createClass(_class, [{
+    key: "get",
+    value: function get() {
+      var property = arguments[0];
+      return this._data['_'.concat(property)];
+    }
+  }, {
     key: "set",
     value: function set() {
       this._history = this.parse();
 
       switch (arguments.length) {
         case 1:
-          console.log(arguments.length);
-
           for (var _i = 0, _Object$entries = Object.entries(arguments[0]); _i < _Object$entries.length; _i++) {
             var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
                 _key = _Object$entries$_i[0],
@@ -724,14 +780,18 @@ function (_MVC$Events) {
             var setEventName = 'set';
             context.emit(setValueEventName, {
               name: setValueEventName,
-              key: key,
-              value: value
-            });
+              data: {
+                key: key,
+                value: value
+              }
+            }, context);
             context.emit(setEventName, {
               name: setEventName,
-              key: key,
-              value: value
-            });
+              data: {
+                key: key,
+                value: value
+              }
+            }, context);
           }
         }));
       }
@@ -748,13 +808,17 @@ function (_MVC$Events) {
       delete this._data[key];
       this.emit(unsetValueEventName, {
         name: unsetValueEventName,
-        key: key,
-        value: unsetValue
+        data: {
+          key: key,
+          value: unsetValue
+        }
       });
       this.emit(unsetEventName, {
         name: unsetEventName,
-        key: key,
-        value: unsetValue
+        data: {
+          key: key,
+          value: unsetValue
+        }
       });
     }
   }, {
@@ -773,6 +837,8 @@ function (_MVC$Events) {
         this.settings = settings;
         if (this.settings.histiogram) this._histiogram = this.settings.histiogram;
         if (this.settings.data) this.set(this.settings.data);
+        if (this.settings.dataCallbacks) this._dataCallbacks = this.settings.dataCallbacks;
+        if (this.settings.dataEvents) this._dataEvents = this.settings.dataEvents;
       }
     }
   }, {
@@ -805,6 +871,20 @@ function (_MVC$Events) {
     get: function get() {
       this.data = this.data ? this.data : {};
       return this.data;
+    }
+  }, {
+    key: "_dataEvents",
+    set: function set(dataEvents) {
+      MVC.Utils.bindEventsToTargetObjects(dataEvents, this, this.dataCallbacks);
+    }
+  }, {
+    key: "_dataCallbacks",
+    get: function get() {
+      this.dataCallbacks = this.dataCallbacks ? this.dataCallbacks : {};
+      return this.dataCallbacks;
+    },
+    set: function set(dataCallbacks) {
+      this.dataCallbacks = MVC.Utils.addPropertiesToTargetObject(dataCallbacks, this._dataCallbacks);
     }
   }]);
 
@@ -1264,3 +1344,4 @@ function (_MVC$Events) {
 
   return _class;
 }(MVC.Events);
+//# sourceMappingURL=http://localhost:3000/.maps/browser/mvc-framework.js.map

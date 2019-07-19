@@ -1,28 +1,75 @@
 MVC.Utils = {
-  getObjectFromDotNotationString: function(string, context) {
-    return string
+  getObjectFromDotNotationString: function(
+    string,
+    context
+  ) {
+    let object = string
       .split('.')
-      .reduce((accumulator, currentValue) => accumulator[currentValue], context)
+      .reduce(
+        (accumulator, currentValue) => {
+          currentValue = (currentValue[0] === '/')
+            ? new RegExp(currentValue.replace(new RegExp('/', 'g'), ''))
+            : currentValue
+          for(let [contextKey, contextValue] of Object.entries(context)) {
+            if(currentValue instanceof RegExp) {
+              if(currentValue.test(contextKey)) {
+                accumulator[contextKey] = contextValue
+              }
+            } else {
+              if(currentValue === contextKey) {
+                accumulator[contextKey] = contextValue
+              }
+            }
+          }
+          return accumulator
+        }, {})
+    return object
   },
-  toggleEventsForTargetObjects: function(toggleMethod, events, targetObjects, callbacks) {
+  toggleEventsForTargetObjects(
+    toggleMethod,
+    events,
+    targetObjects,
+    callbacks
+  ) {
     for(let [eventSettings, eventCallback] of Object.entries(events)) {
       let eventData = eventSettings.split(' ')
-      let eventTargetName = eventData[0].replace('@', '')
-      let eventTarget = targetObjects[eventTargetName]
-      let eventMethodName = (eventTarget instanceof HTMLElement)
-        ? (toggleMethod === 'on')
-          ? 'addEventListener'
-          : 'removeEventListener'
-        : (toggleMethod === 'on')
-          ? 'on'
-          : 'off'
+      let eventTargetSettings = eventData[0]
       let eventName = eventData[1]
-      eventCallback = (eventCallback.match('@'))
-        ? callbacks[eventCallback.replace('@', '')]
-        : (typeof eventCallback === 'string')
-          ? MVC.Utils.getObjectFromDotNotationString(eventCallback, window)
-          : eventCallback
-      eventTarget[eventMethodName](eventName, eventCallback)
+      let eventTargets
+      switch(eventTargetSettings[0] === '@') {
+        case true:
+          eventTargetSettings = eventTargetSettings.replace('@', '')
+          eventTargets = (eventTargetSettings)
+            ? this.getObjectFromDotNotationString(
+              eventTargetSettings,
+              targetObjects
+            )
+            : {
+              0: targetObjects,
+            }
+          break
+        case false:
+          eventTargets = document.querySelectorAll(eventTargetSettings)
+          break
+      }
+      for(let [eventTargetName, eventTarget] of Object.entries(eventTargets)) {
+        let eventTargetMethodName = (toggleMethod === 'on')
+          ? (eventTarget instanceof HTMLElement)
+            ? 'addEventListener'
+            : 'on'
+          : (eventTarget instanceof HTMLElement)
+            ? 'removeEventListener'
+            : 'off'
+        let eventCallbacks = (eventCallback.match('@'))
+          ? this.getObjectFromDotNotationString(
+            eventCallback.replace('@', ''),
+            callbacks
+          )
+          : window[eventCallback]
+        for(let eventCallback of Object.values(eventCallbacks)) {
+          eventTarget[eventTargetMethodName](eventName, eventCallback)
+        }
+      }
     }
   },
   bindEventsToTargetObjects: function() {
