@@ -1,8 +1,14 @@
 MVC.Controller = class extends MVC.Events {
-  constructor(settings) {
+  constructor(settings, options, configuration) {
     super()
+    if(configuration) this._configuration = configuration
+    if(options) this._options = options
     if(settings) this._settings = settings
   }
+  get _configuration() { return this.configuration }
+  set _configuration(configuration) { this.configuration = configuration }
+  get _options() { return this.options }
+  set _options(options) { this.options = options }
   get _settings() {
     this.settings = (this.settings)
       ? this.settings
@@ -127,7 +133,7 @@ MVC.Controller = class extends MVC.Events {
     MVC.Utils.bindEventsToTargetObjects(modelEvents, this._models, this._modelCallbacks)
   }
   set _viewEvents(viewEvents) {
-    MVC.Utils.bindEventsToTargetObjects(viewEvents, this._views)
+    MVC.Utils.bindEventsToTargetObjects(viewEvents, this._views, this._viewCallbacks)
   }
   set _controllerEvents(controllerEvents) {
     MVC.Utils.bindEventsToTargetObjects(controllerEvents, this._controllers, this._controllerCallbacks)

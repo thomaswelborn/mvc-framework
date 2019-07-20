@@ -1,8 +1,14 @@
 MVC.View = class extends MVC.Events {
-  constructor(settings) {
+  constructor(settings, options, configuration) {
     super()
-    this._settings = settings
+    if(configuration) this._configuration = configuration
+    if(options) this._options = options
+    if(settings) this._settings = settings
   }
+  get _options() { return this.options }
+  set _options(options) { this.options = options }
+  get _configuration() { return this.configuration }
+  set _configuration(configuration) { this.configuration = configuration }
   get _settings() {
     this.settings = (this.settings)
       ? this.settings
@@ -21,7 +27,7 @@ MVC.View = class extends MVC.Events {
       if(this.settings.uiEmitters) this._uiEmitters = this.settings.uiEmitters
       if(this.settings.uiEvents) this._uiEvents = this.settings.uiEvents
       if(this.settings.observers) this._observers = this.settings.observers
-      if(this.settings.template) this._template = this.settings.template
+      if(this.settings.templates) this._templates = this.settings.templates
       if(this.settings.insert) this._insert = this.settings.insert
     } else {
       this._elementName = 'div'
@@ -99,7 +105,6 @@ MVC.View = class extends MVC.Events {
             return accumulator
           }, {})
         : {}
-      // if(observerOptions)  = observerOptions
       let observer = new MVC.Observers.Observer({
         context: this,
         target: observerTarget,
@@ -114,6 +119,17 @@ MVC.View = class extends MVC.Events {
     let insertMethod = insert.method
     let parentElement = document.querySelector(insert.element)
     parentElement.insertAdjacentElement(insertMethod, this.element)
+  }
+  get _templates() {
+    this.templates = (this.templates)
+      ? this.templates
+      : {}
+    return this.templates
+  }
+  set _templates(templates) {
+    for(let [templateName, templateSettings] of Object.entries(templates)) {
+      this._templates[templateName] = templateSettings
+    }
   }
   remove() { this.element.parentElement.removeChild(this.element) }
 }

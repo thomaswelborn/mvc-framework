@@ -254,15 +254,15 @@ MVC.Service =
 function (_MVC$Events) {
   _inherits(_class, _MVC$Events);
 
-  function _class(type, url, settings) {
+  function _class(settings, options, configuration) {
     var _this;
 
     _classCallCheck(this, _class);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).call(this));
-    _this._settings = settings || {};
-    _this._type = type;
-    _this._url = url;
+    if (configuration) _this._configuration = configuration;
+    if (options) _this._options = options;
+    if (settings) _this._settings = settings;
     return _this;
   }
 
@@ -293,15 +293,33 @@ function (_MVC$Events) {
       };
     }
   }, {
+    key: "_options",
+    get: function get() {
+      return this.options;
+    },
+    set: function set(options) {
+      this.options = options;
+    }
+  }, {
+    key: "_configuration",
+    get: function get() {
+      return this.configuration;
+    },
+    set: function set(configuration) {
+      this.configuration = configuration;
+    }
+  }, {
     key: "_settings",
     get: function get() {
       return this.settings || {};
     },
     set: function set(settings) {
-      this.settings = settings || {};
-      this._data = this.settings.data || null;
-      this._headers = this._settings.headers || [this._defaults.contentType];
-      this._responseType = this._settings.responseType;
+      this.settings = settings;
+      if (this.settings.type) this._type = this.settings.type;
+      if (this.settings.url) this._url = this.settings.url;
+      if (this.settings.data) this._data = this.settings.data || null;
+      if (this.settings.headers) this._headers = this.settings.headers || [this._defaults.contentType];
+      if (this.settings.responseType) this._responseType = this.settings.responseType;
     }
   }, {
     key: "_responseTypes",
@@ -704,13 +722,15 @@ MVC.Model =
 function (_MVC$Events) {
   _inherits(_class, _MVC$Events);
 
-  function _class(settings) {
+  function _class(settings, options, configuration) {
     var _this;
 
     _classCallCheck(this, _class);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).call(this));
-    _this._settings = settings;
+    if (configuration) _this._configuration = configuration;
+    if (options) _this._options = options;
+    if (settings) _this._settings = settings;
     return _this;
   }
 
@@ -742,6 +762,13 @@ function (_MVC$Events) {
           var value = arguments[1];
           this.setDataProperty(key, value);
           break;
+
+        case 3:
+          var key = arguments[0];
+          var value = arguments[1];
+          var silent = arguments[2];
+          this.setDataProperty(key, value, silent);
+          break;
       }
     }
   }, {
@@ -766,7 +793,7 @@ function (_MVC$Events) {
     }
   }, {
     key: "setDataProperty",
-    value: function setDataProperty(key, value) {
+    value: function setDataProperty(key, value, silent) {
       if (!this._data['_'.concat(key)]) {
         var context = this;
         Object.defineProperties(this._data, _defineProperty({}, '_'.concat(key), {
@@ -778,20 +805,23 @@ function (_MVC$Events) {
             this[key] = value;
             var setValueEventName = ['set', ':', key].join('');
             var setEventName = 'set';
-            context.emit(setValueEventName, {
-              name: setValueEventName,
-              data: {
-                key: key,
-                value: value
-              }
-            }, context);
-            context.emit(setEventName, {
-              name: setEventName,
-              data: {
-                key: key,
-                value: value
-              }
-            }, context);
+
+            if (!silent) {
+              context.emit(setValueEventName, {
+                name: setValueEventName,
+                data: {
+                  key: key,
+                  value: value
+                }
+              }, context);
+              context.emit(setEventName, {
+                name: setEventName,
+                data: {
+                  key: key,
+                  value: value
+                }
+              }, context);
+            }
           }
         }));
       }
@@ -828,6 +858,31 @@ function (_MVC$Events) {
       return JSON.parse(JSON.stringify(Object.assign({}, data)));
     }
   }, {
+    key: "_defaults",
+    get: function get() {
+      return this._defaults;
+    },
+    set: function set(defaults) {
+      this.defaults = defaults;
+      this.set(this.defaults);
+    }
+  }, {
+    key: "_configuration",
+    get: function get() {
+      return this.configuration;
+    },
+    set: function set(configuration) {
+      this.configuration = configuration;
+    }
+  }, {
+    key: "_options",
+    get: function get() {
+      return this.options;
+    },
+    set: function set(options) {
+      this.options = options;
+    }
+  }, {
     key: "_settings",
     get: function get() {
       return this.settings || {};
@@ -839,6 +894,7 @@ function (_MVC$Events) {
         if (this.settings.data) this.set(this.settings.data);
         if (this.settings.dataCallbacks) this._dataCallbacks = this.settings.dataCallbacks;
         if (this.settings.dataEvents) this._dataEvents = this.settings.dataEvents;
+        if (this.settings.defaults) this._defaults = this.settings.defaults;
       }
     }
   }, {
@@ -923,13 +979,15 @@ MVC.View =
 function (_MVC$Events) {
   _inherits(_class, _MVC$Events);
 
-  function _class(settings) {
+  function _class(settings, options, configuration) {
     var _this;
 
     _classCallCheck(this, _class);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).call(this));
-    _this._settings = settings;
+    if (configuration) _this._configuration = configuration;
+    if (options) _this._options = options;
+    if (settings) _this._settings = settings;
     return _this;
   }
 
@@ -937,6 +995,22 @@ function (_MVC$Events) {
     key: "remove",
     value: function remove() {
       this.element.parentElement.removeChild(this.element);
+    }
+  }, {
+    key: "_options",
+    get: function get() {
+      return this.options;
+    },
+    set: function set(options) {
+      this.options = options;
+    }
+  }, {
+    key: "_configuration",
+    get: function get() {
+      return this.configuration;
+    },
+    set: function set(configuration) {
+      this.configuration = configuration;
     }
   }, {
     key: "_settings",
@@ -956,7 +1030,7 @@ function (_MVC$Events) {
         if (this.settings.uiEmitters) this._uiEmitters = this.settings.uiEmitters;
         if (this.settings.uiEvents) this._uiEvents = this.settings.uiEvents;
         if (this.settings.observers) this._observers = this.settings.observers;
-        if (this.settings.template) this._template = this.settings.template;
+        if (this.settings.templates) this._templates = this.settings.templates;
         if (this.settings.insert) this._insert = this.settings.insert;
       } else {
         this._elementName = 'div';
@@ -1070,8 +1144,7 @@ function (_MVC$Events) {
         var observerOptions = observerConfigurationData[1] ? observerConfigurationData[1].split(',').reduce(function (accumulator, currentValue) {
           accumulator[currentValue] = true;
           return accumulator;
-        }, {}) : {}; // if(observerOptions)  = observerOptions
-
+        }, {}) : {};
         var observer = new MVC.Observers.Observer({
           context: this,
           target: observerTarget,
@@ -1088,6 +1161,21 @@ function (_MVC$Events) {
       var insertMethod = insert.method;
       var parentElement = document.querySelector(insert.element);
       parentElement.insertAdjacentElement(insertMethod, this.element);
+    }
+  }, {
+    key: "_templates",
+    get: function get() {
+      this.templates = this.templates ? this.templates : {};
+      return this.templates;
+    },
+    set: function set(templates) {
+      for (var _i4 = 0, _Object$entries4 = Object.entries(templates); _i4 < _Object$entries4.length; _i4++) {
+        var _Object$entries4$_i = _slicedToArray(_Object$entries4[_i4], 2),
+            templateName = _Object$entries4$_i[0],
+            templateSettings = _Object$entries4$_i[1];
+
+        this._templates[templateName] = templateSettings;
+      }
     }
   }]);
 
@@ -1118,17 +1206,35 @@ MVC.Controller =
 function (_MVC$Events) {
   _inherits(_class, _MVC$Events);
 
-  function _class(settings) {
+  function _class(settings, options, configuration) {
     var _this;
 
     _classCallCheck(this, _class);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).call(this));
+    if (configuration) _this._configuration = configuration;
+    if (options) _this._options = options;
     if (settings) _this._settings = settings;
     return _this;
   }
 
   _createClass(_class, [{
+    key: "_configuration",
+    get: function get() {
+      return this.configuration;
+    },
+    set: function set(configuration) {
+      this.configuration = configuration;
+    }
+  }, {
+    key: "_options",
+    get: function get() {
+      return this.options;
+    },
+    set: function set(options) {
+      this.options = options;
+    }
+  }, {
     key: "_settings",
     get: function get() {
       this.settings = this.settings ? this.settings : {};
@@ -1238,7 +1344,7 @@ function (_MVC$Events) {
   }, {
     key: "_viewEvents",
     set: function set(viewEvents) {
-      MVC.Utils.bindEventsToTargetObjects(viewEvents, this._views);
+      MVC.Utils.bindEventsToTargetObjects(viewEvents, this._views, this._viewCallbacks);
     }
   }, {
     key: "_controllerEvents",

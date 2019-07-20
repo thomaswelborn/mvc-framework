@@ -1,8 +1,19 @@
 MVC.Model = class extends MVC.Events {
-  constructor(settings) {
+  constructor(settings, options, configuration) {
     super()
-    this._settings = settings
+    if(configuration) this._configuration = configuration
+    if(options) this._options = options
+    if(settings) this._settings = settings
   }
+  get _defaults() { return this._defaults }
+  set _defaults(defaults) {
+    this.defaults = defaults
+    this.set(this.defaults)
+  }
+  get _configuration() { return this.configuration }
+  set _configuration(configuration) { this.configuration = configuration }
+  get _options() { return this.options }
+  set _options(options) { this.options = options }
   get _settings() { return this.settings || {} }
   set _settings(settings) {
     if(settings) {
@@ -11,6 +22,7 @@ MVC.Model = class extends MVC.Events {
       if(this.settings.data) this.set(this.settings.data)
       if(this.settings.dataCallbacks) this._dataCallbacks = this.settings.dataCallbacks
       if(this.settings.dataEvents) this._dataEvents = this.settings.dataEvents
+      if(this.settings.defaults) this._defaults = this.settings.defaults
     }
   }
   get _histiogram() { return this.histiogram || {
@@ -71,10 +83,16 @@ MVC.Model = class extends MVC.Events {
         }
         break
       case 2:
-        let key = arguments[0]
-        let value = arguments[1]
+        var key = arguments[0]
+        var value = arguments[1]
         this.setDataProperty(key, value)
-        break;
+        break
+      case 3:
+        var key = arguments[0]
+        var value = arguments[1]
+        var silent = arguments[2]
+        this.setDataProperty(key, value, silent)
+        break
     }
   }
   unset() {
@@ -91,7 +109,7 @@ MVC.Model = class extends MVC.Events {
         break
     }
   }
-  setDataProperty(key, value) {
+  setDataProperty(key, value, silent) {
     if(!this._data['_'.concat(key)]) {
       let context = this
       Object.defineProperties(
@@ -104,28 +122,30 @@ MVC.Model = class extends MVC.Events {
               this[key] = value
               let setValueEventName = ['set', ':', key].join('')
               let setEventName = 'set'
-              context.emit(
-                setValueEventName,
-                {
-                  name: setValueEventName,
-                  data: {
-                    key: key,
-                    value: value,
+              if(!silent) {
+                context.emit(
+                  setValueEventName,
+                  {
+                    name: setValueEventName,
+                    data: {
+                      key: key,
+                      value: value,
+                    },
                   },
-                },
-                context
-              )
-              context.emit(
-                setEventName,
-                {
-                  name: setEventName,
-                  data: {
-                    key: key,
-                    value: value,
+                  context
+                )
+                context.emit(
+                  setEventName,
+                  {
+                    name: setEventName,
+                    data: {
+                      key: key,
+                      value: value,
+                    },
                   },
-                },
-                context
-              )
+                  context
+                )
+              }
             }
           }
         }

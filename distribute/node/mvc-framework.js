@@ -152,22 +152,28 @@ MVC.Events = class {
 }
 
 MVC.Service = class extends MVC.Events {
-  constructor(type, url, settings) {
+  constructor(settings, options, configuration) {
     super()
-    this._settings = settings || {}
-    this._type = type
-    this._url = url
+    if(configuration) this._configuration = configuration
+    if(options) this._options = options
+    if(settings) this._settings = settings
   }
   get _defaults() { return this.defaults || {
     contentType: {'Content-Type': 'application/json'},
     responseType: 'json',
   } }
+  get _options() { return this.options }
+  set _options(options) { this.options = options }
+  get _configuration() { return this.configuration }
+  set _configuration(configuration) { this.configuration = configuration }
   get _settings() { return this.settings || {} }
   set _settings(settings) {
-    this.settings = settings || {}
-    this._data = this.settings.data || null
-    this._headers = this._settings.headers || [this._defaults.contentType]
-    this._responseType = this._settings.responseType
+    this.settings = settings
+    if(this.settings.type) this._type = this.settings.type
+    if(this.settings.url) this._url = this.settings.url
+    if(this.settings.data) this._data = this.settings.data || null
+    if(this.settings.headers) this._headers = this.settings.headers || [this._defaults.contentType]
+    if(this.settings.responseType) this._responseType = this.settings.responseType
   }
   get _responseTypes() { return ['', 'arraybuffer', 'blob', 'document', 'json', 'text'] }
   get _responseType() { return this.responseType }
@@ -348,10 +354,21 @@ MVC.Observers.Observer = class {
 }
 
 MVC.Model = class extends MVC.Events {
-  constructor(settings) {
+  constructor(settings, options, configuration) {
     super()
-    this._settings = settings
+    if(configuration) this._configuration = configuration
+    if(options) this._options = options
+    if(settings) this._settings = settings
   }
+  get _defaults() { return this._defaults }
+  set _defaults(defaults) {
+    this.defaults = defaults
+    this.set(this.defaults)
+  }
+  get _configuration() { return this.configuration }
+  set _configuration(configuration) { this.configuration = configuration }
+  get _options() { return this.options }
+  set _options(options) { this.options = options }
   get _settings() { return this.settings || {} }
   set _settings(settings) {
     if(settings) {
@@ -360,6 +377,7 @@ MVC.Model = class extends MVC.Events {
       if(this.settings.data) this.set(this.settings.data)
       if(this.settings.dataCallbacks) this._dataCallbacks = this.settings.dataCallbacks
       if(this.settings.dataEvents) this._dataEvents = this.settings.dataEvents
+      if(this.settings.defaults) this._defaults = this.settings.defaults
     }
   }
   get _histiogram() { return this.histiogram || {
@@ -420,10 +438,16 @@ MVC.Model = class extends MVC.Events {
         }
         break
       case 2:
-        let key = arguments[0]
-        let value = arguments[1]
+        var key = arguments[0]
+        var value = arguments[1]
         this.setDataProperty(key, value)
-        break;
+        break
+      case 3:
+        var key = arguments[0]
+        var value = arguments[1]
+        var silent = arguments[2]
+        this.setDataProperty(key, value, silent)
+        break
     }
   }
   unset() {
@@ -440,7 +464,7 @@ MVC.Model = class extends MVC.Events {
         break
     }
   }
-  setDataProperty(key, value) {
+  setDataProperty(key, value, silent) {
     if(!this._data['_'.concat(key)]) {
       let context = this
       Object.defineProperties(
@@ -453,28 +477,30 @@ MVC.Model = class extends MVC.Events {
               this[key] = value
               let setValueEventName = ['set', ':', key].join('')
               let setEventName = 'set'
-              context.emit(
-                setValueEventName,
-                {
-                  name: setValueEventName,
-                  data: {
-                    key: key,
-                    value: value,
+              if(!silent) {
+                context.emit(
+                  setValueEventName,
+                  {
+                    name: setValueEventName,
+                    data: {
+                      key: key,
+                      value: value,
+                    },
                   },
-                },
-                context
-              )
-              context.emit(
-                setEventName,
-                {
-                  name: setEventName,
-                  data: {
-                    key: key,
-                    value: value,
+                  context
+                )
+                context.emit(
+                  setEventName,
+                  {
+                    name: setEventName,
+                    data: {
+                      key: key,
+                      value: value,
+                    },
                   },
-                },
-                context
-              )
+                  context
+                )
+              }
             }
           }
         }
@@ -515,10 +541,16 @@ MVC.Model = class extends MVC.Events {
 }
 
 MVC.View = class extends MVC.Events {
-  constructor(settings) {
+  constructor(settings, options, configuration) {
     super()
-    this._settings = settings
+    if(configuration) this._configuration = configuration
+    if(options) this._options = options
+    if(settings) this._settings = settings
   }
+  get _options() { return this.options }
+  set _options(options) { this.options = options }
+  get _configuration() { return this.configuration }
+  set _configuration(configuration) { this.configuration = configuration }
   get _settings() {
     this.settings = (this.settings)
       ? this.settings
@@ -537,7 +569,7 @@ MVC.View = class extends MVC.Events {
       if(this.settings.uiEmitters) this._uiEmitters = this.settings.uiEmitters
       if(this.settings.uiEvents) this._uiEvents = this.settings.uiEvents
       if(this.settings.observers) this._observers = this.settings.observers
-      if(this.settings.template) this._template = this.settings.template
+      if(this.settings.templates) this._templates = this.settings.templates
       if(this.settings.insert) this._insert = this.settings.insert
     } else {
       this._elementName = 'div'
@@ -615,7 +647,6 @@ MVC.View = class extends MVC.Events {
             return accumulator
           }, {})
         : {}
-      // if(observerOptions)  = observerOptions
       let observer = new MVC.Observers.Observer({
         context: this,
         target: observerTarget,
@@ -631,14 +662,31 @@ MVC.View = class extends MVC.Events {
     let parentElement = document.querySelector(insert.element)
     parentElement.insertAdjacentElement(insertMethod, this.element)
   }
+  get _templates() {
+    this.templates = (this.templates)
+      ? this.templates
+      : {}
+    return this.templates
+  }
+  set _templates(templates) {
+    for(let [templateName, templateSettings] of Object.entries(templates)) {
+      this._templates[templateName] = templateSettings
+    }
+  }
   remove() { this.element.parentElement.removeChild(this.element) }
 }
 
 MVC.Controller = class extends MVC.Events {
-  constructor(settings) {
+  constructor(settings, options, configuration) {
     super()
+    if(configuration) this._configuration = configuration
+    if(options) this._options = options
     if(settings) this._settings = settings
   }
+  get _configuration() { return this.configuration }
+  set _configuration(configuration) { this.configuration = configuration }
+  get _options() { return this.options }
+  set _options(options) { this.options = options }
   get _settings() {
     this.settings = (this.settings)
       ? this.settings
@@ -763,7 +811,7 @@ MVC.Controller = class extends MVC.Events {
     MVC.Utils.bindEventsToTargetObjects(modelEvents, this._models, this._modelCallbacks)
   }
   set _viewEvents(viewEvents) {
-    MVC.Utils.bindEventsToTargetObjects(viewEvents, this._views)
+    MVC.Utils.bindEventsToTargetObjects(viewEvents, this._views, this._viewCallbacks)
   }
   set _controllerEvents(controllerEvents) {
     MVC.Utils.bindEventsToTargetObjects(controllerEvents, this._controllers, this._controllerCallbacks)

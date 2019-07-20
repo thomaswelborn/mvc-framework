@@ -1,20 +1,26 @@
 MVC.Service = class extends MVC.Events {
-  constructor(type, url, settings) {
+  constructor(settings, options, configuration) {
     super()
-    this._settings = settings || {}
-    this._type = type
-    this._url = url
+    if(configuration) this._configuration = configuration
+    if(options) this._options = options
+    if(settings) this._settings = settings
   }
   get _defaults() { return this.defaults || {
     contentType: {'Content-Type': 'application/json'},
     responseType: 'json',
   } }
+  get _options() { return this.options }
+  set _options(options) { this.options = options }
+  get _configuration() { return this.configuration }
+  set _configuration(configuration) { this.configuration = configuration }
   get _settings() { return this.settings || {} }
   set _settings(settings) {
-    this.settings = settings || {}
-    this._data = this.settings.data || null
-    this._headers = this._settings.headers || [this._defaults.contentType]
-    this._responseType = this._settings.responseType
+    this.settings = settings
+    if(this.settings.type) this._type = this.settings.type
+    if(this.settings.url) this._url = this.settings.url
+    if(this.settings.data) this._data = this.settings.data || null
+    if(this.settings.headers) this._headers = this.settings.headers || [this._defaults.contentType]
+    if(this.settings.responseType) this._responseType = this.settings.responseType
   }
   get _responseTypes() { return ['', 'arraybuffer', 'blob', 'document', 'json', 'text'] }
   get _responseType() { return this.responseType }
