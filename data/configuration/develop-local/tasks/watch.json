@@ -1,4 +1,18 @@
 {
+  "reload": {
+    "globs": [
+      "utils/scripts/**/*.js",
+      "gulpfile.js/**/*.js",
+      "data/**/*.{js,json}"
+    ],
+    "options": {},
+    "task": {
+      "type": "series",
+      "tasks": [
+        "spawn"
+      ]
+    }
+  },
   "scripts": {
     "globs": [
       "source/scripts/**/*.js"

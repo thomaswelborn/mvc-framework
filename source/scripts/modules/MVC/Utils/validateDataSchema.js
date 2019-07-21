@@ -12,6 +12,7 @@ MVC.Utils.validateDataSchema = function validate(data, schema) {
             MVC.Utils.typeOf(array)
           )
         ) {
+          console.log(schema.name)
           for(let [arrayKey, arrayValue] of Object.entries(data)) {
             array.push(
               this.validate(arrayValue)

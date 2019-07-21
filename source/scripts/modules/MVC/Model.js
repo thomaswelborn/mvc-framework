@@ -8,6 +8,8 @@ MVC.Model = class extends MVC.Base {
     this.defaults = defaults
     this.set(this.defaults)
   }
+  get _schema() { return this._schema }
+  set _schema(schema) { this.schema = schema }
   get _histiogram() { return this.histiogram || {
     length: 1
   } }
@@ -59,6 +61,7 @@ MVC.Model = class extends MVC.Base {
       if(this._settings.data) this.set(this._settings.data)
       if(this._settings.dataCallbacks) this._dataCallbacks = this._settings.dataCallbacks
       if(this._settings.dataEvents) this._dataEvents = this._settings.dataEvents
+      if(this._settings.schema) this._schema = this._settings.schema
       if(this._settings.defaults) this._defaults = this._settings.defaults
     }
   }

@@ -1004,6 +1004,7 @@ function (_MVC$Base) {
         if (this._settings.data) this.set(this._settings.data);
         if (this._settings.dataCallbacks) this._dataCallbacks = this._settings.dataCallbacks;
         if (this._settings.dataEvents) this._dataEvents = this._settings.dataEvents;
+        if (this._settings.schema) this._schema = this._settings.schema;
         if (this._settings.defaults) this._defaults = this._settings.defaults;
       }
     }
@@ -1138,6 +1139,14 @@ function (_MVC$Base) {
     set: function set(defaults) {
       this.defaults = defaults;
       this.set(this.defaults);
+    }
+  }, {
+    key: "_schema",
+    get: function get() {
+      return this._schema;
+    },
+    set: function set(schema) {
+      this.schema = schema;
     }
   }, {
     key: "_histiogram",

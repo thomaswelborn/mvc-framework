@@ -1,5 +1,8 @@
 module.exports = function(rootProcess, data) {
   let BrowserSync = function(callback) {
+    $.process.on('reload', () => {
+      $.lib.browserSync.cleanup()
+    })
     let settings = Object.assign(
       {},
       data,

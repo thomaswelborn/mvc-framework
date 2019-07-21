@@ -1,5 +1,5 @@
 global.$ = {
-  process: null,
+  process: process,
   argv: require('yargs').argv,
   libraries: {
     gulp: require('gulp'),
