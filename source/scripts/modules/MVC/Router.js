@@ -1,11 +1,17 @@
-MVC.Router = class extends MVC.Events {
-  constructor(settings) {
-    super()
-    Object.assign(this, settings, { settings: settings })
+MVC.Router = class extends MVC.Base {
+  constructor() {
+    super(...arguments)
+    this.addSettings()
     this.setRoutes(this.routes, this.controllers)
     this.setEvents()
     this.start()
     if(typeof this.initialize === 'function') this.initialize()
+  }
+  addSettings() {
+    if(this._settings) {
+      if(this._settings.routes) this.routes = this._settings.routes
+      if(this._settings.controllers) this.controllers = this._settings.controllers
+    }
   }
   start() {
     var location = this.getRoute()

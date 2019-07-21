@@ -1,37 +1,7 @@
-MVC.View = class extends MVC.Events {
-  constructor(settings, options, configuration) {
-    super()
-    if(configuration) this._configuration = configuration
-    if(options) this._options = options
-    if(settings) this._settings = settings
-  }
-  get _options() { return this.options }
-  set _options(options) { this.options = options }
-  get _configuration() { return this.configuration }
-  set _configuration(configuration) { this.configuration = configuration }
-  get _settings() {
-    this.settings = (this.settings)
-      ? this.settings
-      : {}
-    return this.settings
-  }
-  set _settings(settings) {
-    if(settings) {
-      this.settings = settings
-      if(this.settings.elementName) this._elementName = this.settings.elementName
-      if(this.settings.element) this._element = this.settings.element
-      if(this.settings.attributes) this._attributes = this.settings.attributes
-      this._ui = this.settings.ui || {}
-      if(this.settings.uiCallbacks) this._uiCallbacks = this.settings.uiCallbacks
-      if(this.settings.observerCallbacks) this._observerCallbacks = this.settings.observerCallbacks
-      if(this.settings.uiEmitters) this._uiEmitters = this.settings.uiEmitters
-      if(this.settings.uiEvents) this._uiEvents = this.settings.uiEvents
-      if(this.settings.observers) this._observers = this.settings.observers
-      if(this.settings.templates) this._templates = this.settings.templates
-      if(this.settings.insert) this._insert = this.settings.insert
-    } else {
-      this._elementName = 'div'
-    }
+MVC.View = class extends MVC.Base {
+  constructor() {
+    super(...arguments)
+    this.addSettings()
   }
   get _elementName() { return this._element.tagName }
   set _elementName(elementName) {
@@ -105,7 +75,7 @@ MVC.View = class extends MVC.Events {
             return accumulator
           }, {})
         : {}
-      let observer = new MVC.Observers.Observer({
+      let observer = new MVC.Observer({
         context: this,
         target: observerTarget,
         options: observerOptions,
@@ -129,6 +99,23 @@ MVC.View = class extends MVC.Events {
   set _templates(templates) {
     for(let [templateName, templateSettings] of Object.entries(templates)) {
       this._templates[templateName] = templateSettings
+    }
+  }
+  addSettings() {
+    if(Object.keys(this._settings).length) {
+      if(this._settings.elementName) this._elementName = this._settings.elementName
+      if(this._settings.element) this._element = this._settings.element
+      if(this._settings.attributes) this._attributes = this._settings.attributes
+      this._ui = this._settings.ui || {}
+      if(this._settings.uiCallbacks) this._uiCallbacks = this._settings.uiCallbacks
+      if(this._settings.observerCallbacks) this._observerCallbacks = this._settings.observerCallbacks
+      if(this._settings.uiEmitters) this._uiEmitters = this._settings.uiEmitters
+      if(this._settings.uiEvents) this._uiEvents = this._settings.uiEvents
+      if(this._settings.observers) this._observers = this._settings.observers
+      if(this._settings.templates) this._templates = this._settings.templates
+      if(this._settings.insert) this._insert = this._settings.insert
+    } else {
+      this._elementName = 'div'
     }
   }
   remove() { this.element.parentElement.removeChild(this.element) }

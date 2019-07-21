@@ -1,34 +1,7 @@
-MVC.Controller = class extends MVC.Events {
-  constructor(settings, options, configuration) {
-    super()
-    if(configuration) this._configuration = configuration
-    if(options) this._options = options
-    if(settings) this._settings = settings
-  }
-  get _configuration() { return this.configuration }
-  set _configuration(configuration) { this.configuration = configuration }
-  get _options() { return this.options }
-  set _options(options) { this.options = options }
-  get _settings() {
-    this.settings = (this.settings)
-      ? this.settings
-      : {}
-    return this.settings
-  }
-  set _settings(settings) {
-    this.settings = settings
-    if(this._settings.emitters) this._emitters = this._settings.emitters
-    if(this._settings.modelCallbacks) this._modelCallbacks = this._settings.modelCallbacks
-    if(this._settings.viewCallbacks) this._viewCallbacks = this._settings.viewCallbacks
-    if(this._settings.controllerCallbacks) this._controllerCallbacks = this._settings.controllerCallbacks
-    if(this._settings.routerCallbacks) this._routerCallbacks = this._settings.routerCallbacks
-    if(this._settings.models) this._models = this._settings.models
-    if(this._settings.views) this._views = this._settings.views
-    if(this._settings.controllers) this._controllers = this._settings.controllers
-    if(this._settings.routers) this._routers = this._settings.routers
-    if(this._settings.modelEvents) this._modelEvents = this._settings.modelEvents
-    if(this._settings.viewEvents) this._viewEvents = this._settings.viewEvents
-    if(this._settings.controllerEvents) this._controllerEvents = this._settings.controllerEvents
+MVC.Controller = class extends MVC.Base {
+  constructor() {
+    super(...arguments)
+    this.addSettings()
   }
   get _emitters() {
     this.emitters = (this.emitters)
@@ -137,5 +110,21 @@ MVC.Controller = class extends MVC.Events {
   }
   set _controllerEvents(controllerEvents) {
     MVC.Utils.bindEventsToTargetObjects(controllerEvents, this._controllers, this._controllerCallbacks)
+  }
+  addSettings() {
+    if(Object.keys(this._settings).length) {
+      if(this.settings.emitters) this._emitters = this.settings.emitters
+      if(this.settings.modelCallbacks) this._modelCallbacks = this.settings.modelCallbacks
+      if(this.settings.viewCallbacks) this._viewCallbacks = this.settings.viewCallbacks
+      if(this.settings.controllerCallbacks) this._controllerCallbacks = this.settings.controllerCallbacks
+      if(this.settings.routerCallbacks) this._routerCallbacks = this.settings.routerCallbacks
+      if(this.settings.models) this._models = this.settings.models
+      if(this.settings.views) this._views = this.settings.views
+      if(this.settings.controllers) this._controllers = this.settings.controllers
+      if(this.settings.routers) this._routers = this.settings.routers
+      if(this.settings.modelEvents) this._modelEvents = this.settings.modelEvents
+      if(this.settings.viewEvents) this._viewEvents = this.settings.viewEvents
+      if(this.settings.controllerEvents) this._controllerEvents = this.settings.controllerEvents
+    }
   }
 }

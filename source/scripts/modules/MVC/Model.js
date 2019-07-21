@@ -1,29 +1,12 @@
-MVC.Model = class extends MVC.Events {
-  constructor(settings, options, configuration) {
-    super()
-    if(configuration) this._configuration = configuration
-    if(options) this._options = options
-    if(settings) this._settings = settings
+MVC.Model = class extends MVC.Base {
+  constructor() {
+    super(...arguments)
+    this.addSettings()
   }
   get _defaults() { return this._defaults }
   set _defaults(defaults) {
     this.defaults = defaults
     this.set(this.defaults)
-  }
-  get _configuration() { return this.configuration }
-  set _configuration(configuration) { this.configuration = configuration }
-  get _options() { return this.options }
-  set _options(options) { this.options = options }
-  get _settings() { return this.settings || {} }
-  set _settings(settings) {
-    if(settings) {
-      this.settings = settings
-      if(this.settings.histiogram) this._histiogram = this.settings.histiogram
-      if(this.settings.data) this.set(this.settings.data)
-      if(this.settings.dataCallbacks) this._dataCallbacks = this.settings.dataCallbacks
-      if(this.settings.dataEvents) this._dataEvents = this.settings.dataEvents
-      if(this.settings.defaults) this._defaults = this.settings.defaults
-    }
   }
   get _histiogram() { return this.histiogram || {
     length: 1
@@ -69,6 +52,15 @@ MVC.Model = class extends MVC.Events {
     this.dataCallbacks = MVC.Utils.addPropertiesToTargetObject(
       dataCallbacks, this._dataCallbacks
     )
+  }
+  addSettings() {
+    if(Object.keys(this._settings).length) {
+      if(this._settings.histiogram) this._histiogram = this._settings.histiogram
+      if(this._settings.data) this.set(this._settings.data)
+      if(this._settings.dataCallbacks) this._dataCallbacks = this._settings.dataCallbacks
+      if(this._settings.dataEvents) this._dataEvents = this._settings.dataEvents
+      if(this._settings.defaults) this._defaults = this._settings.defaults
+    }
   }
   get() {
     let property = arguments[0]

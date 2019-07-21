@@ -3,6 +3,68 @@
 var MVC = MVC || {};
 "use strict";
 
+MVC.Constants = {};
+MVC.CONST = MVC.Constants;
+"use strict";
+
+MVC.Constants.Events = {};
+MVC.CONST.EV = MVC.Constants.Events;
+"use strict";
+
+MVC.Constants.Templates = {};
+MVC.CONST.TMPL = MVC.Constants.Templates;
+"use strict";
+
+MVC.Utils = {};
+"use strict";
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+MVC.Utils.isArray = function isArray(object) {
+  return Array.isArray(object);
+};
+
+MVC.Utils.isObject = function isObject(object) {
+  return !Array.isArray(object) ? _typeof(object) === 'object' : false;
+};
+
+MVC.Utils.isEqualType = function isEqualType(valueA, valueB) {
+  return valueA === valueB;
+};
+"use strict";
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+MVC.Utils.typeOf = function typeOf(data) {
+  switch (_typeof(data)) {
+    case 'object':
+      var _object;
+
+      if (MVC.Utils.isArray(data)) {
+        // Array
+        return 'array';
+      } else if (MVC.Utils.isObject(data)) {
+        // Object
+        return 'object';
+      } else if (data === null) {
+        // Null
+        return 'null';
+      }
+
+      return _object;
+      break;
+
+    case 'string':
+    case 'number':
+    case 'boolean':
+    case 'undefined':
+    case 'function':
+      return _typeof(data);
+      break;
+  }
+};
+"use strict";
+
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
 
 function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
@@ -11,103 +73,202 @@ function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = 
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-MVC.Utils = {
-  getObjectFromDotNotationString: function getObjectFromDotNotationString(string, context) {
-    var object = string.split('.').reduce(function (accumulator, currentValue) {
-      currentValue = currentValue[0] === '/' ? new RegExp(currentValue.replace(new RegExp('/', 'g'), '')) : currentValue;
+MVC.Utils.addPropertiesToTargetObject = function addPropertiesToTargetObject() {
+  var targetObject;
 
-      for (var _i = 0, _Object$entries = Object.entries(context); _i < _Object$entries.length; _i++) {
+  switch (arguments.length) {
+    case 2:
+      var properties = arguments[0];
+      targetObject = arguments[1];
+
+      for (var _i = 0, _Object$entries = Object.entries(properties); _i < _Object$entries.length; _i++) {
         var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
-            contextKey = _Object$entries$_i[0],
-            contextValue = _Object$entries$_i[1];
+            _propertyName = _Object$entries$_i[0],
+            _propertyValue = _Object$entries$_i[1];
 
-        if (currentValue instanceof RegExp) {
-          if (currentValue.test(contextKey)) {
-            accumulator[contextKey] = contextValue;
-          }
-        } else {
-          if (currentValue === contextKey) {
-            accumulator[contextKey] = contextValue;
-          }
-        }
+        targetObject[_propertyName] = _propertyValue;
       }
 
-      return accumulator;
-    }, {});
-    return object;
-  },
-  toggleEventsForTargetObjects: function toggleEventsForTargetObjects(toggleMethod, events, targetObjects, callbacks) {
-    for (var _i2 = 0, _Object$entries2 = Object.entries(events); _i2 < _Object$entries2.length; _i2++) {
+      break;
+
+    case 3:
+      var propertyName = arguments[0];
+      var propertyValue = arguments[1];
+      targetObject = arguments[2];
+      targetObject[propertyName] = propertyValue;
+      break;
+  }
+
+  return targetObject;
+};
+"use strict";
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+MVC.Utils.getObjectFromDotNotationString = function getObjectFromDotNotationString(string, context) {
+  var object = string.split('.').reduce(function (accumulator, currentValue) {
+    currentValue = currentValue[0] === '/' ? new RegExp(currentValue.replace(new RegExp('/', 'g'), '')) : currentValue;
+
+    for (var _i = 0, _Object$entries = Object.entries(context); _i < _Object$entries.length; _i++) {
+      var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+          contextKey = _Object$entries$_i[0],
+          contextValue = _Object$entries$_i[1];
+
+      if (currentValue instanceof RegExp) {
+        if (currentValue.test(contextKey)) {
+          accumulator[contextKey] = contextValue;
+        }
+      } else {
+        if (currentValue === contextKey) {
+          accumulator[contextKey] = contextValue;
+        }
+      }
+    }
+
+    return accumulator;
+  }, {});
+  return object;
+};
+"use strict";
+
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(toggleMethod, events, targetObjects, callbacks) {
+  for (var _i = 0, _Object$entries = Object.entries(events); _i < _Object$entries.length; _i++) {
+    var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+        eventSettings = _Object$entries$_i[0],
+        eventCallback = _Object$entries$_i[1];
+
+    var eventData = eventSettings.split(' ');
+    var eventTargetSettings = eventData[0];
+    var eventName = eventData[1];
+    var eventTargets = void 0;
+
+    switch (eventTargetSettings[0] === '@') {
+      case true:
+        eventTargetSettings = eventTargetSettings.replace('@', '');
+        eventTargets = eventTargetSettings ? this.getObjectFromDotNotationString(eventTargetSettings, targetObjects) : {
+          0: targetObjects
+        };
+        break;
+
+      case false:
+        eventTargets = document.querySelectorAll(eventTargetSettings);
+        break;
+    }
+
+    for (var _i2 = 0, _Object$entries2 = Object.entries(eventTargets); _i2 < _Object$entries2.length; _i2++) {
       var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
-          eventSettings = _Object$entries2$_i[0],
-          eventCallback = _Object$entries2$_i[1];
+          eventTargetName = _Object$entries2$_i[0],
+          eventTarget = _Object$entries2$_i[1];
 
-      var eventData = eventSettings.split(' ');
-      var eventTargetSettings = eventData[0];
-      var eventName = eventData[1];
-      var eventTargets = void 0;
+      var eventTargetMethodName = toggleMethod === 'on' ? eventTarget instanceof HTMLElement ? 'addEventListener' : 'on' : eventTarget instanceof HTMLElement ? 'removeEventListener' : 'off';
+      var eventCallbacks = eventCallback.match('@') ? this.getObjectFromDotNotationString(eventCallback.replace('@', ''), callbacks) : window[eventCallback];
 
-      switch (eventTargetSettings[0] === '@') {
-        case true:
-          eventTargetSettings = eventTargetSettings.replace('@', '');
-          eventTargets = eventTargetSettings ? this.getObjectFromDotNotationString(eventTargetSettings, targetObjects) : {
-            0: targetObjects
-          };
-          break;
-
-        case false:
-          eventTargets = document.querySelectorAll(eventTargetSettings);
-          break;
-      }
-
-      for (var _i3 = 0, _Object$entries3 = Object.entries(eventTargets); _i3 < _Object$entries3.length; _i3++) {
-        var _Object$entries3$_i = _slicedToArray(_Object$entries3[_i3], 2),
-            eventTargetName = _Object$entries3$_i[0],
-            eventTarget = _Object$entries3$_i[1];
-
-        var eventTargetMethodName = toggleMethod === 'on' ? eventTarget instanceof HTMLElement ? 'addEventListener' : 'on' : eventTarget instanceof HTMLElement ? 'removeEventListener' : 'off';
-        var eventCallbacks = eventCallback.match('@') ? this.getObjectFromDotNotationString(eventCallback.replace('@', ''), callbacks) : window[eventCallback];
-
-        for (var _i4 = 0, _Object$values = Object.values(eventCallbacks); _i4 < _Object$values.length; _i4++) {
-          var _eventCallback = _Object$values[_i4];
-          eventTarget[eventTargetMethodName](eventName, _eventCallback);
-        }
+      for (var _i3 = 0, _Object$values = Object.values(eventCallbacks); _i3 < _Object$values.length; _i3++) {
+        var _eventCallback = _Object$values[_i3];
+        eventTarget[eventTargetMethodName](eventName, _eventCallback);
       }
     }
-  },
-  bindEventsToTargetObjects: function bindEventsToTargetObjects() {
-    this.toggleEventsForTargetObjects.apply(this, ['on'].concat(Array.prototype.slice.call(arguments)));
-  },
-  unbindEventsFromTargetObjects: function unbindEventsFromTargetObjects() {
-    this.toggleEventsForTargetObjects.apply(this, ['off'].concat(Array.prototype.slice.call(arguments)));
-  },
-  addPropertiesToTargetObject: function addPropertiesToTargetObject() {
-    var targetObject;
+  }
+};
 
-    switch (arguments.length) {
-      case 2:
-        var properties = arguments[0];
-        targetObject = arguments[1];
+MVC.Utils.bindEventsToTargetObjects = function bindEventsToTargetObjects() {
+  this.toggleEventsForTargetObjects.apply(this, ['on'].concat(Array.prototype.slice.call(arguments)));
+};
 
-        for (var _i5 = 0, _Object$entries4 = Object.entries(properties); _i5 < _Object$entries4.length; _i5++) {
-          var _Object$entries4$_i = _slicedToArray(_Object$entries4[_i5], 2),
-              _propertyName = _Object$entries4$_i[0],
-              _propertyValue = _Object$entries4$_i[1];
+MVC.Utils.unbindEventsFromTargetObjects = function unbindEventsFromTargetObjects() {
+  this.toggleEventsForTargetObjects.apply(this, ['off'].concat(Array.prototype.slice.call(arguments)));
+};
+"use strict";
 
-          targetObject[_propertyName] = _propertyValue;
+function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
+
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance"); }
+
+function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"] != null) _i["return"](); } finally { if (_d) throw _e; } } return _arr; }
+
+function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
+
+MVC.Utils.validateDataSchema = function validate(data, schema) {
+  if (schema) {
+    switch (MVC.Utils.typeOf(data)) {
+      case 'array':
+        var array = [];
+        schema = MVC.Utils.typeOf(schema) === 'function' ? schema() : schema;
+
+        if (MVC.Utils.isEqualType(MVC.Utils.typeOf(schema), MVC.Utils.typeOf(array))) {
+          for (var _i = 0, _Object$entries = Object.entries(data); _i < _Object$entries.length; _i++) {
+            var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
+                arrayKey = _Object$entries$_i[0],
+                arrayValue = _Object$entries$_i[1];
+
+            array.push(this.validate(arrayValue));
+          }
+        }
+
+        return array;
+        break;
+
+      case 'object':
+        var object = {};
+        schema = MVC.Utils.typeOf(schema) === 'function' ? schema() : schema;
+
+        if (MVC.Utils.isEqualType(MVC.Utils.typeOf(schema), MVC.Utils.typeOf(object))) {
+          for (var _i2 = 0, _Object$entries2 = Object.entries(data); _i2 < _Object$entries2.length; _i2++) {
+            var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
+                objectKey = _Object$entries2$_i[0],
+                objectValue = _Object$entries2$_i[1];
+
+            object[objectKey] = this.validate(objectValue, schema[objectKey]);
+          }
+        }
+
+        return object;
+        break;
+
+      case 'string':
+      case 'number':
+      case 'boolean':
+        schema = MVC.Utils.typeOf(schema) === 'function' ? schema() : schema;
+
+        if (MVC.Utils.isEqualType(MVC.Utils.typeOf(schema), MVC.Utils.typeOf(data))) {
+          return data;
+        } else {
+          throw MVC.CONST.TMPL;
         }
 
         break;
 
-      case 3:
-        var propertyName = arguments[0];
-        var propertyValue = arguments[1];
-        targetObject = arguments[2];
-        targetObject[propertyName] = propertyValue;
+      case 'null':
+        if (MVC.Utils.isEqualType(MVC.Utils.typeOf(schema), MVC.Utils.typeOf(data))) {
+          return data;
+        }
+
+        break;
+
+      case 'undefined':
+        throw MVC.CONST.TMPL;
+        break;
+
+      case 'function':
+        throw MVC.CONST.TMPL;
         break;
     }
-
-    return targetObject;
+  } else {
+    throw MVC.CONST.TMPL;
   }
 };
 "use strict";
@@ -231,177 +392,6 @@ function () {
 }();
 "use strict";
 
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-MVC.Service =
-/*#__PURE__*/
-function (_MVC$Events) {
-  _inherits(_class, _MVC$Events);
-
-  function _class(settings, options, configuration) {
-    var _this;
-
-    _classCallCheck(this, _class);
-
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).call(this));
-    if (configuration) _this._configuration = configuration;
-    if (options) _this._options = options;
-    if (settings) _this._settings = settings;
-    return _this;
-  }
-
-  _createClass(_class, [{
-    key: "newXHR",
-    value: function newXHR() {
-      var _this2 = this;
-
-      return new Promise(function (resolve, reject) {
-        if (_this2._xhr.status === 200) _this2._xhr.abort();
-
-        _this2._xhr.open(_this2._type, _this2._url);
-
-        _this2._xhr.onload = resolve;
-        _this2._xhr.onerror = reject;
-
-        _this2._xhr.send(_this2._data);
-      });
-    }
-  }, {
-    key: "_defaults",
-    get: function get() {
-      return this.defaults || {
-        contentType: {
-          'Content-Type': 'application/json'
-        },
-        responseType: 'json'
-      };
-    }
-  }, {
-    key: "_options",
-    get: function get() {
-      return this.options;
-    },
-    set: function set(options) {
-      this.options = options;
-    }
-  }, {
-    key: "_configuration",
-    get: function get() {
-      return this.configuration;
-    },
-    set: function set(configuration) {
-      this.configuration = configuration;
-    }
-  }, {
-    key: "_settings",
-    get: function get() {
-      return this.settings || {};
-    },
-    set: function set(settings) {
-      this.settings = settings;
-      if (this.settings.type) this._type = this.settings.type;
-      if (this.settings.url) this._url = this.settings.url;
-      if (this.settings.data) this._data = this.settings.data || null;
-      if (this.settings.headers) this._headers = this.settings.headers || [this._defaults.contentType];
-      if (this.settings.responseType) this._responseType = this.settings.responseType;
-    }
-  }, {
-    key: "_responseTypes",
-    get: function get() {
-      return ['', 'arraybuffer', 'blob', 'document', 'json', 'text'];
-    }
-  }, {
-    key: "_responseType",
-    get: function get() {
-      return this.responseType;
-    },
-    set: function set(responseType) {
-      this._xhr.responseType = this._responseTypes.find(function (responseTypeItem) {
-        return responseTypeItem === responseType;
-      }) || this._defaults.responseType;
-    }
-  }, {
-    key: "_type",
-    get: function get() {
-      return this.type;
-    },
-    set: function set(type) {
-      this.type = type;
-    }
-  }, {
-    key: "_url",
-    get: function get() {
-      return this.url;
-    },
-    set: function set(url) {
-      this.url = url;
-    }
-  }, {
-    key: "_headers",
-    get: function get() {
-      return this.headers || [];
-    },
-    set: function set(headers) {
-      this._headers.length = 0;
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = headers[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var header = _step.value;
-
-          this._xhr.setRequestHeader({
-            header: header
-          }[0], {
-            header: header
-          }[1]);
-
-          this._headers.push(header);
-        }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-            _iterator["return"]();
-          }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
-        }
-      }
-    }
-  }, {
-    key: "_xhr",
-    get: function get() {
-      this.xhr = this.xhr ? this.xhr : new XMLHttpRequest();
-      return this.xhr;
-    }
-  }]);
-
-  return _class;
-}(MVC.Events);
-"use strict";
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
@@ -509,18 +499,75 @@ function () {
 }();
 "use strict";
 
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-MVC.Observers =
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+MVC.Base =
 /*#__PURE__*/
-function () {
-  function _class() {
+function (_MVC$Events) {
+  _inherits(_class, _MVC$Events);
+
+  function _class(settings, options, configuration) {
+    var _this;
+
     _classCallCheck(this, _class);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).call(this));
+    if (configuration) _this._configuration = configuration;
+    if (options) _this._options = options;
+    if (settings) _this._settings = settings;
+    return _this;
   }
 
+  _createClass(_class, [{
+    key: "_configuration",
+    get: function get() {
+      this.configuration = this.configuration ? this.configuration : {};
+      return this.configuration;
+    },
+    set: function set(configuration) {
+      this.configuration = configuration;
+    }
+  }, {
+    key: "_options",
+    get: function get() {
+      this.options = this.options ? this.options : {};
+      return this.options;
+    },
+    set: function set(options) {
+      this.options = options;
+    }
+  }, {
+    key: "_settings",
+    get: function get() {
+      this.settings = this.settings ? this.settings : {};
+      return this.settings;
+    },
+    set: function set(settings) {
+      this.settings = settings;
+    }
+  }]);
+
   return _class;
-}();
+}(MVC.Events);
 "use strict";
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _nonIterableRest(); }
 
@@ -536,21 +583,50 @@ function _defineProperties(target, props) { for (var i = 0; i < props.length; i+
 
 function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
 
-MVC.Observers.Observer =
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+MVC.Observer =
 /*#__PURE__*/
-function () {
-  function _class(settings) {
+function (_MVC$Base) {
+  _inherits(_class, _MVC$Base);
+
+  function _class() {
+    var _this;
+
     _classCallCheck(this, _class);
 
-    this._settings = settings;
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).apply(this, arguments));
 
-    this._observer.observe(this.target, this.options);
+    _this.addSettings();
+
+    _this._observer.observe(_this.target, _this.options);
+
+    return _this;
   }
 
   _createClass(_class, [{
+    key: "addSettings",
+    value: function addSettings() {
+      if (Object.keys(this._settings).length) {
+        this._settings = settings;
+        if (this._settings.context) this._context = this._settings.context;
+        if (this._settings.target) this._target = this._settings.target instanceof NodeList ? this._settings.target[0] : this._settings.target;
+        if (this._settings.options) this._options = this._settings.options;
+        if (this._settings.mutations) this._mutations = this._settings.mutations;
+      }
+    }
+  }, {
     key: "observerCallback",
     value: function observerCallback(mutationRecordList, observer) {
-      var _this = this;
+      var _this2 = this;
 
       var _loop = function _loop() {
         var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
@@ -570,7 +646,7 @@ function () {
                       nodeIndex = _Object$entries2$_i[0],
                       node = _Object$entries2$_i[1];
 
-                  var mutation = _this.mutations.filter(function (_mutation) {
+                  var mutation = _this2.mutations.filter(function (_mutation) {
                     return _mutation.target === node;
                   })[0];
 
@@ -591,7 +667,7 @@ function () {
             break;
 
           case 'attributes':
-            var mutation = _this.mutations.filter(function (_mutation) {
+            var mutation = _this2.mutations.filter(function (_mutation) {
               return _mutation.name === mutationRecord.type && _mutation.data === mutationRecord.attributeName;
             })[0];
 
@@ -608,21 +684,6 @@ function () {
 
       for (var _i = 0, _Object$entries = Object.entries(mutationRecordList); _i < _Object$entries.length; _i++) {
         _loop();
-      }
-    }
-  }, {
-    key: "_settings",
-    get: function get() {
-      this.settings = this.settings ? this.settings : {};
-      return this.settings;
-    },
-    set: function set(settings) {
-      if (settings) {
-        this.settings = settings;
-        if (this.settings.context) this._context = this.settings.context;
-        if (this.settings.target) this._target = this.settings.target instanceof NodeList ? this.settings.target[0] : this.settings.target;
-        if (this.settings.options) this._options = this.settings.options;
-        if (this.settings.mutations) this._mutations = this.settings.mutations;
       }
     }
   }, {
@@ -686,7 +747,208 @@ function () {
   }]);
 
   return _class;
-}();
+}(MVC.Base);
+"use strict";
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+MVC.Emitter =
+/*#__PURE__*/
+function (_MVC$Base) {
+  _inherits(_class, _MVC$Base);
+
+  function _class() {
+    _classCallCheck(this, _class);
+
+    return _possibleConstructorReturn(this, _getPrototypeOf(_class).apply(this, arguments));
+  }
+
+  _createClass(_class, [{
+    key: "validate",
+    value: function validate(data) {
+      return MVC.Utils.validateDataSchema(data, this.schema);
+    }
+  }, {
+    key: "_schema",
+    get: function get() {
+      return this.schema;
+    },
+    set: function set(schema) {
+      this.schema = schema;
+    }
+  }]);
+
+  return _class;
+}(MVC.Base);
+"use strict";
+
+function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
+
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
+
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
+
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
+
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+
+MVC.Service =
+/*#__PURE__*/
+function (_MVC$Base) {
+  _inherits(_class, _MVC$Base);
+
+  function _class() {
+    var _this;
+
+    _classCallCheck(this, _class);
+
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).apply(this, arguments));
+
+    _this.addSettings();
+
+    return _this;
+  }
+
+  _createClass(_class, [{
+    key: "addSettings",
+    value: function addSettings() {
+      if (Object.keys(this._settings).length) {
+        if (this._settings.type) this._type = this._settings.type;
+        if (this._settings.url) this._url = this._settings.url;
+        if (this._settings.data) this._data = this._settings.data || null;
+        if (this._settings.headers) this._headers = this._settings.headers || [this._defaults.contentType];
+        if (this._settings.responseType) this._responseType = this._settings.responseType;
+      }
+    }
+  }, {
+    key: "newXHR",
+    value: function newXHR() {
+      var _this2 = this;
+
+      return new Promise(function (resolve, reject) {
+        if (_this2._xhr.status === 200) _this2._xhr.abort();
+
+        _this2._xhr.open(_this2._type, _this2._url);
+
+        _this2._xhr.onload = resolve;
+        _this2._xhr.onerror = reject;
+
+        _this2._xhr.send(_this2._data);
+      });
+    }
+  }, {
+    key: "_defaults",
+    get: function get() {
+      return this.defaults || {
+        contentType: {
+          'Content-Type': 'application/json'
+        },
+        responseType: 'json'
+      };
+    }
+  }, {
+    key: "_responseTypes",
+    get: function get() {
+      return ['', 'arraybuffer', 'blob', 'document', 'json', 'text'];
+    }
+  }, {
+    key: "_responseType",
+    get: function get() {
+      return this.responseType;
+    },
+    set: function set(responseType) {
+      this._xhr.responseType = this._responseTypes.find(function (responseTypeItem) {
+        return responseTypeItem === responseType;
+      }) || this._defaults.responseType;
+    }
+  }, {
+    key: "_type",
+    get: function get() {
+      return this.type;
+    },
+    set: function set(type) {
+      this.type = type;
+    }
+  }, {
+    key: "_url",
+    get: function get() {
+      return this.url;
+    },
+    set: function set(url) {
+      this.url = url;
+    }
+  }, {
+    key: "_headers",
+    get: function get() {
+      return this.headers || [];
+    },
+    set: function set(headers) {
+      this._headers.length = 0;
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = headers[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var header = _step.value;
+
+          this._xhr.setRequestHeader({
+            header: header
+          }[0], {
+            header: header
+          }[1]);
+
+          this._headers.push(header);
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+            _iterator["return"]();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
+        }
+      }
+    }
+  }, {
+    key: "_xhr",
+    get: function get() {
+      this.xhr = this.xhr ? this.xhr : new XMLHttpRequest();
+      return this.xhr;
+    }
+  }]);
+
+  return _class;
+}(MVC.Base);
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -719,22 +981,33 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 MVC.Model =
 /*#__PURE__*/
-function (_MVC$Events) {
-  _inherits(_class, _MVC$Events);
+function (_MVC$Base) {
+  _inherits(_class, _MVC$Base);
 
-  function _class(settings, options, configuration) {
+  function _class() {
     var _this;
 
     _classCallCheck(this, _class);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).call(this));
-    if (configuration) _this._configuration = configuration;
-    if (options) _this._options = options;
-    if (settings) _this._settings = settings;
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).apply(this, arguments));
+
+    _this.addSettings();
+
     return _this;
   }
 
   _createClass(_class, [{
+    key: "addSettings",
+    value: function addSettings() {
+      if (Object.keys(this._settings).length) {
+        if (this._settings.histiogram) this._histiogram = this._settings.histiogram;
+        if (this._settings.data) this.set(this._settings.data);
+        if (this._settings.dataCallbacks) this._dataCallbacks = this._settings.dataCallbacks;
+        if (this._settings.dataEvents) this._dataEvents = this._settings.dataEvents;
+        if (this._settings.defaults) this._defaults = this._settings.defaults;
+      }
+    }
+  }, {
     key: "get",
     value: function get() {
       var property = arguments[0];
@@ -867,37 +1140,6 @@ function (_MVC$Events) {
       this.set(this.defaults);
     }
   }, {
-    key: "_configuration",
-    get: function get() {
-      return this.configuration;
-    },
-    set: function set(configuration) {
-      this.configuration = configuration;
-    }
-  }, {
-    key: "_options",
-    get: function get() {
-      return this.options;
-    },
-    set: function set(options) {
-      this.options = options;
-    }
-  }, {
-    key: "_settings",
-    get: function get() {
-      return this.settings || {};
-    },
-    set: function set(settings) {
-      if (settings) {
-        this.settings = settings;
-        if (this.settings.histiogram) this._histiogram = this.settings.histiogram;
-        if (this.settings.data) this.set(this.settings.data);
-        if (this.settings.dataCallbacks) this._dataCallbacks = this.settings.dataCallbacks;
-        if (this.settings.dataEvents) this._dataEvents = this.settings.dataEvents;
-        if (this.settings.defaults) this._defaults = this.settings.defaults;
-      }
-    }
-  }, {
     key: "_histiogram",
     get: function get() {
       return this.histiogram || {
@@ -945,7 +1187,7 @@ function (_MVC$Events) {
   }]);
 
   return _class;
-}(MVC.Events);
+}(MVC.Base);
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -976,65 +1218,44 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 MVC.View =
 /*#__PURE__*/
-function (_MVC$Events) {
-  _inherits(_class, _MVC$Events);
+function (_MVC$Base) {
+  _inherits(_class, _MVC$Base);
 
-  function _class(settings, options, configuration) {
+  function _class() {
     var _this;
 
     _classCallCheck(this, _class);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).call(this));
-    if (configuration) _this._configuration = configuration;
-    if (options) _this._options = options;
-    if (settings) _this._settings = settings;
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).apply(this, arguments));
+
+    _this.addSettings();
+
     return _this;
   }
 
   _createClass(_class, [{
-    key: "remove",
-    value: function remove() {
-      this.element.parentElement.removeChild(this.element);
-    }
-  }, {
-    key: "_options",
-    get: function get() {
-      return this.options;
-    },
-    set: function set(options) {
-      this.options = options;
-    }
-  }, {
-    key: "_configuration",
-    get: function get() {
-      return this.configuration;
-    },
-    set: function set(configuration) {
-      this.configuration = configuration;
-    }
-  }, {
-    key: "_settings",
-    get: function get() {
-      this.settings = this.settings ? this.settings : {};
-      return this.settings;
-    },
-    set: function set(settings) {
-      if (settings) {
-        this.settings = settings;
-        if (this.settings.elementName) this._elementName = this.settings.elementName;
-        if (this.settings.element) this._element = this.settings.element;
-        if (this.settings.attributes) this._attributes = this.settings.attributes;
-        this._ui = this.settings.ui || {};
-        if (this.settings.uiCallbacks) this._uiCallbacks = this.settings.uiCallbacks;
-        if (this.settings.observerCallbacks) this._observerCallbacks = this.settings.observerCallbacks;
-        if (this.settings.uiEmitters) this._uiEmitters = this.settings.uiEmitters;
-        if (this.settings.uiEvents) this._uiEvents = this.settings.uiEvents;
-        if (this.settings.observers) this._observers = this.settings.observers;
-        if (this.settings.templates) this._templates = this.settings.templates;
-        if (this.settings.insert) this._insert = this.settings.insert;
+    key: "addSettings",
+    value: function addSettings() {
+      if (Object.keys(this._settings).length) {
+        if (this._settings.elementName) this._elementName = this._settings.elementName;
+        if (this._settings.element) this._element = this._settings.element;
+        if (this._settings.attributes) this._attributes = this._settings.attributes;
+        this._ui = this._settings.ui || {};
+        if (this._settings.uiCallbacks) this._uiCallbacks = this._settings.uiCallbacks;
+        if (this._settings.observerCallbacks) this._observerCallbacks = this._settings.observerCallbacks;
+        if (this._settings.uiEmitters) this._uiEmitters = this._settings.uiEmitters;
+        if (this._settings.uiEvents) this._uiEvents = this._settings.uiEvents;
+        if (this._settings.observers) this._observers = this._settings.observers;
+        if (this._settings.templates) this._templates = this._settings.templates;
+        if (this._settings.insert) this._insert = this._settings.insert;
       } else {
         this._elementName = 'div';
       }
+    }
+  }, {
+    key: "remove",
+    value: function remove() {
+      this.element.parentElement.removeChild(this.element);
     }
   }, {
     key: "_elementName",
@@ -1145,7 +1366,7 @@ function (_MVC$Events) {
           accumulator[currentValue] = true;
           return accumulator;
         }, {}) : {};
-        var observer = new MVC.Observers.Observer({
+        var observer = new MVC.Observer({
           context: this,
           target: observerTarget,
           options: observerOptions,
@@ -1180,7 +1401,7 @@ function (_MVC$Events) {
   }]);
 
   return _class;
-}(MVC.Events);
+}(MVC.Base);
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -1203,57 +1424,38 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 MVC.Controller =
 /*#__PURE__*/
-function (_MVC$Events) {
-  _inherits(_class, _MVC$Events);
+function (_MVC$Base) {
+  _inherits(_class, _MVC$Base);
 
-  function _class(settings, options, configuration) {
+  function _class() {
     var _this;
 
     _classCallCheck(this, _class);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).call(this));
-    if (configuration) _this._configuration = configuration;
-    if (options) _this._options = options;
-    if (settings) _this._settings = settings;
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).apply(this, arguments));
+
+    _this.addSettings();
+
     return _this;
   }
 
   _createClass(_class, [{
-    key: "_configuration",
-    get: function get() {
-      return this.configuration;
-    },
-    set: function set(configuration) {
-      this.configuration = configuration;
-    }
-  }, {
-    key: "_options",
-    get: function get() {
-      return this.options;
-    },
-    set: function set(options) {
-      this.options = options;
-    }
-  }, {
-    key: "_settings",
-    get: function get() {
-      this.settings = this.settings ? this.settings : {};
-      return this.settings;
-    },
-    set: function set(settings) {
-      this.settings = settings;
-      if (this._settings.emitters) this._emitters = this._settings.emitters;
-      if (this._settings.modelCallbacks) this._modelCallbacks = this._settings.modelCallbacks;
-      if (this._settings.viewCallbacks) this._viewCallbacks = this._settings.viewCallbacks;
-      if (this._settings.controllerCallbacks) this._controllerCallbacks = this._settings.controllerCallbacks;
-      if (this._settings.routerCallbacks) this._routerCallbacks = this._settings.routerCallbacks;
-      if (this._settings.models) this._models = this._settings.models;
-      if (this._settings.views) this._views = this._settings.views;
-      if (this._settings.controllers) this._controllers = this._settings.controllers;
-      if (this._settings.routers) this._routers = this._settings.routers;
-      if (this._settings.modelEvents) this._modelEvents = this._settings.modelEvents;
-      if (this._settings.viewEvents) this._viewEvents = this._settings.viewEvents;
-      if (this._settings.controllerEvents) this._controllerEvents = this._settings.controllerEvents;
+    key: "addSettings",
+    value: function addSettings() {
+      if (Object.keys(this._settings).length) {
+        if (this.settings.emitters) this._emitters = this.settings.emitters;
+        if (this.settings.modelCallbacks) this._modelCallbacks = this.settings.modelCallbacks;
+        if (this.settings.viewCallbacks) this._viewCallbacks = this.settings.viewCallbacks;
+        if (this.settings.controllerCallbacks) this._controllerCallbacks = this.settings.controllerCallbacks;
+        if (this.settings.routerCallbacks) this._routerCallbacks = this.settings.routerCallbacks;
+        if (this.settings.models) this._models = this.settings.models;
+        if (this.settings.views) this._views = this.settings.views;
+        if (this.settings.controllers) this._controllers = this.settings.controllers;
+        if (this.settings.routers) this._routers = this.settings.routers;
+        if (this.settings.modelEvents) this._modelEvents = this.settings.modelEvents;
+        if (this.settings.viewEvents) this._viewEvents = this.settings.viewEvents;
+        if (this.settings.controllerEvents) this._controllerEvents = this.settings.controllerEvents;
+      }
     }
   }, {
     key: "_emitters",
@@ -1354,7 +1556,7 @@ function (_MVC$Events) {
   }]);
 
   return _class;
-}(MVC.Events);
+}(MVC.Base);
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -1367,9 +1569,9 @@ function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _d
 
 function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
 
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
 function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
 
@@ -1377,18 +1579,17 @@ function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || func
 
 MVC.Router =
 /*#__PURE__*/
-function (_MVC$Events) {
-  _inherits(_class, _MVC$Events);
+function (_MVC$Base) {
+  _inherits(_class, _MVC$Base);
 
-  function _class(settings) {
+  function _class() {
     var _this;
 
     _classCallCheck(this, _class);
 
-    _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).call(this));
-    Object.assign(_assertThisInitialized(_this), settings, {
-      settings: settings
-    });
+    _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).apply(this, arguments));
+
+    _this.addSettings();
 
     _this.setRoutes(_this.routes, _this.controllers);
 
@@ -1401,6 +1602,14 @@ function (_MVC$Events) {
   }
 
   _createClass(_class, [{
+    key: "addSettings",
+    value: function addSettings() {
+      if (this._settings) {
+        if (this._settings.routes) this.routes = this._settings.routes;
+        if (this._settings.controllers) this.controllers = this._settings.controllers;
+      }
+    }
+  }, {
     key: "start",
     value: function start() {
       var location = this.getRoute();
@@ -1449,5 +1658,5 @@ function (_MVC$Events) {
   }]);
 
   return _class;
-}(MVC.Events);
+}(MVC.Base);
 //# sourceMappingURL=http://localhost:3000/.maps/browser/mvc-framework.js.map

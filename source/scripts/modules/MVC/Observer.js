@@ -1,24 +1,8 @@
-MVC.Observers.Observer = class {
-  constructor(settings) {
-    this._settings = settings
+MVC.Observer = class extends MVC.Base {
+  constructor() {
+    super(...arguments)
+    this.addSettings()
     this._observer.observe(this.target, this.options)
-  }
-  get _settings() {
-    this.settings = (this.settings)
-      ? this.settings
-      : {}
-    return this.settings
-  }
-  set _settings(settings) {
-    if(settings) {
-      this.settings = settings
-      if(this.settings.context) this._context = this.settings.context
-      if(this.settings.target) this._target = (this.settings.target instanceof NodeList)
-        ? this.settings.target[0]
-        : this.settings.target
-      if(this.settings.options) this._options = this.settings.options
-      if(this.settings.mutations) this._mutations = this.settings.mutations
-    }
   }
   get _context() { return this.context }
   set _context(context) { this.context = context }
@@ -60,6 +44,17 @@ MVC.Observers.Observer = class {
       }
       if(mutationEventData) mutation.data = mutationEventData
       this._mutations.push(mutation)
+    }
+  }
+  addSettings() {
+    if(Object.keys(this._settings).length) {
+      this._settings = settings
+      if(this._settings.context) this._context = this._settings.context
+      if(this._settings.target) this._target = (this._settings.target instanceof NodeList)
+      ? this._settings.target[0]
+      : this._settings.target
+      if(this._settings.options) this._options = this._settings.options
+      if(this._settings.mutations) this._mutations = this._settings.mutations
     }
   }
   observerCallback(mutationRecordList, observer) {
