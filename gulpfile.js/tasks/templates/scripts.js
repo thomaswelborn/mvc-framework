@@ -18,7 +18,7 @@ module.exports = function(rootProcess, data) {
 
       let templateScript = $.lib.mergeStream(layouts, partials)
         .pipe($.tasks.subtasks.concat(templateScriptSettings.concat))
-        .pipe($.lib.gulp.dest(templateScriptSettings.dest))
+        .pipe($.lib.dest(templateScriptSettings.dest))
       templateScriptStream.add(templateScript)
     }
     return templateScriptStream

@@ -8,7 +8,7 @@ module.exports = function(rootProcess, data) {
           .pipe($.tasks.subtasks.data(fileSettings.data))
           .pipe($.tasks.subtasks.compileHandlebars(fileSettings.compileHandlebars))
           .pipe($.tasks.subtasks.rename(fileSettings.rename))
-        .pipe($.lib.gulp.dest(fileSettings.dest))
+        .pipe($.lib.dest(fileSettings.dest))
       stream.add(task)
     }
     return stream

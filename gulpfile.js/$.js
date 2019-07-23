@@ -31,6 +31,7 @@ global.$ = {
     prettyprint: require('js-object-pretty-print'),
     through2: require('through2'),
     util: require('util'),
+    dest: require('gulp-multi-dest')
   },
 }
 $.lib = $.libraries
