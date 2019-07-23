@@ -8,6 +8,7 @@ global.$ = {
     compileHandlebars: require('gulp-compile-handlebars'),
     data: require('gulp-data'),
     declare: require('gulp-declare'),
+    dest: require('gulp-multi-dest'),
     file: require('gulp-file'),
     flatten: require('gulp-flatten'),
     handlebars: require('gulp-handlebars'),
@@ -31,7 +32,6 @@ global.$ = {
     prettyprint: require('js-object-pretty-print'),
     through2: require('through2'),
     util: require('util'),
-    dest: require('gulp-multi-dest')
   },
 }
 $.lib = $.libraries
