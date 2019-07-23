@@ -187,17 +187,32 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
     )
     for(let [eventTargetName, eventTarget] of eventTargets) {
       let eventMethodName = (toggleMethod === 'on')
-      ? (eventTarget instanceof HTMLElement)
+      ? (
+        eventTarget instanceof NodeList ||
+        eventTarget instanceof HTMLElement
+      )
         ? 'addEventListener'
         : 'on'
-      : (eventTarget instanceof HTMLElement)
+      : (
+        eventTarget instanceof NodeList ||
+        eventTarget instanceof HTMLElement
+      )
         ? 'removeEventListener'
         : 'off'
       let eventCallback = MVC.Utils.objectQuery(
         eventCallbackName,
         callbacks
       )[0][1]
-      eventTarget[eventMethodName](eventName, eventCallback)
+      console.log('eventMethodName', eventMethodName)
+      if(eventTarget instanceof NodeList) {
+        for(let _eventTarget of eventTarget) {
+          _eventTarget[eventMethodName](eventName, eventCallback)
+        }
+      } else if(eventTarget instanceof HTMLElement){
+        eventTarget[eventMethodName](eventName, eventCallback)
+      } else {
+        eventTarget[eventMethodName](eventName, eventCallback)
+      }
     }
   }
 }
@@ -438,7 +453,7 @@ MVC.Observer = class extends MVC.Base {
       let mutation
       let mutationData = mutationSettings.split(' ')
       let mutationTarget = MVC.Utils.objectQuery(
-        mutationData[0].replace('@', ''),
+        mutationData,
         this.context.ui
       )
       let mutationEventName = mutationData[1]
