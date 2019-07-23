@@ -62,7 +62,7 @@ MVC.View = class extends MVC.Base {
       let observerConfigurationData = observerConfiguration.split(' ')
       let observerName = observerConfigurationData[0]
       let observerTarget = (observerName.match('@', ''))
-        ? MVC.Utils.getObjectFromDotNotationString(
+        ? MVC.Utils.objectQuery(
             observerName.replace('@', ''),
             this.ui
           )

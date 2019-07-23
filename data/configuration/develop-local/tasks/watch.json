@@ -27,7 +27,7 @@
   },
   "scripts-distribute": {
     "globs": [
-      "distribute/**/*.js"
+      "distribute/**/*.{map,js}"
     ],
     "options": {},
     "task": {

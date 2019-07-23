@@ -11,8 +11,24 @@ MVC.Constants.Events = {};
 MVC.CONST.EV = MVC.Constants.Events;
 "use strict";
 
-MVC.Constants.Templates = {};
-MVC.CONST.TMPL = MVC.Constants.Templates;
+MVC.Templates = {
+  ObjectQueryStringFormatInvalidRoot: function ObjectQueryStringFormatInvalid(data) {
+    return ['Object Query "string" property must be formatted to first include "[@]".'].join('\n');
+  },
+  DataSchemaMismatch: function DataSchemaMismatch(data) {
+    return ["Data and Schema properties do not match."].join('\n');
+  },
+  DataFunctionInvalid: function DataFunctionInvalid(data) {
+    ["Model Data property type \"Function\" is not valid."].join('\n');
+  },
+  DataUndefined: function DataUndefined(data) {
+    ["Model Data property undefined."].join('\n');
+  },
+  SchemaUndefined: function SchemaUndefined(data) {
+    ["Model \"Schema\" undefined."].join('\n');
+  }
+};
+MVC.TMPL = MVC.Templates;
 "use strict";
 
 MVC.Utils = {};
@@ -111,29 +127,103 @@ function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = 
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-MVC.Utils.getObjectFromDotNotationString = function getObjectFromDotNotationString(string, context) {
-  var object = string.split('.').reduce(function (accumulator, currentValue) {
-    currentValue = currentValue[0] === '/' ? new RegExp(currentValue.replace(new RegExp('/', 'g'), '')) : currentValue;
+MVC.Utils.objectQuery = function objectQuery(string, context) {
+  var stringData = MVC.Utils.objectQuery.parseStringData(string, context);
 
-    for (var _i = 0, _Object$entries = Object.entries(context); _i < _Object$entries.length; _i++) {
-      var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
-          contextKey = _Object$entries$_i[0],
-          contextValue = _Object$entries$_i[1];
+  if (stringData[0].test('@')) {
+    if (stringData.length === 1) {
+      return [['@', context]];
+    } else {
+      stringData = stringData.slice(1);
 
-      if (currentValue instanceof RegExp) {
-        if (currentValue.test(contextKey)) {
-          accumulator[contextKey] = contextValue;
+      var _context = MVC.Utils.objectQuery.parseContext(stringData, context);
+
+      return _context;
+    }
+  } else {
+    throw MVC.TMPL.ObjectQueryStringFormatInvalidRoot();
+  }
+};
+
+MVC.Utils.objectQuery.parseContext = function (stringData, context) {
+  context = MVC.Utils.isObject(context) ? Object.entries(context) : context;
+  return stringData.reduce(function (properties, fragment, fragmentIndex, fragments) {
+    var _properties = [];
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
+
+    try {
+      for (var _iterator = properties[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var _step$value = _slicedToArray(_step.value, 2),
+            propertyKey = _step$value[0],
+            propertyValue = _step$value[1];
+
+        if (fragment.test(propertyKey)) {
+          if (fragmentIndex === fragments.length - 1) {
+            _properties = _properties.concat([[propertyKey, propertyValue]]);
+          } else {
+            _properties = _properties.concat(Object.entries(propertyValue));
+          }
         }
-      } else {
-        if (currentValue === contextKey) {
-          accumulator[contextKey] = contextValue;
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+          _iterator["return"]();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
         }
       }
     }
 
-    return accumulator;
-  }, {});
-  return object;
+    properties = _properties;
+    return properties;
+  }, context);
+};
+
+MVC.Utils.objectQuery.parseStringData = function (string, context) {
+  var stringData = string.split('][').map(function (fragment, fragmentIndex, fragments) {
+    if (fragmentIndex === 0) {
+      fragment = fragment[0] === '[' ? fragment.split('').slice(1).join('') : fragment;
+    }
+
+    if (fragmentIndex === fragments.length - 1) {
+      fragment = fragment[fragment.length - 1] === ']' ? fragment.split('').slice(0, -1).join('') : fragment;
+    }
+
+    var operator;
+
+    if (fragment[0] === '/') {
+      fragment = fragment.split('');
+      fragment.splice(0, 1);
+
+      switch (fragment[fragment.length - 1]) {
+        case '/':
+          operator = 'i';
+          break;
+
+        case ')':
+          operator = fragment.splice(-3).slice(1).slice(0, -1);
+          break;
+      }
+
+      fragment.splice(-1);
+      fragment = fragment.join('');
+      fragment = new RegExp(fragment, operator);
+    } else {
+      operator = 'i';
+      fragment = new RegExp('^'.concat(fragment, '$'), operator);
+    }
+
+    return fragment;
+  });
+  return stringData;
 };
 "use strict";
 
@@ -149,37 +239,38 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(t
   for (var _i = 0, _Object$entries = Object.entries(events); _i < _Object$entries.length; _i++) {
     var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
         eventSettings = _Object$entries$_i[0],
-        eventCallback = _Object$entries$_i[1];
+        eventCallbackName = _Object$entries$_i[1];
 
     var eventData = eventSettings.split(' ');
     var eventTargetSettings = eventData[0];
     var eventName = eventData[1];
-    var eventTargets = void 0;
+    var eventTargets = MVC.Utils.objectQuery(eventTargetSettings, targetObjects);
+    var _iteratorNormalCompletion = true;
+    var _didIteratorError = false;
+    var _iteratorError = undefined;
 
-    switch (eventTargetSettings[0] === '@') {
-      case true:
-        eventTargetSettings = eventTargetSettings.replace('@', '');
-        eventTargets = eventTargetSettings ? this.getObjectFromDotNotationString(eventTargetSettings, targetObjects) : {
-          0: targetObjects
-        };
-        break;
+    try {
+      for (var _iterator = eventTargets[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+        var _step$value = _slicedToArray(_step.value, 2),
+            eventTargetName = _step$value[0],
+            eventTarget = _step$value[1];
 
-      case false:
-        eventTargets = document.querySelectorAll(eventTargetSettings);
-        break;
-    }
-
-    for (var _i2 = 0, _Object$entries2 = Object.entries(eventTargets); _i2 < _Object$entries2.length; _i2++) {
-      var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
-          eventTargetName = _Object$entries2$_i[0],
-          eventTarget = _Object$entries2$_i[1];
-
-      var eventTargetMethodName = toggleMethod === 'on' ? eventTarget instanceof HTMLElement ? 'addEventListener' : 'on' : eventTarget instanceof HTMLElement ? 'removeEventListener' : 'off';
-      var eventCallbacks = eventCallback.match('@') ? this.getObjectFromDotNotationString(eventCallback.replace('@', ''), callbacks) : window[eventCallback];
-
-      for (var _i3 = 0, _Object$values = Object.values(eventCallbacks); _i3 < _Object$values.length; _i3++) {
-        var _eventCallback = _Object$values[_i3];
-        eventTarget[eventTargetMethodName](eventName, _eventCallback);
+        var eventMethodName = toggleMethod === 'on' ? eventTarget instanceof HTMLElement ? 'addEventListener' : 'on' : eventTarget instanceof HTMLElement ? 'removeEventListener' : 'off';
+        var eventCallback = MVC.Utils.objectQuery(eventCallbackName, callbacks)[0][1];
+        eventTarget[eventMethodName](eventName, eventCallback);
+      }
+    } catch (err) {
+      _didIteratorError = true;
+      _iteratorError = err;
+    } finally {
+      try {
+        if (!_iteratorNormalCompletion && _iterator["return"] != null) {
+          _iterator["return"]();
+        }
+      } finally {
+        if (_didIteratorError) {
+          throw _iteratorError;
+        }
       }
     }
   }
@@ -202,7 +293,7 @@ function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = 
 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
-MVC.Utils.validateDataSchema = function validate(data, schema) {
+MVC.Utils.validateDataSchema = function validateDataSchema(data, schema) {
   if (schema) {
     switch (MVC.Utils.typeOf(data)) {
       case 'array':
@@ -210,12 +301,14 @@ MVC.Utils.validateDataSchema = function validate(data, schema) {
         schema = MVC.Utils.typeOf(schema) === 'function' ? schema() : schema;
 
         if (MVC.Utils.isEqualType(MVC.Utils.typeOf(schema), MVC.Utils.typeOf(array))) {
+          console.log(schema.name);
+
           for (var _i = 0, _Object$entries = Object.entries(data); _i < _Object$entries.length; _i++) {
             var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
                 arrayKey = _Object$entries$_i[0],
                 arrayValue = _Object$entries$_i[1];
 
-            array.push(this.validate(arrayValue));
+            array.push(this.validateDataSchema(arrayValue));
           }
         }
 
@@ -227,12 +320,14 @@ MVC.Utils.validateDataSchema = function validate(data, schema) {
         schema = MVC.Utils.typeOf(schema) === 'function' ? schema() : schema;
 
         if (MVC.Utils.isEqualType(MVC.Utils.typeOf(schema), MVC.Utils.typeOf(object))) {
+          console.log(schema.name);
+
           for (var _i2 = 0, _Object$entries2 = Object.entries(data); _i2 < _Object$entries2.length; _i2++) {
             var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
                 objectKey = _Object$entries2$_i[0],
                 objectValue = _Object$entries2$_i[1];
 
-            object[objectKey] = this.validate(objectValue, schema[objectKey]);
+            object[objectKey] = this.validateDataSchema(objectValue, schema[objectKey]);
           }
         }
 
@@ -245,9 +340,10 @@ MVC.Utils.validateDataSchema = function validate(data, schema) {
         schema = MVC.Utils.typeOf(schema) === 'function' ? schema() : schema;
 
         if (MVC.Utils.isEqualType(MVC.Utils.typeOf(schema), MVC.Utils.typeOf(data))) {
+          console.log(schema.name);
           return data;
         } else {
-          throw MVC.CONST.TMPL;
+          throw MVC.TMPL;
         }
 
         break;
@@ -260,15 +356,15 @@ MVC.Utils.validateDataSchema = function validate(data, schema) {
         break;
 
       case 'undefined':
-        throw MVC.CONST.TMPL;
+        throw MVC.TMPL;
         break;
 
       case 'function':
-        throw MVC.CONST.TMPL;
+        throw MVC.TMPL;
         break;
     }
   } else {
-    throw MVC.CONST.TMPL;
+    throw MVC.TMPL;
   }
 };
 "use strict";
@@ -730,10 +826,10 @@ function (_MVC$Base) {
 
         var mutation = void 0;
         var mutationData = mutationSettings.split(' ');
-        var mutationTarget = MVC.Utils.getObjectFromDotNotationString(mutationData[0].replace('@', ''), this.context.ui);
+        var mutationTarget = MVC.Utils.objectQuery(mutationData[0].replace('@', ''), this.context.ui);
         var mutationEventName = mutationData[1];
         var mutationEventData = mutationData[2];
-        mutationCallback = mutationCallback.match('@') ? this.context.observerCallbacks[mutationCallback.replace('@', '')] : typeof mutationCallback === 'string' ? MVC.Utils.getObjectFromDotNotationString(mutationCallback, window) : mutationCallback;
+        mutationCallback = mutationCallback.match('@') ? this.context.observerCallbacks[mutationCallback.replace('@', '')] : typeof mutationCallback === 'string' ? MVC.Utils.objectQuery(mutationCallback, window) : mutationCallback;
         mutation = {
           target: mutationTarget,
           name: mutationEventName,
@@ -743,54 +839,6 @@ function (_MVC$Base) {
 
         this._mutations.push(mutation);
       }
-    }
-  }]);
-
-  return _class;
-}(MVC.Base);
-"use strict";
-
-function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } }
-
-function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); return Constructor; }
-
-function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } return _assertThisInitialized(self); }
-
-function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
-
-function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); if (superClass) _setPrototypeOf(subClass, superClass); }
-
-function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
-
-MVC.Emitter =
-/*#__PURE__*/
-function (_MVC$Base) {
-  _inherits(_class, _MVC$Base);
-
-  function _class() {
-    _classCallCheck(this, _class);
-
-    return _possibleConstructorReturn(this, _getPrototypeOf(_class).apply(this, arguments));
-  }
-
-  _createClass(_class, [{
-    key: "validate",
-    value: function validate(data) {
-      return MVC.Utils.validateDataSchema(data, this.schema);
-    }
-  }, {
-    key: "_schema",
-    get: function get() {
-      return this.schema;
-    },
-    set: function set(schema) {
-      this.schema = schema;
     }
   }]);
 
@@ -1025,6 +1073,9 @@ function (_MVC$Base) {
             var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
                 _key = _Object$entries$_i[0],
                 _value = _Object$entries$_i[1];
+
+            var _data = Object.assign(this.parse(), _defineProperty({}, _key, _value)); // console.log('\n', '_data', '\n', '-----', '\n', _data)
+
 
             this.setDataProperty(_key, _value);
           }
@@ -1370,7 +1421,7 @@ function (_MVC$Base) {
 
         var observerConfigurationData = observerConfiguration.split(' ');
         var observerName = observerConfigurationData[0];
-        var observerTarget = observerName.match('@', '') ? MVC.Utils.getObjectFromDotNotationString(observerName.replace('@', ''), this.ui) : document.querySelectorAll(observerName);
+        var observerTarget = observerName.match('@', '') ? MVC.Utils.objectQuery(observerName.replace('@', ''), this.ui) : document.querySelectorAll(observerName);
         var observerOptions = observerConfigurationData[1] ? observerConfigurationData[1].split(',').reduce(function (accumulator, currentValue) {
           accumulator[currentValue] = true;
           return accumulator;
@@ -1668,4 +1719,4 @@ function (_MVC$Base) {
 
   return _class;
 }(MVC.Base);
-//# sourceMappingURL=http://localhost:3000/.maps/browser/mvc-framework.js.map
+//# sourceMappingURL=../.maps/browser/mvc-framework.js.map

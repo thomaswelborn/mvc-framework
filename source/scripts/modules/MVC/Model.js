@@ -74,6 +74,13 @@ MVC.Model = class extends MVC.Base {
     switch(arguments.length) {
       case 1:
         for(let [key, value] of Object.entries(arguments[0])) {
+          let _data = Object.assign(
+            this.parse(),
+            {
+              [key]: value,
+            },
+          )
+          // console.log('\n', '_data', '\n', '-----', '\n', _data)
           this.setDataProperty(key, value)
         }
         break

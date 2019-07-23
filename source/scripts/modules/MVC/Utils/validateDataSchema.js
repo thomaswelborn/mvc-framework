@@ -1,4 +1,4 @@
-MVC.Utils.validateDataSchema = function validate(data, schema) {
+MVC.Utils.validateDataSchema = function validateDataSchema(data, schema) {
   if(schema) {
     switch(MVC.Utils.typeOf(data)) {
       case 'array':
@@ -15,7 +15,7 @@ MVC.Utils.validateDataSchema = function validate(data, schema) {
           console.log(schema.name)
           for(let [arrayKey, arrayValue] of Object.entries(data)) {
             array.push(
-              this.validate(arrayValue)
+              this.validateDataSchema(arrayValue)
             )
           }
         }
@@ -32,8 +32,9 @@ MVC.Utils.validateDataSchema = function validate(data, schema) {
             MVC.Utils.typeOf(object)
           )
         ) {
+          console.log(schema.name)
           for(let [objectKey, objectValue] of Object.entries(data)) {
-            object[objectKey] = this.validate(objectValue, schema[objectKey])
+            object[objectKey] = this.validateDataSchema(objectValue, schema[objectKey])
           }
         }
         return object
@@ -50,9 +51,10 @@ MVC.Utils.validateDataSchema = function validate(data, schema) {
             MVC.Utils.typeOf(data)
           )
         ) {
+          console.log(schema.name)
           return data
         } else {
-          throw MVC.CONST.TMPL
+          throw MVC.TMPL
         }
         break
       case 'null':
@@ -66,13 +68,13 @@ MVC.Utils.validateDataSchema = function validate(data, schema) {
         }
         break
       case 'undefined':
-        throw MVC.CONST.TMPL
+        throw MVC.TMPL
         break
       case 'function':
-        throw MVC.CONST.TMPL
+        throw MVC.TMPL
         break
     }
   } else {
-    throw MVC.CONST.TMPL
+    throw MVC.TMPL
   }
 }

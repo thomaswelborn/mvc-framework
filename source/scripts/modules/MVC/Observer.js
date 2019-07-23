@@ -26,7 +26,7 @@ MVC.Observer = class extends MVC.Base {
     for(let [mutationSettings, mutationCallback] of Object.entries(mutations)) {
       let mutation
       let mutationData = mutationSettings.split(' ')
-      let mutationTarget = MVC.Utils.getObjectFromDotNotationString(
+      let mutationTarget = MVC.Utils.objectQuery(
         mutationData[0].replace('@', ''),
         this.context.ui
       )
@@ -35,7 +35,7 @@ MVC.Observer = class extends MVC.Base {
       mutationCallback = (mutationCallback.match('@'))
         ? this.context.observerCallbacks[mutationCallback.replace('@', '')]
         : (typeof mutationCallback === 'string')
-          ? MVC.Utils.getObjectFromDotNotationString(mutationCallback, window)
+          ? MVC.Utils.objectQuery(mutationCallback, window)
           : mutationCallback
       mutation = {
         target: mutationTarget,

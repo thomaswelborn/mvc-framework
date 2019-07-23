@@ -6,8 +6,34 @@ MVC.CONST = MVC.Constants
 MVC.Constants.Events = {}
 MVC.CONST.EV = MVC.Constants.Events
 
-MVC.Constants.Templates = {}
-MVC.CONST.TMPL = MVC.Constants.Templates
+MVC.Templates = {
+  ObjectQueryStringFormatInvalidRoot: function ObjectQueryStringFormatInvalid(data) {
+    return [
+      'Object Query "string" property must be formatted to first include "[@]".'
+    ].join('\n')
+  },
+  DataSchemaMismatch: function DataSchemaMismatch(data) {
+    return [
+      `Data and Schema properties do not match.`
+    ].join('\n')
+  },
+  DataFunctionInvalid: function DataFunctionInvalid(data) {
+    [
+      `Model Data property type "Function" is not valid.`
+    ].join('\n')
+  },
+  DataUndefined: function DataUndefined(data) {
+    [
+      `Model Data property undefined.`
+    ].join('\n')
+  },
+  SchemaUndefined: function SchemaUndefined(data) {
+    [
+      `Model "Schema" undefined.`
+    ].join('\n')
+  },
+}
+MVC.TMPL = MVC.Templates
 
 MVC.Utils = {}
 
@@ -69,31 +95,80 @@ MVC.Utils.addPropertiesToTargetObject = function addPropertiesToTargetObject() {
   return targetObject
 }
 
-MVC.Utils.getObjectFromDotNotationString = function getObjectFromDotNotationString(
+MVC.Utils.objectQuery = function objectQuery(
   string,
   context
 ) {
-  let object = string
-    .split('.')
-    .reduce(
-      (accumulator, currentValue) => {
-        currentValue = (currentValue[0] === '/')
-          ? new RegExp(currentValue.replace(new RegExp('/', 'g'), ''))
-          : currentValue
-        for(let [contextKey, contextValue] of Object.entries(context)) {
-          if(currentValue instanceof RegExp) {
-            if(currentValue.test(contextKey)) {
-              accumulator[contextKey] = contextValue
-            }
-          } else {
-            if(currentValue === contextKey) {
-              accumulator[contextKey] = contextValue
-            }
-          }
+  let stringData = MVC.Utils.objectQuery.parseStringData(string, context)
+  if(stringData[0].test('@')) {
+    if(stringData.length === 1) {
+      return [
+        ['@', context]
+      ]
+    } else {
+      stringData = stringData.slice(1)
+      let _context = MVC.Utils.objectQuery.parseContext(stringData, context)
+      return _context
+    }
+  } else {
+    throw MVC.TMPL.ObjectQueryStringFormatInvalidRoot()
+  }
+}
+MVC.Utils.objectQuery.parseContext = function(stringData, context) {
+  context = (MVC.Utils.isObject(context))
+    ? Object.entries(context)
+    : context
+  return stringData.reduce((properties, fragment, fragmentIndex, fragments) => {
+    let _properties = []
+    for(let [propertyKey, propertyValue] of properties) {
+      if(fragment.test(propertyKey)) {
+        if(fragmentIndex === fragments.length - 1) {
+          _properties = _properties.concat([[propertyKey, propertyValue]])
+        } else {
+          _properties = _properties.concat(Object.entries(propertyValue))
         }
-        return accumulator
-      }, {})
-  return object
+      }
+    }
+    properties = _properties
+    return properties
+  }, context)
+}
+MVC.Utils.objectQuery.parseStringData = function(string, context) {
+  let stringData = string
+    .split('][')
+    .map((fragment, fragmentIndex, fragments) => {
+      if(fragmentIndex === 0) {
+        fragment = (fragment[0] === '[')
+          ? fragment.split('').slice(1).join('')
+          : fragment
+      }
+      if(fragmentIndex === fragments.length - 1) {
+        fragment = (fragment[fragment.length - 1] === ']')
+          ? fragment.split('').slice(0, -1).join('')
+          : fragment
+      }
+      let operator
+      if(fragment[0] === '/') {
+        fragment = fragment.split('')
+        fragment.splice(0, 1)
+        switch(fragment[fragment.length - 1]) {
+          case '/':
+            operator = 'i'
+            break
+          case ')':
+            operator = fragment.splice(-3).slice(1).slice(0, -1)
+            break
+        }
+        fragment.splice(-1)
+        fragment = fragment.join('')
+        fragment = new RegExp(fragment, operator)
+      } else {
+        operator = 'i'
+        fragment = new RegExp('^'.concat(fragment, '$'), operator)
+      }
+      return fragment
+    })
+  return stringData
 }
 
 MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
@@ -102,44 +177,27 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
   targetObjects,
   callbacks
 ) {
-  for(let [eventSettings, eventCallback] of Object.entries(events)) {
+  for(let [eventSettings, eventCallbackName] of Object.entries(events)) {
     let eventData = eventSettings.split(' ')
     let eventTargetSettings = eventData[0]
     let eventName = eventData[1]
-    let eventTargets
-    switch(eventTargetSettings[0] === '@') {
-      case true:
-        eventTargetSettings = eventTargetSettings.replace('@', '')
-        eventTargets = (eventTargetSettings)
-          ? this.getObjectFromDotNotationString(
-            eventTargetSettings,
-            targetObjects
-          )
-          : {
-            0: targetObjects,
-          }
-        break
-      case false:
-        eventTargets = document.querySelectorAll(eventTargetSettings)
-        break
-    }
-    for(let [eventTargetName, eventTarget] of Object.entries(eventTargets)) {
-      let eventTargetMethodName = (toggleMethod === 'on')
-        ? (eventTarget instanceof HTMLElement)
-          ? 'addEventListener'
-          : 'on'
-        : (eventTarget instanceof HTMLElement)
-          ? 'removeEventListener'
-          : 'off'
-      let eventCallbacks = (eventCallback.match('@'))
-        ? this.getObjectFromDotNotationString(
-          eventCallback.replace('@', ''),
-          callbacks
-        )
-        : window[eventCallback]
-      for(let eventCallback of Object.values(eventCallbacks)) {
-        eventTarget[eventTargetMethodName](eventName, eventCallback)
-      }
+    let eventTargets = MVC.Utils.objectQuery(
+      eventTargetSettings,
+      targetObjects
+    )
+    for(let [eventTargetName, eventTarget] of eventTargets) {
+      let eventMethodName = (toggleMethod === 'on')
+      ? (eventTarget instanceof HTMLElement)
+        ? 'addEventListener'
+        : 'on'
+      : (eventTarget instanceof HTMLElement)
+        ? 'removeEventListener'
+        : 'off'
+      let eventCallback = MVC.Utils.objectQuery(
+        eventCallbackName,
+        callbacks
+      )[0][1]
+      eventTarget[eventMethodName](eventName, eventCallback)
     }
   }
 }
@@ -150,7 +208,7 @@ MVC.Utils.unbindEventsFromTargetObjects = function unbindEventsFromTargetObjects
   this.toggleEventsForTargetObjects('off', ...arguments)
 }
 
-MVC.Utils.validateDataSchema = function validate(data, schema) {
+MVC.Utils.validateDataSchema = function validateDataSchema(data, schema) {
   if(schema) {
     switch(MVC.Utils.typeOf(data)) {
       case 'array':
@@ -164,9 +222,10 @@ MVC.Utils.validateDataSchema = function validate(data, schema) {
             MVC.Utils.typeOf(array)
           )
         ) {
+          console.log(schema.name)
           for(let [arrayKey, arrayValue] of Object.entries(data)) {
             array.push(
-              this.validate(arrayValue)
+              this.validateDataSchema(arrayValue)
             )
           }
         }
@@ -183,8 +242,9 @@ MVC.Utils.validateDataSchema = function validate(data, schema) {
             MVC.Utils.typeOf(object)
           )
         ) {
+          console.log(schema.name)
           for(let [objectKey, objectValue] of Object.entries(data)) {
-            object[objectKey] = this.validate(objectValue, schema[objectKey])
+            object[objectKey] = this.validateDataSchema(objectValue, schema[objectKey])
           }
         }
         return object
@@ -201,9 +261,10 @@ MVC.Utils.validateDataSchema = function validate(data, schema) {
             MVC.Utils.typeOf(data)
           )
         ) {
+          console.log(schema.name)
           return data
         } else {
-          throw MVC.CONST.TMPL
+          throw MVC.TMPL
         }
         break
       case 'null':
@@ -217,14 +278,14 @@ MVC.Utils.validateDataSchema = function validate(data, schema) {
         }
         break
       case 'undefined':
-        throw MVC.CONST.TMPL
+        throw MVC.TMPL
         break
       case 'function':
-        throw MVC.CONST.TMPL
+        throw MVC.TMPL
         break
     }
   } else {
-    throw MVC.CONST.TMPL
+    throw MVC.TMPL
   }
 }
 
@@ -376,7 +437,7 @@ MVC.Observer = class extends MVC.Base {
     for(let [mutationSettings, mutationCallback] of Object.entries(mutations)) {
       let mutation
       let mutationData = mutationSettings.split(' ')
-      let mutationTarget = MVC.Utils.getObjectFromDotNotationString(
+      let mutationTarget = MVC.Utils.objectQuery(
         mutationData[0].replace('@', ''),
         this.context.ui
       )
@@ -385,7 +446,7 @@ MVC.Observer = class extends MVC.Base {
       mutationCallback = (mutationCallback.match('@'))
         ? this.context.observerCallbacks[mutationCallback.replace('@', '')]
         : (typeof mutationCallback === 'string')
-          ? MVC.Utils.getObjectFromDotNotationString(mutationCallback, window)
+          ? MVC.Utils.objectQuery(mutationCallback, window)
           : mutationCallback
       mutation = {
         target: mutationTarget,
@@ -440,15 +501,6 @@ MVC.Observer = class extends MVC.Base {
           break
       }
     }
-  }
-}
-
-MVC.Emitter = class extends MVC.Base {
-  constructor() { super(...arguments) }
-  get _schema() { return this.schema }
-  set _schema(schema) { this.schema = schema }
-  validate(data) {
-    return MVC.Utils.validateDataSchema(data, this.schema)
   }
 }
 
@@ -582,6 +634,13 @@ MVC.Model = class extends MVC.Base {
     switch(arguments.length) {
       case 1:
         for(let [key, value] of Object.entries(arguments[0])) {
+          let _data = Object.assign(
+            this.parse(),
+            {
+              [key]: value,
+            },
+          )
+          // console.log('\n', '_data', '\n', '-----', '\n', _data)
           this.setDataProperty(key, value)
         }
         break
@@ -752,7 +811,7 @@ MVC.View = class extends MVC.Base {
       let observerConfigurationData = observerConfiguration.split(' ')
       let observerName = observerConfigurationData[0]
       let observerTarget = (observerName.match('@', ''))
-        ? MVC.Utils.getObjectFromDotNotationString(
+        ? MVC.Utils.objectQuery(
             observerName.replace('@', ''),
             this.ui
           )
