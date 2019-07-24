@@ -27,7 +27,7 @@ MVC.Observer = class extends MVC.Base {
       let mutation
       let mutationData = mutationSettings.split(' ')
       let mutationTarget = MVC.Utils.objectQuery(
-        mutationData[0].replace('@', ''),
+        mutationData,
         this.context.ui
       )
       let mutationEventName = mutationData[1]

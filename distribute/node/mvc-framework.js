@@ -762,6 +762,21 @@ MVC.Model = class extends MVC.Base {
     return JSON.parse(JSON.stringify(Object.assign({}, data))) }
 }
 
+MVC.Emitter = class extends MVC.Model {
+  constructor() {
+    super(...arguments)
+    this._name = this.settings.name
+  }
+  get _name() { return this.name }
+  set _name(name) { this.name = name }
+  get emission() {
+    return {
+      name: this.name,
+      data: this.parse()
+    }
+  }
+}
+
 MVC.View = class extends MVC.Base {
   constructor() {
     super(...arguments)
@@ -809,12 +824,39 @@ MVC.View = class extends MVC.Base {
   set _uiEvents(uiEvents) {
     MVC.Utils.bindEventsToTargetObjects(uiEvents, this.ui, this.uiCallbacks)
   }
-  get _uiCallbacks() { return this.uiCallbacks || {} }
-  set _uiCallbacks(uiCallbacks) { this.uiCallbacks = uiCallbacks }
-  get _observerCallbacks() { return this.observerCallbacks || {} }
-  set _observerCallbacks(observerCallbacks) { this.observerCallbacks = observerCallbacks }
-  get _uiEmitters() { return this.uiEmitters || {} }
-  set _uiEmitters(uiEmitters) { this.uiEmitters = emitters }
+  get _uiCallbacks() {
+    this.uiCallbacks = (this.uiCallbacks)
+      ? this.uiCallbacks
+      : {}
+    return this.uiCallbacks
+  }
+  set _uiCallbacks(uiCallbacks) {
+    this.uiCallbacks = MVC.Utils.addPropertiesToTargetObject(
+      uiCallbacks, this._uiCallbacks
+    )
+  }
+  get _observerCallbacks() {
+    this.observerCallbacks = (this.observerCallbacks)
+      ? this.observerCallbacks
+      : {}
+    return this.observerCallbacks
+  }
+  set _observerCallbacks(observerCallbacks) {
+    this.observerCallbacks = MVC.Utils.addPropertiesToTargetObject(
+      observerCallbacks, this._observerCallbacks
+    )
+  }
+  get _uiEmitters() {
+    this.uiEmitters = (this.uiEmitters)
+      ? this.uiEmitters
+      : {}
+    return this.uiEmitters
+  }
+  set _uiEmitters(uiEmitters) {
+    this.uiEmitters = MVC.Utils.addPropertiesToTargetObject(
+      uiEmitters, this._uiEmitters
+    )
+  }
   get _observers() {
     this.observers = (this.observers)
       ? this.observers

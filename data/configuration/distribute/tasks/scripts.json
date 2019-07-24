@@ -20,6 +20,7 @@
         "source/scripts/modules/MVC/Observer.js",
         "source/scripts/modules/MVC/Service.js",
         "source/scripts/modules/MVC/Model.js",
+        "source/scripts/modules/MVC/Emitter.js",
         "source/scripts/modules/MVC/View.js",
         "source/scripts/modules/MVC/Controller.js",
         "source/scripts/modules/MVC/Router.js"
@@ -62,6 +63,7 @@
         "source/scripts/modules/MVC/Observer.js",
         "source/scripts/modules/MVC/Service.js",
         "source/scripts/modules/MVC/Model.js",
+        "source/scripts/modules/MVC/Emitter.js",
         "source/scripts/modules/MVC/View.js",
         "source/scripts/modules/MVC/Controller.js",
         "source/scripts/modules/MVC/Router.js"
