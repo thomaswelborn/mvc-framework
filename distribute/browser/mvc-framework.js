@@ -257,7 +257,6 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(t
 
         var eventMethodName = toggleMethod === 'on' ? eventTarget instanceof NodeList || eventTarget instanceof HTMLElement ? 'addEventListener' : 'on' : eventTarget instanceof NodeList || eventTarget instanceof HTMLElement ? 'removeEventListener' : 'off';
         var eventCallback = MVC.Utils.objectQuery(eventCallbackName, callbacks)[0][1];
-        console.log('eventMethodName', eventMethodName);
 
         if (eventTarget instanceof NodeList) {
           var _iteratorNormalCompletion2 = true;
@@ -1096,20 +1095,27 @@ function (_MVC$Base) {
   }, {
     key: "set",
     value: function set() {
+      var _this2 = this;
+
       this._history = this.parse();
 
       switch (arguments.length) {
         case 1:
-          for (var _i = 0, _Object$entries = Object.entries(arguments[0]); _i < _Object$entries.length; _i++) {
-            var _Object$entries$_i = _slicedToArray(_Object$entries[_i], 2),
-                _key = _Object$entries$_i[0],
-                _value = _Object$entries$_i[1];
+          var _arguments = Object.entries(arguments[0]);
 
-            var _data = Object.assign(this.parse(), _defineProperty({}, _key, _value)); // console.log('\n', '_data', '\n', '-----', '\n', _data)
+          _arguments.forEach(function (_ref, index) {
+            var _ref2 = _slicedToArray(_ref, 2),
+                key = _ref2[0],
+                value = _ref2[1];
 
+            if (index === 0) {
+              _this2._isSetting = true;
+            } else if (index === _arguments.length - 1) {
+              _this2._isSetting = false;
+            }
 
-            this.setDataProperty(_key, _value);
-          }
+            _this2.setDataProperty(key, value);
+          });
 
           break;
 
@@ -1135,8 +1141,8 @@ function (_MVC$Base) {
       switch (arguments.length) {
         case 0:
           for (var _i2 = 0, _Object$keys = Object.keys(this._data); _i2 < _Object$keys.length; _i2++) {
-            var _key2 = _Object$keys[_i2];
-            this.unsetDataProperty(_key2);
+            var _key = _Object$keys[_i2];
+            this.unsetDataProperty(_key);
           }
 
           break;
@@ -1159,10 +1165,10 @@ function (_MVC$Base) {
           },
           set: function set(value) {
             this[key] = value;
-            var setValueEventName = ['set', ':', key].join('');
-            var setEventName = 'set';
 
-            if (!silent) {
+            if (!silent && !context._isSetting) {
+              var setValueEventName = ['set', ':', key].join('');
+              var setEventName = 'set';
               context.emit(setValueEventName, {
                 name: setValueEventName,
                 data: {
@@ -1212,6 +1218,14 @@ function (_MVC$Base) {
     value: function parse(data) {
       data = data || this._data;
       return JSON.parse(JSON.stringify(Object.assign({}, data)));
+    }
+  }, {
+    key: "_isSetting",
+    get: function get() {
+      return this.isSetting;
+    },
+    set: function set(isSetting) {
+      this.isSetting = isSetting;
     }
   }, {
     key: "_defaults",
@@ -1310,7 +1324,11 @@ function (_MVC$Model) {
     _classCallCheck(this, _class);
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(_class).apply(this, arguments));
-    _this._name = _this.settings.name;
+
+    if (_this.settings) {
+      if (_this.settings.name) _this._name = _this.settings.name;
+    }
+
     return _this;
   }
 
@@ -1326,7 +1344,7 @@ function (_MVC$Model) {
     key: "emission",
     get: function get() {
       return {
-        name: this.name,
+        name: this._name,
         data: this.parse()
       };
     }

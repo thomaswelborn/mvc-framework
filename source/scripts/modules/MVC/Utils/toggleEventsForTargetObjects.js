@@ -30,7 +30,6 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
         eventCallbackName,
         callbacks
       )[0][1]
-      console.log('eventMethodName', eventMethodName)
       if(eventTarget instanceof NodeList) {
         for(let _eventTarget of eventTarget) {
           _eventTarget[eventMethodName](eventName, eventCallback)

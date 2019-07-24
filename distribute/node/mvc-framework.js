@@ -203,7 +203,6 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
         eventCallbackName,
         callbacks
       )[0][1]
-      console.log('eventMethodName', eventMethodName)
       if(eventTarget instanceof NodeList) {
         for(let _eventTarget of eventTarget) {
           _eventTarget[eventMethodName](eventName, eventCallback)
@@ -578,6 +577,8 @@ MVC.Model = class extends MVC.Base {
     super(...arguments)
     this.addSettings()
   }
+  get _isSetting() { return this.isSetting }
+  set _isSetting(isSetting) { this.isSetting = isSetting }
   get _defaults() { return this._defaults }
   set _defaults(defaults) {
     this.defaults = defaults
@@ -648,16 +649,15 @@ MVC.Model = class extends MVC.Base {
     this._history = this.parse()
     switch(arguments.length) {
       case 1:
-        for(let [key, value] of Object.entries(arguments[0])) {
-          let _data = Object.assign(
-            this.parse(),
-            {
-              [key]: value,
-            },
-          )
-          // console.log('\n', '_data', '\n', '-----', '\n', _data)
+        let _arguments = Object.entries(arguments[0])
+        _arguments.forEach(([key, value], index) => {
+          if(index === 0) {
+            this._isSetting = true
+          } else if(index === (_arguments.length - 1)) {
+            this._isSetting = false
+          }
           this.setDataProperty(key, value)
-        }
+        })
         break
       case 2:
         var key = arguments[0]
@@ -697,9 +697,12 @@ MVC.Model = class extends MVC.Base {
             get() { return this[key] },
             set(value) {
               this[key] = value
-              let setValueEventName = ['set', ':', key].join('')
-              let setEventName = 'set'
-              if(!silent) {
+              if(
+                !silent &&
+                !context._isSetting
+              ) {
+                let setValueEventName = ['set', ':', key].join('')
+                let setEventName = 'set'
                 context.emit(
                   setValueEventName,
                   {
@@ -765,13 +768,15 @@ MVC.Model = class extends MVC.Base {
 MVC.Emitter = class extends MVC.Model {
   constructor() {
     super(...arguments)
-    this._name = this.settings.name
+    if(this.settings) {
+      if(this.settings.name) this._name = this.settings.name
+    }
   }
   get _name() { return this.name }
   set _name(name) { this.name = name }
   get emission() {
     return {
-      name: this.name,
+      name: this._name,
       data: this.parse()
     }
   }
