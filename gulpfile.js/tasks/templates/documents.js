@@ -7,6 +7,8 @@ module.exports = function(rootProcess, data) {
         .src(fileSettings.src.globs, fileSettings.src.options)
           .pipe($.tasks.subtasks.data(fileSettings.data))
           .pipe($.tasks.subtasks.compileHandlebars(fileSettings.compileHandlebars))
+          .pipe($.tasks.subtasks.cleanHTML(fileSettings.cleanHTML))
+          .pipe($.tasks.subtasks.minifyHTML(fileSettings.minifyHTML))
           .pipe($.tasks.subtasks.rename(fileSettings.rename))
         .pipe($.lib.dest(fileSettings.dest))
       stream.add(task)

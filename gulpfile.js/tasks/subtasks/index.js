@@ -1,6 +1,7 @@
 module.exports = {
   babel: require('./babel.js'),
   beautify: require('./beautify.js'),
+  cleanHTML: require('./clean-html.js'),
   compileHandlebars: require('./compile-handlebars.js'),
   concat: require('./concat.js'),
   data: require('./data'),
@@ -8,6 +9,7 @@ module.exports = {
   delSync: require('./delSync.js'),
   flatten: require('./flatten.js'),
   minify: require('./minify.js'),
+  minifyHTML: require('./minify-html.js'),
   prettyprint: require('./prettyprint.js'),
   rename: require('./rename.js'),
   sass: require('./sass.js'),

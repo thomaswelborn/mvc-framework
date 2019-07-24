@@ -4,6 +4,7 @@ global.$ = {
   libraries: {
     gulp: require('gulp'),
     babel: require('gulp-babel'),
+    cleanHTML: require('gulp-htmlclean'),
     concat: require('gulp-concat'),
     compileHandlebars: require('gulp-compile-handlebars'),
     data: require('gulp-data'),
@@ -13,6 +14,7 @@ global.$ = {
     flatten: require('gulp-flatten'),
     handlebars: require('gulp-handlebars'),
     minify: require('gulp-minify'),
+    minifyHTML: require('gulp-htmlmin'),
     rename: require('gulp-rename'),
     sass: require('gulp-sass'),
     sourcemaps: require('gulp-sourcemaps'),
