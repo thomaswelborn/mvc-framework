@@ -355,7 +355,12 @@ MVC.Events = class {
 
 MVC.Channels = class {
   constructor() {}
-  get _channels() { return this.channels || {} }
+  get _channels() {
+    this.channels = (this.channels)
+      ? this.channels
+      : {}
+    return this.channels
+  }
   channel(channelName) {
     this._channels[channelName] = (this._channels[channelName])
       ? this._channels[channelName]
@@ -369,7 +374,12 @@ MVC.Channels = class {
 
 MVC.Channels.Channel = class {
   constructor() {}
-  get _responses() { return this.responses || {} }
+  get _responses() {
+    this.responses = (this.responses)
+      ? this.responses
+      : {}
+    return this.responses
+  }
   response(responseName, responseCallback) {
     if(responseCallback) {
       this._responses[responseName] = responseCallback

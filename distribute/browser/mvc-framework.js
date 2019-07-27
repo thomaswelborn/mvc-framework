@@ -545,7 +545,8 @@ function () {
   }, {
     key: "_channels",
     get: function get() {
-      return this.channels || {};
+      this.channels = this.channels ? this.channels : {};
+      return this.channels;
     }
   }]);
 
@@ -617,7 +618,8 @@ function () {
   }, {
     key: "_responses",
     get: function get() {
-      return this.responses || {};
+      this.responses = this.responses ? this.responses : {};
+      return this.responses;
     }
   }]);
 
