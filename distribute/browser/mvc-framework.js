@@ -47,6 +47,10 @@ MVC.Utils.isObject = function isObject(object) {
 MVC.Utils.isEqualType = function isEqualType(valueA, valueB) {
   return valueA === valueB;
 };
+
+MVC.Utils.isHTMLElement = function isHTMLElement(object) {
+  return object instanceof HTMLElement;
+};
 "use strict";
 
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
@@ -128,27 +132,12 @@ function _iterableToArrayLimit(arr, i) { var _arr = []; var _n = true; var _d = 
 function _arrayWithHoles(arr) { if (Array.isArray(arr)) return arr; }
 
 MVC.Utils.objectQuery = function objectQuery(string, context) {
-  var stringData = MVC.Utils.objectQuery.parseStringData(string, context);
-
-  if (stringData[0].test('@')) {
-    if (stringData.length === 1) {
-      return [['@', context]];
-    } else {
-      stringData = stringData.slice(1);
-
-      var _context = MVC.Utils.objectQuery.parseContext(stringData, context);
-
-      return _context;
-    }
-  } else {
-    throw MVC.TMPL.ObjectQueryStringFormatInvalidRoot();
-  }
-};
-
-MVC.Utils.objectQuery.parseContext = function (stringData, context) {
+  var stringData = MVC.Utils.objectQuery.parseNotation(string);
+  if (stringData[0] === '@') stringData.splice(0, 1);
   context = MVC.Utils.isObject(context) ? Object.entries(context) : context;
   return stringData.reduce(function (properties, fragment, fragmentIndex, fragments) {
     var _properties = [];
+    fragment = MVC.Utils.objectQuery.parseFragment(fragment);
     var _iteratorNormalCompletion = true;
     var _didIteratorError = false;
     var _iteratorError = undefined;
@@ -159,7 +148,7 @@ MVC.Utils.objectQuery.parseContext = function (stringData, context) {
             propertyKey = _step$value[0],
             propertyValue = _step$value[1];
 
-        if (fragment.test(propertyKey)) {
+        if (propertyKey.match(fragment)) {
           if (fragmentIndex === fragments.length - 1) {
             _properties = _properties.concat([[propertyKey, propertyValue]]);
           } else {
@@ -185,45 +174,77 @@ MVC.Utils.objectQuery.parseContext = function (stringData, context) {
     properties = _properties;
     return properties;
   }, context);
-};
+  /*
+  let stringData = MVC.Utils.objectQuery.parseNotation(string)
+  if(stringData[0] === '@') stringData.splice(0, 1)
+  let object = Object.entries(context)
+    .reduce((properties, [propertyKey, propertyValue], propertyIndex, originalContext) => {
+      properties = stringData.reduce((object, fragment, fragmentIndex, originalStringData) => {
+        fragment = MVC.Utils.objectQuery.parseFragment(fragment)
+        if(propertyKey.match(fragment)) {
+          if(fragmentIndex === originalStringData.length - 1) {
+            console.log('fragment', fragment)
+            console.log('propertyValue', propertyValue)
+            return propertyValue
+          } else {
+            console.log('fragment', fragment)
+            console.log('propertyValue', propertyValue)
+            return Object.entries(propertyValue)
+          }
+        }
+      }, [])
+      console.log('properties', '\n', properties)
+      return properties
+    }, [])
+  console.log('object', object)
+  */
 
-MVC.Utils.objectQuery.parseStringData = function (string, context) {
-  var stringData = string.split('][').map(function (fragment, fragmentIndex, fragments) {
-    if (fragmentIndex === 0) {
-      fragment = fragment[0] === '[' ? fragment.split('').slice(1).join('') : fragment;
-    }
-
-    if (fragmentIndex === fragments.length - 1) {
-      fragment = fragment[fragment.length - 1] === ']' ? fragment.split('').slice(0, -1).join('') : fragment;
-    }
-
-    var operator;
-
-    if (fragment[0] === '/') {
-      fragment = fragment.split('');
-      fragment.splice(0, 1);
-
-      switch (fragment[fragment.length - 1]) {
-        case '/':
-          operator = 'i';
-          break;
-
-        case ')':
-          operator = fragment.splice(-3).slice(1).slice(0, -1);
-          break;
+  /*
+  let stringData = MVC.Utils.objectQuery.parseNotation(string)
+  if(stringData[0] === '@') stringData.splice(0, 1)
+  stringData.reduce((object, fragment, fragmentIndex, originalStringData) => {
+    console.log('-----', '\n', '-----', '\n')
+    console.log('input', object)
+    fragment = MVC.Utils.objectQuery.parseFragment(fragment)
+    let properties = []
+    object.forEach(([propertyKey, propertyValue]) => {
+      if(propertyKey.match(fragment)) {
+        if(fragmentIndex === originalStringData.length - 1) {
+          // return propertyValue
+          // console.log('propertyValue', propertyValue)
+          properties.push(propertyValue)
+        } else {
+          // return Object.entries(propertyValue)
+          // console.log('propertyValue', propertyValue)
+          properties.push(Object.entries(propertyValue))
+        }
       }
+    })
+    console.log('output', properties)
+    return properties
+  }, Object.entries(context))
+  */
+}; // Parse Notation
 
-      fragment.splice(-1);
-      fragment = fragment.join('');
-      fragment = new RegExp(fragment, operator);
-    } else {
-      operator = 'i';
-      fragment = new RegExp('^'.concat(fragment, '$'), operator);
-    }
 
-    return fragment;
-  });
-  return stringData;
+MVC.Utils.objectQuery.parseNotation = function parseNotation(string) {
+  if (string.charAt(0) === '[' && string.charAt(string.length - 1) == ']') {
+    string = string.slice(1, -1).split('][');
+  } else {
+    string = string.split('.');
+  }
+
+  return string;
+}; // Parse Fragments
+
+
+MVC.Utils.objectQuery.parseFragment = function parseFragment(fragment) {
+  if (fragment.charAt(0) === '/' && fragment.charAt(fragment.length - 1) == '/') {
+    fragment = fragment.slice(1, -1);
+    fragment = new RegExp(fragment);
+  }
+
+  return fragment;
 };
 "use strict";
 
@@ -744,7 +765,6 @@ function (_MVC$Base) {
     key: "addSettings",
     value: function addSettings() {
       if (Object.keys(this._settings).length) {
-        this._settings = settings;
         if (this._settings.context) this._context = this._settings.context;
         if (this._settings.target) this._target = this._settings.target instanceof NodeList ? this._settings.target[0] : this._settings.target;
         if (this._settings.options) this._options = this._settings.options;
@@ -769,25 +789,19 @@ function (_MVC$Base) {
               var mutationRecordCategory = _mutationRecordCatego[_i2];
 
               if (mutationRecord[mutationRecordCategory].length) {
-                var _loop2 = function _loop2() {
+                for (var _i3 = 0, _Object$entries2 = Object.entries(mutationRecord[mutationRecordCategory]); _i3 < _Object$entries2.length; _i3++) {
                   var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i3], 2),
                       nodeIndex = _Object$entries2$_i[0],
                       node = _Object$entries2$_i[1];
 
-                  var mutation = _this2.mutations.filter(function (_mutation) {
-                    return _mutation.target === node;
-                  })[0];
-
-                  if (mutation) {
-                    mutation.callback({
-                      mutation: mutation,
-                      mutationRecord: mutationRecord
-                    });
-                  }
-                };
-
-                for (var _i3 = 0, _Object$entries2 = Object.entries(mutationRecord[mutationRecordCategory]); _i3 < _Object$entries2.length; _i3++) {
-                  _loop2();
+                  // let mutation = this.mutations.filter((_mutation) => _mutation.target === node)[0]
+                  console.log('nodeIndex, node', '\n', nodeIndex, node);
+                  console.log('this.mutations', '\n', _this2.mutations); // if(mutation) {
+                  //   mutation.callback({
+                  //     mutation: mutation,
+                  //     mutationRecord: mutationRecord,
+                  //   })
+                  // }
                 }
               }
             }
@@ -858,10 +872,10 @@ function (_MVC$Base) {
 
         var mutation = void 0;
         var mutationData = mutationSettings.split(' ');
-        var mutationTarget = MVC.Utils.objectQuery(mutationData, this.context.ui);
+        var mutationTarget = MVC.Utils.objectQuery(mutationData[0]);
         var mutationEventName = mutationData[1];
         var mutationEventData = mutationData[2];
-        mutationCallback = mutationCallback.match('@') ? this.context.observerCallbacks[mutationCallback.replace('@', '')] : typeof mutationCallback === 'string' ? MVC.Utils.objectQuery(mutationCallback, window) : mutationCallback;
+        mutationCallback = MVC.Utils.objectQuery(mutationCallback, window);
         mutation = {
           target: mutationTarget,
           name: mutationEventName,
@@ -1470,7 +1484,8 @@ function (_MVC$Base) {
       return this.ui;
     },
     set: function set(ui) {
-      this._ui['$'] = this.element;
+      this._ui['$element'] = this.element;
+      this._ui['$parentElement'] = this.element.parentElement;
 
       for (var _i2 = 0, _Object$entries2 = Object.entries(ui); _i2 < _Object$entries2.length; _i2++) {
         var _Object$entries2$_i = _slicedToArray(_Object$entries2[_i2], 2),
@@ -1514,7 +1529,12 @@ function (_MVC$Base) {
       return this.uiEmitters;
     },
     set: function set(uiEmitters) {
-      this.uiEmitters = MVC.Utils.addPropertiesToTargetObject(uiEmitters, this._uiEmitters);
+      var _uiEmitters = {};
+      uiEmitters.forEach(function (UIEmitter) {
+        var uiEmitter = new UIEmitter();
+        _uiEmitters[uiEmitter.name] = uiEmitter;
+      });
+      this.uiEmitters = MVC.Utils.addPropertiesToTargetObject(_uiEmitters, this._uiEmitters);
     }
   }, {
     key: "_observers",
@@ -1530,8 +1550,8 @@ function (_MVC$Base) {
 
         var observerConfigurationData = observerConfiguration.split(' ');
         var observerName = observerConfigurationData[0];
-        var observerTarget = observerName.match('@', '') ? MVC.Utils.objectQuery(observerName.replace('@', ''), this.ui) : document.querySelectorAll(observerName);
-        var observerOptions = observerConfigurationData[1] ? observerConfigurationData[1].split(',').reduce(function (accumulator, currentValue) {
+        var observerTarget = MVC.Utils.objectQuery(observerName, this.ui);
+        var observerOptions = observerConfigurationData[1] ? observerConfigurationData[1].split(':').reduce(function (accumulator, currentValue) {
           accumulator[currentValue] = true;
           return accumulator;
         }, {}) : {};

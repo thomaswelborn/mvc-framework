@@ -33,7 +33,8 @@ MVC.View = class extends MVC.Base {
     return this.ui
   }
   set _ui(ui) {
-    this._ui['$'] = this.element
+    this._ui['$element'] = this.element
+    this._ui['$parentElement'] = this.element.parentElement
     for(let [uiKey, uiSelector] of Object.entries(ui)) {
       if(typeof uiSelector === 'undefined') {
         delete this._ui[uiKey]
@@ -74,8 +75,13 @@ MVC.View = class extends MVC.Base {
     return this.uiEmitters
   }
   set _uiEmitters(uiEmitters) {
+    let _uiEmitters = {}
+    uiEmitters.forEach((UIEmitter) => {
+      let uiEmitter = new UIEmitter()
+      _uiEmitters[uiEmitter.name] = uiEmitter
+    })
     this.uiEmitters = MVC.Utils.addPropertiesToTargetObject(
-      uiEmitters, this._uiEmitters
+      _uiEmitters, this._uiEmitters
     )
   }
   get _observers() {
@@ -88,15 +94,13 @@ MVC.View = class extends MVC.Base {
     for(let [observerConfiguration, mutationSettings] of Object.entries(observers)) {
       let observerConfigurationData = observerConfiguration.split(' ')
       let observerName = observerConfigurationData[0]
-      let observerTarget = (observerName.match('@', ''))
-        ? MVC.Utils.objectQuery(
-            observerName.replace('@', ''),
-            this.ui
-          )
-        : document.querySelectorAll(observerName)
+      let observerTarget = MVC.Utils.objectQuery(
+        observerName,
+        this.ui
+      )
       let observerOptions = (observerConfigurationData[1])
         ? observerConfigurationData[1]
-          .split(',')
+          .split(':')
           .reduce((accumulator, currentValue) => {
             accumulator[currentValue] = true
             return accumulator

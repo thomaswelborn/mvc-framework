@@ -9,7 +9,9 @@ MVC.Observer = class extends MVC.Base {
   get _target() { return this.target }
   set _target(target) { this.target = target }
   get _options() { return this.options }
-  set _options(options) { this.options = options }
+  set _options(options) {
+    this.options = options
+  }
   get _observer() {
     this.observer = (this.observer)
       ? this.observer
@@ -27,16 +29,11 @@ MVC.Observer = class extends MVC.Base {
       let mutation
       let mutationData = mutationSettings.split(' ')
       let mutationTarget = MVC.Utils.objectQuery(
-        mutationData,
-        this.context.ui
+        mutationData[0]
       )
       let mutationEventName = mutationData[1]
       let mutationEventData = mutationData[2]
-      mutationCallback = (mutationCallback.match('@'))
-        ? this.context.observerCallbacks[mutationCallback.replace('@', '')]
-        : (typeof mutationCallback === 'string')
-          ? MVC.Utils.objectQuery(mutationCallback, window)
-          : mutationCallback
+      mutationCallback = MVC.Utils.objectQuery(mutationCallback, window)
       mutation = {
         target: mutationTarget,
         name: mutationEventName,
@@ -48,11 +45,10 @@ MVC.Observer = class extends MVC.Base {
   }
   addSettings() {
     if(Object.keys(this._settings).length) {
-      this._settings = settings
       if(this._settings.context) this._context = this._settings.context
       if(this._settings.target) this._target = (this._settings.target instanceof NodeList)
-      ? this._settings.target[0]
-      : this._settings.target
+        ? this._settings.target[0]
+        : this._settings.target
       if(this._settings.options) this._options = this._settings.options
       if(this._settings.mutations) this._mutations = this._settings.mutations
     }
@@ -65,13 +61,15 @@ MVC.Observer = class extends MVC.Base {
           for(let mutationRecordCategory of mutationRecordCategories) {
             if(mutationRecord[mutationRecordCategory].length) {
               for(let [nodeIndex, node] of Object.entries(mutationRecord[mutationRecordCategory])) {
-                let mutation = this.mutations.filter((_mutation) => _mutation.target === node)[0]
-                if(mutation) {
-                  mutation.callback({
-                    mutation: mutation,
-                    mutationRecord: mutationRecord,
-                  })
-                }
+                // let mutation = this.mutations.filter((_mutation) => _mutation.target === node)[0]
+                console.log('nodeIndex, node', '\n', nodeIndex, node)
+                console.log('this.mutations', '\n', this.mutations)
+                // if(mutation) {
+                //   mutation.callback({
+                //     mutation: mutation,
+                //     mutationRecord: mutationRecord,
+                //   })
+                // }
               }
             }
           }

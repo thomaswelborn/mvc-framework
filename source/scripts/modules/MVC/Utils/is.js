@@ -5,3 +5,6 @@ MVC.Utils.isObject = function isObject(object) {
     : false
 }
 MVC.Utils.isEqualType = function isEqualType(valueA, valueB) { return valueA === valueB }
+MVC.Utils.isHTMLElement = function isHTMLElement(object) {
+  return object instanceof HTMLElement
+}

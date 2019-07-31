@@ -2,29 +2,16 @@ MVC.Utils.objectQuery = function objectQuery(
   string,
   context
 ) {
-  let stringData = MVC.Utils.objectQuery.parseStringData(string, context)
-  if(stringData[0].test('@')) {
-    if(stringData.length === 1) {
-      return [
-        ['@', context]
-      ]
-    } else {
-      stringData = stringData.slice(1)
-      let _context = MVC.Utils.objectQuery.parseContext(stringData, context)
-      return _context
-    }
-  } else {
-    throw MVC.TMPL.ObjectQueryStringFormatInvalidRoot()
-  }
-}
-MVC.Utils.objectQuery.parseContext = function(stringData, context) {
+  let stringData = MVC.Utils.objectQuery.parseNotation(string)
+  if(stringData[0] === '@') stringData.splice(0, 1)
   context = (MVC.Utils.isObject(context))
     ? Object.entries(context)
     : context
   return stringData.reduce((properties, fragment, fragmentIndex, fragments) => {
     let _properties = []
+    fragment = MVC.Utils.objectQuery.parseFragment(fragment)
     for(let [propertyKey, propertyValue] of properties) {
-      if(fragment.test(propertyKey)) {
+      if(propertyKey.match(fragment)) {
         if(fragmentIndex === fragments.length - 1) {
           _properties = _properties.concat([[propertyKey, propertyValue]])
         } else {
@@ -35,41 +22,79 @@ MVC.Utils.objectQuery.parseContext = function(stringData, context) {
     properties = _properties
     return properties
   }, context)
-}
-MVC.Utils.objectQuery.parseStringData = function(string, context) {
-  let stringData = string
-    .split('][')
-    .map((fragment, fragmentIndex, fragments) => {
-      if(fragmentIndex === 0) {
-        fragment = (fragment[0] === '[')
-          ? fragment.split('').slice(1).join('')
-          : fragment
-      }
-      if(fragmentIndex === fragments.length - 1) {
-        fragment = (fragment[fragment.length - 1] === ']')
-          ? fragment.split('').slice(0, -1).join('')
-          : fragment
-      }
-      let operator
-      if(fragment[0] === '/') {
-        fragment = fragment.split('')
-        fragment.splice(0, 1)
-        switch(fragment[fragment.length - 1]) {
-          case '/':
-            operator = 'i'
-            break
-          case ')':
-            operator = fragment.splice(-3).slice(1).slice(0, -1)
-            break
+  /*
+  let stringData = MVC.Utils.objectQuery.parseNotation(string)
+  if(stringData[0] === '@') stringData.splice(0, 1)
+  let object = Object.entries(context)
+    .reduce((properties, [propertyKey, propertyValue], propertyIndex, originalContext) => {
+      properties = stringData.reduce((object, fragment, fragmentIndex, originalStringData) => {
+        fragment = MVC.Utils.objectQuery.parseFragment(fragment)
+        if(propertyKey.match(fragment)) {
+          if(fragmentIndex === originalStringData.length - 1) {
+            console.log('fragment', fragment)
+            console.log('propertyValue', propertyValue)
+            return propertyValue
+          } else {
+            console.log('fragment', fragment)
+            console.log('propertyValue', propertyValue)
+            return Object.entries(propertyValue)
+          }
         }
-        fragment.splice(-1)
-        fragment = fragment.join('')
-        fragment = new RegExp(fragment, operator)
-      } else {
-        operator = 'i'
-        fragment = new RegExp('^'.concat(fragment, '$'), operator)
+      }, [])
+      console.log('properties', '\n', properties)
+      return properties
+    }, [])
+  console.log('object', object)
+  */
+  /*
+  let stringData = MVC.Utils.objectQuery.parseNotation(string)
+  if(stringData[0] === '@') stringData.splice(0, 1)
+  stringData.reduce((object, fragment, fragmentIndex, originalStringData) => {
+    console.log('-----', '\n', '-----', '\n')
+    console.log('input', object)
+    fragment = MVC.Utils.objectQuery.parseFragment(fragment)
+    let properties = []
+    object.forEach(([propertyKey, propertyValue]) => {
+      if(propertyKey.match(fragment)) {
+        if(fragmentIndex === originalStringData.length - 1) {
+          // return propertyValue
+          // console.log('propertyValue', propertyValue)
+          properties.push(propertyValue)
+        } else {
+          // return Object.entries(propertyValue)
+          // console.log('propertyValue', propertyValue)
+          properties.push(Object.entries(propertyValue))
+        }
       }
-      return fragment
     })
-  return stringData
+    console.log('output', properties)
+    return properties
+  }, Object.entries(context))
+  */
+}
+// Parse Notation
+MVC.Utils.objectQuery.parseNotation = function parseNotation(string) {
+  if(
+    string.charAt(0) === '[' &&
+    string.charAt(string.length - 1) == ']'
+  ) {
+    string = string
+      .slice(1, -1)
+      .split('][')
+  } else {
+    string = string
+      .split('.')
+  }
+  return string
+}
+// Parse Fragments
+MVC.Utils.objectQuery.parseFragment = function parseFragment(fragment) {
+  if(
+    fragment.charAt(0) === '/' &&
+    fragment.charAt(fragment.length - 1) == '/'
+  ) {
+    fragment = fragment.slice(1, -1)
+    fragment = new RegExp(fragment)
+  }
+  return fragment
 }
