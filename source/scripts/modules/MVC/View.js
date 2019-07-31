@@ -1,7 +1,7 @@
 MVC.View = class extends MVC.Base {
   constructor() {
     super(...arguments)
-    this.addSettings()
+    this.enable()
   }
   get _elementName() { return this._element.tagName }
   set _elementName(elementName) {
@@ -14,6 +14,10 @@ MVC.View = class extends MVC.Base {
     } else if(typeof element === 'string') {
       this.element = document.querySelector(element)
     }
+    this.elementObserver.observe(this.element, {
+      subtree: true,
+      childList: true,
+    })
   }
   get _attributes() { return this._element.attributes }
   set _attributes(attributes) {
@@ -24,7 +28,6 @@ MVC.View = class extends MVC.Base {
         this._element.setAttribute(attributeKey, attributeValue)
       }
     }
-    this.attributes = this._element.attributes
   }
   get _ui() {
     this.ui = (this.ui)
@@ -33,19 +36,17 @@ MVC.View = class extends MVC.Base {
     return this.ui
   }
   set _ui(ui) {
-    this._ui['$element'] = this.element
-    this._ui['$parentElement'] = this.element.parentElement
-    for(let [uiKey, uiSelector] of Object.entries(ui)) {
-      if(typeof uiSelector === 'undefined') {
-        delete this._ui[uiKey]
-      } else {
-        this._ui[uiKey] = this._element.querySelectorAll(uiSelector)
+    if(!this._ui['$element']) this._ui['$element'] = this.element
+    for(let [uiKey, uiValue] of Object.entries(ui)) {
+      if(uiValue instanceof HTMLElement) {
+        this._ui[uiKey] = uiValue
+      } else if(typeof uiValue === 'string') {
+        this._ui[uiKey] = this._element.querySelectorAll(uiValue)
       }
     }
   }
-  set _uiEvents(uiEvents) {
-    MVC.Utils.bindEventsToTargetObjects(uiEvents, this.ui, this.uiCallbacks)
-  }
+  get _uiEvents() { return this.uiEvents }
+  set _uiEvents(uiEvents) { this.uiEvents = uiEvents }
   get _uiCallbacks() {
     this.uiCallbacks = (this.uiCallbacks)
       ? this.uiCallbacks
@@ -53,7 +54,7 @@ MVC.View = class extends MVC.Base {
     return this.uiCallbacks
   }
   set _uiCallbacks(uiCallbacks) {
-    this.uiCallbacks = MVC.Utils.addPropertiesToTargetObject(
+    this.uiCallbacks = MVC.Utils.addPropertiesToObject(
       uiCallbacks, this._uiCallbacks
     )
   }
@@ -64,7 +65,7 @@ MVC.View = class extends MVC.Base {
     return this.observerCallbacks
   }
   set _observerCallbacks(observerCallbacks) {
-    this.observerCallbacks = MVC.Utils.addPropertiesToTargetObject(
+    this.observerCallbacks = MVC.Utils.addPropertiesToObject(
       observerCallbacks, this._observerCallbacks
     )
   }
@@ -80,7 +81,7 @@ MVC.View = class extends MVC.Base {
       let uiEmitter = new UIEmitter()
       _uiEmitters[uiEmitter.name] = uiEmitter
     })
-    this.uiEmitters = MVC.Utils.addPropertiesToTargetObject(
+    this.uiEmitters = MVC.Utils.addPropertiesToObject(
       _uiEmitters, this._uiEmitters
     )
   }
@@ -101,26 +102,51 @@ MVC.View = class extends MVC.Base {
       let observerOptions = (observerConfigurationData[1])
         ? observerConfigurationData[1]
           .split(':')
-          .reduce((accumulator, currentValue) => {
-            accumulator[currentValue] = true
-            return accumulator
+          .reduce((_observerOptions, currentValue) => {
+            _observerOptions[currentValue] = true
+            return _observerOptions
           }, {})
         : {}
-      let observer = new MVC.Observer({
-        context: this,
-        target: observerTarget,
+      let observerSettings = {
+        target: observerTarget[0][1],
         options: observerOptions,
-        mutations: mutationSettings
-      })
+        mutations: {
+          targets: this.ui,
+          settings: mutationSettings,
+          callbacks: this.observerCallbacks,
+        },
+      }
+      let observer = new MVC.Observer(observerSettings)
       this._observers[observerName] = observer
     }
   }
-  set _insert(insert) {
-    if(this.element.parentElement) this.remove()
-    let insertMethod = insert.method
-    let parentElement = document.querySelector(insert.element)
-    parentElement.insertAdjacentElement(insertMethod, this.element)
+  get elementObserver() {
+    this._elementObserver = (this._elementObserver)
+      ? this._elementObserver
+      : new MutationObserver(this.elementObserve.bind(this))
+    return this._elementObserver
   }
+  elementObserve(mutationRecordList, observer) {
+    for(let [mutationRecordIndex, mutationRecord] of Object.entries(mutationRecordList)) {
+      switch(mutationRecord.type) {
+        case 'childList':
+          let mutationRecordCategories = ['addedNodes', 'removedNodes']
+          for(let mutationRecordCategory of mutationRecordCategories) {
+            if(mutationRecord[mutationRecordCategory].length) {
+              this.removeObservers()
+              this.removeUI()
+              this.addUI()
+              this.addObservers()
+            }
+          }
+          break
+      }
+    }
+  }
+  get _insert() { return this.insert }
+  set _insert(insert) { this.insert = insert }
+  get _enabled() { return this.enabled || false }
+  set _enabled(enabled) { this.enabled = enabled }
   get _templates() {
     this.templates = (this.templates)
       ? this.templates
@@ -132,22 +158,134 @@ MVC.View = class extends MVC.Base {
       this._templates[templateName] = templateSettings
     }
   }
-  addSettings() {
-    if(Object.keys(this._settings).length) {
-      if(this._settings.elementName) this._elementName = this._settings.elementName
-      if(this._settings.element) this._element = this._settings.element
-      if(this._settings.attributes) this._attributes = this._settings.attributes
-      this._ui = this._settings.ui || {}
-      if(this._settings.uiCallbacks) this._uiCallbacks = this._settings.uiCallbacks
-      if(this._settings.observerCallbacks) this._observerCallbacks = this._settings.observerCallbacks
-      if(this._settings.uiEmitters) this._uiEmitters = this._settings.uiEmitters
-      if(this._settings.uiEvents) this._uiEvents = this._settings.uiEvents
-      if(this._settings.observers) this._observers = this._settings.observers
-      if(this._settings.templates) this._templates = this._settings.templates
-      if(this._settings.insert) this._insert = this._settings.insert
-    } else {
-      this._elementName = 'div'
+  autoInsert() {
+    this.insert.element
+    this.insert.method
+    document.querySelectorAll(this.insert.element)
+    .forEach((element) => {
+      element.insertAdjacentElement(this.insert.method, this.element)
+    })
+  }
+  autoRemove() {
+    if(
+      this.element &&
+      this.element.parentElement
+    ) this.element.parentElement.removeChild(this.element)
+  }
+  addElement(settings) {
+    settings = settings || this.settings
+    if(settings.elementName) this._elementName = settings.elementName
+    if(settings.element) this._element = settings.element
+    if(settings.attributes) this._attributes = settings.attributes
+    if(settings.templates) this._templates = settings.templates
+    if(settings.insert) this._insert = settings.insert
+  }
+  removeElement(settings) {
+    settings = settings || this.settings
+    if(
+      this.element &&
+      this.element.parentElement
+    ) this.element.parentElement.removeChild(this.element)
+    if(this.element) delete this.element
+    if(this.attributes) delete this.attributes
+    if(this.templates) delete this.templates
+    if(this.insert) delete this.insert
+  }
+  addUI(settings) {
+    settings = settings || this.settings
+    if(settings.ui) this._ui = settings.ui
+    if(settings.uiEmitters) this._uiEmitters = settings.uiEmitters
+    if(settings.uiCallbacks) this._uiCallbacks = settings.uiCallbacks
+    if(settings.uiEvents) {
+      this._uiEvents = settings.uiEvents
+      this.addUIEvents()
     }
   }
-  remove() { this.element.parentElement.removeChild(this.element) }
+  removeUI(settings) {
+    settings = settings || this.settings
+    if(settings.uiEvents) {
+      this.removeUIEvents()
+      delete this._uiEvents
+    }
+    delete this.uiEvents
+    delete this.ui
+    delete this.uiCallbacks
+  }
+  addObservers(settings) {
+    settings = settings || this.settings
+    if(settings.observerCallbacks) this._observerCallbacks = settings.observerCallbacks
+    if(settings.observers) {
+      this._observers = settings.observers
+      this.connectObservers()
+    }
+  }
+  removeObservers() {
+    if(this.observerCallbacks) delete this.observerCallbacks
+    if(this.observers) {
+      this.disconnectObservers()
+      delete this.observers
+    }
+  }
+  addUIEvents() {
+    if(
+      this.uiEvents &&
+      this.ui &&
+      this.uiCallbacks
+    ) {
+      MVC.Utils.bindEventsToTargetObjects(
+        this.uiEvents,
+        this.ui,
+        this.uiCallbacks
+      )
+    }
+  }
+  removeUIEvents() {
+    if(
+      this.uiEvents &&
+      this.ui &&
+      this.uiCallbacks
+    ) {
+      MVC.Utils.unbindEventsFromTargetObjects(
+        this.uiEvents,
+        this.ui,
+        this.uiCallbacks
+      )
+    }
+  }
+  connectObservers() {
+    Object.entries(this._observers)
+      .forEach(([observerName, observer]) => {
+        observer.connect()
+      })
+  }
+  disconnectObservers() {
+    Object.entries(this._observers)
+      .forEach(([observerName, observer]) => {
+        observer.disconnect()
+      })
+  }
+  enable() {
+    let settings = this.settings
+    if(
+      settings &&
+      !this.enabled
+    ) {
+      this.addElement(settings)
+      this.addUI(settings)
+      this.addObservers(settings)
+      this._enabled = true
+    }
+  }
+  disable() {
+    let settings = this.settings
+    if(
+      settings &&
+      this.enabled
+    ) {
+      this.removeUI(settings)
+      this.removeElement(settings)
+      this.removeObservers(settings)
+      this._enabled = false
+    }
+  }
 }

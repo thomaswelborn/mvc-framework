@@ -29,7 +29,17 @@
     },
     "babel": {
       "options": {
-        "presets": ["@babel/env"]
+        "presets": [
+          [
+            "@babel/preset-env",
+            {
+              "modules": false,
+              "targets": {
+                "esmodules": true
+              }
+            }
+          ]
+        ]
       }
     },
     "concat": {
@@ -45,10 +55,7 @@
         "options": {}
       },
       "write": {
-        "options": {
-          "includeContent": true
-        },
-        "dest": "./.maps"
+        "options": {}
       }
     },
     "dest": "distribute"

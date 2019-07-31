@@ -1,7 +1,7 @@
 MVC.Model = class extends MVC.Base {
   constructor() {
     super(...arguments)
-    this.addSettings()
+    this.enable()
   }
   get _isSetting() { return this.isSetting }
   set _isSetting(isSetting) { this.isSetting = isSetting }
@@ -43,8 +43,16 @@ MVC.Model = class extends MVC.Base {
       : {}
     return this.data
   }
+  get _dataEvents() {
+    this.dataEvents = (this.dataEvents)
+      ? this.dataEvents
+      : {}
+    return this.dataEvents
+  }
   set _dataEvents(dataEvents) {
-    MVC.Utils.bindEventsToTargetObjects(dataEvents, this, this.dataCallbacks)
+    this.dataEvents = MVC.Utils.addPropertiesToObject(
+      dataEvents, this._dataEvents
+    )
   }
   get _dataCallbacks() {
     this.dataCallbacks = (this.dataCallbacks)
@@ -53,19 +61,14 @@ MVC.Model = class extends MVC.Base {
     return this.dataCallbacks
   }
   set _dataCallbacks(dataCallbacks) {
-    this.dataCallbacks = MVC.Utils.addPropertiesToTargetObject(
+    this.dataCallbacks = MVC.Utils.addPropertiesToObject(
       dataCallbacks, this._dataCallbacks
     )
   }
-  addSettings() {
-    if(Object.keys(this._settings).length) {
-      if(this._settings.histiogram) this._histiogram = this._settings.histiogram
-      if(this._settings.data) this.set(this._settings.data)
-      if(this._settings.dataCallbacks) this._dataCallbacks = this._settings.dataCallbacks
-      if(this._settings.dataEvents) this._dataEvents = this._settings.dataEvents
-      if(this._settings.schema) this._schema = this._settings.schema
-      if(this._settings.defaults) this._defaults = this._settings.defaults
-    }
+  get _enabled() { return this.enabled || false }
+  set _enabled(enabled) { this.enabled = enabled }
+  addDataEvents() {
+    MVC.Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
   }
   get() {
     let property = arguments[0]
@@ -188,5 +191,48 @@ MVC.Model = class extends MVC.Base {
   }
   parse(data) {
     data = data || this._data
-    return JSON.parse(JSON.stringify(Object.assign({}, data))) }
+    return JSON.parse(JSON.stringify(Object.assign({}, data)))
+  }
+  enable() {
+    let settings = this.settings
+    if(
+      settings &&
+      !this.enabled
+    ) {
+      if(this.settings.histiogram) this._histiogram = this.settings.histiogram
+      if(this.settings.data) this.set(this.settings.data)
+      if(this.settings.dataCallbacks) this._dataCallbacks = this.settings.dataCallbacks
+      if(this.settings.dataEvents) this._dataEvents = this.settings.dataEvents
+      if(this.settings.schema) this._schema = this.settings.schema
+      if(this.settings.defaults) this._defaults = this.settings.defaults
+      if(
+        this.dataEvents &&
+        this.dataCallbacks
+      ) {
+        this.addDataEvents()
+      }
+      this._enabled = true
+    }
+  }
+  disable() {
+    let settings = this.settings
+    if(
+      settings &&
+      !this.enabled
+    ) {
+      if(
+        this.dataEvents &&
+        this.dataCallbacks
+      ) {
+        this.removeDataEvents()
+      }
+      delete this._histiogram
+      delete this._data
+      delete this._dataCallbacks
+      delete this._dataEvents
+      delete this._schema
+      delete this._defaults
+      this._enabled = false
+    }
+  }
 }

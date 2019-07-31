@@ -4,75 +4,26 @@ MVC.Utils.objectQuery = function objectQuery(
 ) {
   let stringData = MVC.Utils.objectQuery.parseNotation(string)
   if(stringData[0] === '@') stringData.splice(0, 1)
+  if(!stringData.length) return context
   context = (MVC.Utils.isObject(context))
     ? Object.entries(context)
     : context
-  return stringData.reduce((properties, fragment, fragmentIndex, fragments) => {
-    let _properties = []
+  return stringData.reduce((object, fragment, fragmentIndex, fragments) => {
+    let properties = []
     fragment = MVC.Utils.objectQuery.parseFragment(fragment)
-    for(let [propertyKey, propertyValue] of properties) {
+    for(let [propertyKey, propertyValue] of object) {
       if(propertyKey.match(fragment)) {
         if(fragmentIndex === fragments.length - 1) {
-          _properties = _properties.concat([[propertyKey, propertyValue]])
+          properties = properties.concat([[propertyKey, propertyValue]])
         } else {
-          _properties = _properties.concat(Object.entries(propertyValue))
+          properties = properties.concat(Object.entries(propertyValue))
         }
       }
     }
-    properties = _properties
-    return properties
+    object = properties
+    return object
   }, context)
-  /*
-  let stringData = MVC.Utils.objectQuery.parseNotation(string)
-  if(stringData[0] === '@') stringData.splice(0, 1)
-  let object = Object.entries(context)
-    .reduce((properties, [propertyKey, propertyValue], propertyIndex, originalContext) => {
-      properties = stringData.reduce((object, fragment, fragmentIndex, originalStringData) => {
-        fragment = MVC.Utils.objectQuery.parseFragment(fragment)
-        if(propertyKey.match(fragment)) {
-          if(fragmentIndex === originalStringData.length - 1) {
-            console.log('fragment', fragment)
-            console.log('propertyValue', propertyValue)
-            return propertyValue
-          } else {
-            console.log('fragment', fragment)
-            console.log('propertyValue', propertyValue)
-            return Object.entries(propertyValue)
-          }
-        }
-      }, [])
-      console.log('properties', '\n', properties)
-      return properties
-    }, [])
-  console.log('object', object)
-  */
-  /*
-  let stringData = MVC.Utils.objectQuery.parseNotation(string)
-  if(stringData[0] === '@') stringData.splice(0, 1)
-  stringData.reduce((object, fragment, fragmentIndex, originalStringData) => {
-    console.log('-----', '\n', '-----', '\n')
-    console.log('input', object)
-    fragment = MVC.Utils.objectQuery.parseFragment(fragment)
-    let properties = []
-    object.forEach(([propertyKey, propertyValue]) => {
-      if(propertyKey.match(fragment)) {
-        if(fragmentIndex === originalStringData.length - 1) {
-          // return propertyValue
-          // console.log('propertyValue', propertyValue)
-          properties.push(propertyValue)
-        } else {
-          // return Object.entries(propertyValue)
-          // console.log('propertyValue', propertyValue)
-          properties.push(Object.entries(propertyValue))
-        }
-      }
-    })
-    console.log('output', properties)
-    return properties
-  }, Object.entries(context))
-  */
 }
-// Parse Notation
 MVC.Utils.objectQuery.parseNotation = function parseNotation(string) {
   if(
     string.charAt(0) === '[' &&
@@ -87,7 +38,6 @@ MVC.Utils.objectQuery.parseNotation = function parseNotation(string) {
   }
   return string
 }
-// Parse Fragments
 MVC.Utils.objectQuery.parseFragment = function parseFragment(fragment) {
   if(
     fragment.charAt(0) === '/' &&

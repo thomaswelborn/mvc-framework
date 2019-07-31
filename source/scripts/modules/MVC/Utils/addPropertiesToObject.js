@@ -1,4 +1,4 @@
-MVC.Utils.addPropertiesToTargetObject = function addPropertiesToTargetObject() {
+MVC.Utils.addPropertiesToObject = function addPropertiesToObject() {
   let targetObject
   switch(arguments.length) {
     case 2:

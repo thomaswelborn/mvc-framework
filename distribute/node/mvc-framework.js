@@ -78,7 +78,7 @@ MVC.Utils.typeOf =  function typeOf(data) {
   }
 }
 
-MVC.Utils.addPropertiesToTargetObject = function addPropertiesToTargetObject() {
+MVC.Utils.addPropertiesToObject = function addPropertiesToObject() {
   let targetObject
   switch(arguments.length) {
     case 2:
@@ -104,75 +104,26 @@ MVC.Utils.objectQuery = function objectQuery(
 ) {
   let stringData = MVC.Utils.objectQuery.parseNotation(string)
   if(stringData[0] === '@') stringData.splice(0, 1)
+  if(!stringData.length) return context
   context = (MVC.Utils.isObject(context))
     ? Object.entries(context)
     : context
-  return stringData.reduce((properties, fragment, fragmentIndex, fragments) => {
-    let _properties = []
+  return stringData.reduce((object, fragment, fragmentIndex, fragments) => {
+    let properties = []
     fragment = MVC.Utils.objectQuery.parseFragment(fragment)
-    for(let [propertyKey, propertyValue] of properties) {
+    for(let [propertyKey, propertyValue] of object) {
       if(propertyKey.match(fragment)) {
         if(fragmentIndex === fragments.length - 1) {
-          _properties = _properties.concat([[propertyKey, propertyValue]])
+          properties = properties.concat([[propertyKey, propertyValue]])
         } else {
-          _properties = _properties.concat(Object.entries(propertyValue))
+          properties = properties.concat(Object.entries(propertyValue))
         }
       }
     }
-    properties = _properties
-    return properties
+    object = properties
+    return object
   }, context)
-  /*
-  let stringData = MVC.Utils.objectQuery.parseNotation(string)
-  if(stringData[0] === '@') stringData.splice(0, 1)
-  let object = Object.entries(context)
-    .reduce((properties, [propertyKey, propertyValue], propertyIndex, originalContext) => {
-      properties = stringData.reduce((object, fragment, fragmentIndex, originalStringData) => {
-        fragment = MVC.Utils.objectQuery.parseFragment(fragment)
-        if(propertyKey.match(fragment)) {
-          if(fragmentIndex === originalStringData.length - 1) {
-            console.log('fragment', fragment)
-            console.log('propertyValue', propertyValue)
-            return propertyValue
-          } else {
-            console.log('fragment', fragment)
-            console.log('propertyValue', propertyValue)
-            return Object.entries(propertyValue)
-          }
-        }
-      }, [])
-      console.log('properties', '\n', properties)
-      return properties
-    }, [])
-  console.log('object', object)
-  */
-  /*
-  let stringData = MVC.Utils.objectQuery.parseNotation(string)
-  if(stringData[0] === '@') stringData.splice(0, 1)
-  stringData.reduce((object, fragment, fragmentIndex, originalStringData) => {
-    console.log('-----', '\n', '-----', '\n')
-    console.log('input', object)
-    fragment = MVC.Utils.objectQuery.parseFragment(fragment)
-    let properties = []
-    object.forEach(([propertyKey, propertyValue]) => {
-      if(propertyKey.match(fragment)) {
-        if(fragmentIndex === originalStringData.length - 1) {
-          // return propertyValue
-          // console.log('propertyValue', propertyValue)
-          properties.push(propertyValue)
-        } else {
-          // return Object.entries(propertyValue)
-          // console.log('propertyValue', propertyValue)
-          properties.push(Object.entries(propertyValue))
-        }
-      }
-    })
-    console.log('output', properties)
-    return properties
-  }, Object.entries(context))
-  */
 }
-// Parse Notation
 MVC.Utils.objectQuery.parseNotation = function parseNotation(string) {
   if(
     string.charAt(0) === '[' &&
@@ -187,7 +138,6 @@ MVC.Utils.objectQuery.parseNotation = function parseNotation(string) {
   }
   return string
 }
-// Parse Fragments
 MVC.Utils.objectQuery.parseFragment = function parseFragment(fragment) {
   if(
     fragment.charAt(0) === '/' &&
@@ -218,14 +168,12 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
       ? (
         eventTarget instanceof NodeList ||
         eventTarget instanceof HTMLElement
-      )
-        ? 'addEventListener'
+      ) ? 'addEventListener'
         : 'on'
       : (
         eventTarget instanceof NodeList ||
         eventTarget instanceof HTMLElement
-      )
-        ? 'removeEventListener'
+      ) ? 'removeEventListener'
         : 'off'
       let eventCallback = MVC.Utils.objectQuery(
         eventCallbackName,
@@ -464,22 +412,21 @@ MVC.Base = class extends MVC.Events {
 MVC.Observer = class extends MVC.Base {
   constructor() {
     super(...arguments)
-    this.addSettings()
-    this._observer.observe(this.target, this.options)
+    this.enable()
   }
-  get _context() { return this.context }
-  set _context(context) { this.context = context }
+  get _connected() { return this.connected || false }
+  set _connected(connected) { this.connected = connected }
+  get observer() {
+    this._observer = (this._observer)
+      ? this._observer
+      : new MutationObserver(this.observerCallback.bind(this))
+    return this._observer
+  }
   get _target() { return this.target }
   set _target(target) { this.target = target }
   get _options() { return this.options }
   set _options(options) {
     this.options = options
-  }
-  get _observer() {
-    this.observer = (this.observer)
-      ? this.observer
-      : new MutationObserver(this.observerCallback.bind(this))
-    return this.observer
   }
   get _mutations() {
     this.mutations = (this.mutations)
@@ -488,32 +435,45 @@ MVC.Observer = class extends MVC.Base {
     return this.mutations
   }
   set _mutations(mutations) {
-    for(let [mutationSettings, mutationCallback] of Object.entries(mutations)) {
+    for(let [mutationSettings, mutationCallback] of Object.entries(mutations.settings)) {
       let mutation
       let mutationData = mutationSettings.split(' ')
-      let mutationTarget = MVC.Utils.objectQuery(
-        mutationData[0]
-      )
+      let mutationTarget = MVC.Utils.objectQuery(mutationData[0], mutations.targets)[0][1]
       let mutationEventName = mutationData[1]
-      let mutationEventData = mutationData[2]
-      mutationCallback = MVC.Utils.objectQuery(mutationCallback, window)
+      mutationCallback = MVC.Utils.objectQuery(mutationCallback, mutations.callbacks)[0][1]
       mutation = {
         target: mutationTarget,
         name: mutationEventName,
         callback: mutationCallback,
       }
-      if(mutationEventData) mutation.data = mutationEventData
       this._mutations.push(mutation)
     }
   }
-  addSettings() {
-    if(Object.keys(this._settings).length) {
-      if(this._settings.context) this._context = this._settings.context
-      if(this._settings.target) this._target = (this._settings.target instanceof NodeList)
-        ? this._settings.target[0]
-        : this._settings.target
-      if(this._settings.options) this._options = this._settings.options
-      if(this._settings.mutations) this._mutations = this._settings.mutations
+  enable() {
+    let settings = this.settings
+    if(
+      settings &&
+      !this.enabled
+    ) {
+      if(settings.target) this._target = (settings.target instanceof NodeList)
+        ? settings.target[0]
+        : settings.target
+      if(settings.options) this._options = settings.options
+      if(settings.mutations) this._mutations = settings.mutations
+      this._enabled = true
+    }
+  }
+  disable() {
+    let settings = this.settings
+    if(
+      settings &&
+      this.enabled
+    ) {
+      if(this.target) delete this.target
+      if(this.options) delete this.options
+      if(this.mutations) delete this.mutations
+      if(this.observeer) delete this.observer
+      this._enabled = false
     }
   }
   observerCallback(mutationRecordList, observer) {
@@ -524,15 +484,27 @@ MVC.Observer = class extends MVC.Base {
           for(let mutationRecordCategory of mutationRecordCategories) {
             if(mutationRecord[mutationRecordCategory].length) {
               for(let [nodeIndex, node] of Object.entries(mutationRecord[mutationRecordCategory])) {
-                // let mutation = this.mutations.filter((_mutation) => _mutation.target === node)[0]
-                console.log('nodeIndex, node', '\n', nodeIndex, node)
-                console.log('this.mutations', '\n', this.mutations)
-                // if(mutation) {
-                //   mutation.callback({
-                //     mutation: mutation,
-                //     mutationRecord: mutationRecord,
-                //   })
-                // }
+                this.mutations.forEach((_mutation) => {
+                  if(mutationRecordCategory.match(new RegExp('^'.concat(_mutation.name)))) {
+                    if(_mutation.target instanceof HTMLElement) {
+                      if(_mutation.target === node) {
+                        _mutation.callback({
+                          mutation: _mutation,
+                          mutationRecord: mutationRecord
+                        })
+                      }
+                    } else if(_mutation.target instanceof NodeList) {
+                      for(let _mutationTarget of _mutation.target) {
+                        if(_mutationTarget === node) {
+                          _mutationTarget.callback({
+                            mutation: _mutation,
+                            mutationRecord: mutationRecord
+                          })
+                        }
+                      }
+                    }
+                  }
+                })
               }
             }
           }
@@ -552,12 +524,20 @@ MVC.Observer = class extends MVC.Base {
       }
     }
   }
+  connect() {
+    this.observer.observe(this.target, this.options)
+    this._connected = true
+  }
+  disconnect() {
+    this.observer.disconnect()
+    this._connected = false
+  }
 }
 
 MVC.Service = class extends MVC.Base {
   constructor() {
     super(...arguments)
-    this.addSettings()
+    this.enable()
   }
   get _defaults() { return this.defaults || {
     contentType: {'Content-Type': 'application/json'},
@@ -588,15 +568,8 @@ MVC.Service = class extends MVC.Base {
       : new XMLHttpRequest()
     return this.xhr
   }
-  addSettings() {
-    if(Object.keys(this._settings).length) {
-      if(this._settings.type) this._type = this._settings.type
-      if(this._settings.url) this._url = this._settings.url
-      if(this._settings.data) this._data = this._settings.data || null
-      if(this._settings.headers) this._headers = this._settings.headers || [this._defaults.contentType]
-      if(this._settings.responseType) this._responseType = this._settings.responseType
-    }
-  }
+  get _enabled() { return this.enabled || false }
+  set _enabled(enabled) { this.enabled = enabled }
   newXHR() {
     return new Promise((resolve, reject) => {
       if(this._xhr.status === 200) this._xhr.abort()
@@ -606,12 +579,36 @@ MVC.Service = class extends MVC.Base {
       this._xhr.send(this._data)
     })
   }
+  enable() {
+    let settings = this.settings
+    if(
+      settings &&
+      !this.enabled
+    ) {
+      if(settings.type) this._type = settings.type
+      if(settings.url) this._url = settings.url
+      if(settings.data) this._data = settings.data || null
+      if(settings.headers) this._headers = settings.headers || [this._defaults.contentType]
+      if(this.settings.responseType) this._responseType = this._settings.responseType
+      this._enabled = true
+    }
+  }
+  disable() {
+    if(Object.keys(this.settings).length) {
+      delete this.settings.type
+      delete this.settings.url
+      delete this.settings.data
+      delete this.settings.headers
+      delete this.settings.responseType
+      this._enabled = true
+    }
+  }
 }
 
 MVC.Model = class extends MVC.Base {
   constructor() {
     super(...arguments)
-    this.addSettings()
+    this.enable()
   }
   get _isSetting() { return this.isSetting }
   set _isSetting(isSetting) { this.isSetting = isSetting }
@@ -653,8 +650,16 @@ MVC.Model = class extends MVC.Base {
       : {}
     return this.data
   }
+  get _dataEvents() {
+    this.dataEvents = (this.dataEvents)
+      ? this.dataEvents
+      : {}
+    return this.dataEvents
+  }
   set _dataEvents(dataEvents) {
-    MVC.Utils.bindEventsToTargetObjects(dataEvents, this, this.dataCallbacks)
+    this.dataEvents = MVC.Utils.addPropertiesToObject(
+      dataEvents, this._dataEvents
+    )
   }
   get _dataCallbacks() {
     this.dataCallbacks = (this.dataCallbacks)
@@ -663,19 +668,14 @@ MVC.Model = class extends MVC.Base {
     return this.dataCallbacks
   }
   set _dataCallbacks(dataCallbacks) {
-    this.dataCallbacks = MVC.Utils.addPropertiesToTargetObject(
+    this.dataCallbacks = MVC.Utils.addPropertiesToObject(
       dataCallbacks, this._dataCallbacks
     )
   }
-  addSettings() {
-    if(Object.keys(this._settings).length) {
-      if(this._settings.histiogram) this._histiogram = this._settings.histiogram
-      if(this._settings.data) this.set(this._settings.data)
-      if(this._settings.dataCallbacks) this._dataCallbacks = this._settings.dataCallbacks
-      if(this._settings.dataEvents) this._dataEvents = this._settings.dataEvents
-      if(this._settings.schema) this._schema = this._settings.schema
-      if(this._settings.defaults) this._defaults = this._settings.defaults
-    }
+  get _enabled() { return this.enabled || false }
+  set _enabled(enabled) { this.enabled = enabled }
+  addDataEvents() {
+    MVC.Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
   }
   get() {
     let property = arguments[0]
@@ -798,7 +798,50 @@ MVC.Model = class extends MVC.Base {
   }
   parse(data) {
     data = data || this._data
-    return JSON.parse(JSON.stringify(Object.assign({}, data))) }
+    return JSON.parse(JSON.stringify(Object.assign({}, data)))
+  }
+  enable() {
+    let settings = this.settings
+    if(
+      settings &&
+      !this.enabled
+    ) {
+      if(this.settings.histiogram) this._histiogram = this.settings.histiogram
+      if(this.settings.data) this.set(this.settings.data)
+      if(this.settings.dataCallbacks) this._dataCallbacks = this.settings.dataCallbacks
+      if(this.settings.dataEvents) this._dataEvents = this.settings.dataEvents
+      if(this.settings.schema) this._schema = this.settings.schema
+      if(this.settings.defaults) this._defaults = this.settings.defaults
+      if(
+        this.dataEvents &&
+        this.dataCallbacks
+      ) {
+        this.addDataEvents()
+      }
+      this._enabled = true
+    }
+  }
+  disable() {
+    let settings = this.settings
+    if(
+      settings &&
+      !this.enabled
+    ) {
+      if(
+        this.dataEvents &&
+        this.dataCallbacks
+      ) {
+        this.removeDataEvents()
+      }
+      delete this._histiogram
+      delete this._data
+      delete this._dataCallbacks
+      delete this._dataEvents
+      delete this._schema
+      delete this._defaults
+      this._enabled = false
+    }
+  }
 }
 
 MVC.Emitter = class extends MVC.Model {
@@ -821,7 +864,7 @@ MVC.Emitter = class extends MVC.Model {
 MVC.View = class extends MVC.Base {
   constructor() {
     super(...arguments)
-    this.addSettings()
+    this.enable()
   }
   get _elementName() { return this._element.tagName }
   set _elementName(elementName) {
@@ -834,6 +877,10 @@ MVC.View = class extends MVC.Base {
     } else if(typeof element === 'string') {
       this.element = document.querySelector(element)
     }
+    this.elementObserver.observe(this.element, {
+      subtree: true,
+      childList: true,
+    })
   }
   get _attributes() { return this._element.attributes }
   set _attributes(attributes) {
@@ -844,7 +891,6 @@ MVC.View = class extends MVC.Base {
         this._element.setAttribute(attributeKey, attributeValue)
       }
     }
-    this.attributes = this._element.attributes
   }
   get _ui() {
     this.ui = (this.ui)
@@ -853,19 +899,17 @@ MVC.View = class extends MVC.Base {
     return this.ui
   }
   set _ui(ui) {
-    this._ui['$element'] = this.element
-    this._ui['$parentElement'] = this.element.parentElement
-    for(let [uiKey, uiSelector] of Object.entries(ui)) {
-      if(typeof uiSelector === 'undefined') {
-        delete this._ui[uiKey]
-      } else {
-        this._ui[uiKey] = this._element.querySelectorAll(uiSelector)
+    if(!this._ui['$element']) this._ui['$element'] = this.element
+    for(let [uiKey, uiValue] of Object.entries(ui)) {
+      if(uiValue instanceof HTMLElement) {
+        this._ui[uiKey] = uiValue
+      } else if(typeof uiValue === 'string') {
+        this._ui[uiKey] = this._element.querySelectorAll(uiValue)
       }
     }
   }
-  set _uiEvents(uiEvents) {
-    MVC.Utils.bindEventsToTargetObjects(uiEvents, this.ui, this.uiCallbacks)
-  }
+  get _uiEvents() { return this.uiEvents }
+  set _uiEvents(uiEvents) { this.uiEvents = uiEvents }
   get _uiCallbacks() {
     this.uiCallbacks = (this.uiCallbacks)
       ? this.uiCallbacks
@@ -873,7 +917,7 @@ MVC.View = class extends MVC.Base {
     return this.uiCallbacks
   }
   set _uiCallbacks(uiCallbacks) {
-    this.uiCallbacks = MVC.Utils.addPropertiesToTargetObject(
+    this.uiCallbacks = MVC.Utils.addPropertiesToObject(
       uiCallbacks, this._uiCallbacks
     )
   }
@@ -884,7 +928,7 @@ MVC.View = class extends MVC.Base {
     return this.observerCallbacks
   }
   set _observerCallbacks(observerCallbacks) {
-    this.observerCallbacks = MVC.Utils.addPropertiesToTargetObject(
+    this.observerCallbacks = MVC.Utils.addPropertiesToObject(
       observerCallbacks, this._observerCallbacks
     )
   }
@@ -900,7 +944,7 @@ MVC.View = class extends MVC.Base {
       let uiEmitter = new UIEmitter()
       _uiEmitters[uiEmitter.name] = uiEmitter
     })
-    this.uiEmitters = MVC.Utils.addPropertiesToTargetObject(
+    this.uiEmitters = MVC.Utils.addPropertiesToObject(
       _uiEmitters, this._uiEmitters
     )
   }
@@ -921,26 +965,51 @@ MVC.View = class extends MVC.Base {
       let observerOptions = (observerConfigurationData[1])
         ? observerConfigurationData[1]
           .split(':')
-          .reduce((accumulator, currentValue) => {
-            accumulator[currentValue] = true
-            return accumulator
+          .reduce((_observerOptions, currentValue) => {
+            _observerOptions[currentValue] = true
+            return _observerOptions
           }, {})
         : {}
-      let observer = new MVC.Observer({
-        context: this,
-        target: observerTarget,
+      let observerSettings = {
+        target: observerTarget[0][1],
         options: observerOptions,
-        mutations: mutationSettings
-      })
+        mutations: {
+          targets: this.ui,
+          settings: mutationSettings,
+          callbacks: this.observerCallbacks,
+        },
+      }
+      let observer = new MVC.Observer(observerSettings)
       this._observers[observerName] = observer
     }
   }
-  set _insert(insert) {
-    if(this.element.parentElement) this.remove()
-    let insertMethod = insert.method
-    let parentElement = document.querySelector(insert.element)
-    parentElement.insertAdjacentElement(insertMethod, this.element)
+  get elementObserver() {
+    this._elementObserver = (this._elementObserver)
+      ? this._elementObserver
+      : new MutationObserver(this.elementObserve.bind(this))
+    return this._elementObserver
   }
+  elementObserve(mutationRecordList, observer) {
+    for(let [mutationRecordIndex, mutationRecord] of Object.entries(mutationRecordList)) {
+      switch(mutationRecord.type) {
+        case 'childList':
+          let mutationRecordCategories = ['addedNodes', 'removedNodes']
+          for(let mutationRecordCategory of mutationRecordCategories) {
+            if(mutationRecord[mutationRecordCategory].length) {
+              this.removeObservers()
+              this.removeUI()
+              this.addUI()
+              this.addObservers()
+            }
+          }
+          break
+      }
+    }
+  }
+  get _insert() { return this.insert }
+  set _insert(insert) { this.insert = insert }
+  get _enabled() { return this.enabled || false }
+  set _enabled(enabled) { this.enabled = enabled }
   get _templates() {
     this.templates = (this.templates)
       ? this.templates
@@ -952,30 +1021,142 @@ MVC.View = class extends MVC.Base {
       this._templates[templateName] = templateSettings
     }
   }
-  addSettings() {
-    if(Object.keys(this._settings).length) {
-      if(this._settings.elementName) this._elementName = this._settings.elementName
-      if(this._settings.element) this._element = this._settings.element
-      if(this._settings.attributes) this._attributes = this._settings.attributes
-      this._ui = this._settings.ui || {}
-      if(this._settings.uiCallbacks) this._uiCallbacks = this._settings.uiCallbacks
-      if(this._settings.observerCallbacks) this._observerCallbacks = this._settings.observerCallbacks
-      if(this._settings.uiEmitters) this._uiEmitters = this._settings.uiEmitters
-      if(this._settings.uiEvents) this._uiEvents = this._settings.uiEvents
-      if(this._settings.observers) this._observers = this._settings.observers
-      if(this._settings.templates) this._templates = this._settings.templates
-      if(this._settings.insert) this._insert = this._settings.insert
-    } else {
-      this._elementName = 'div'
+  autoInsert() {
+    this.insert.element
+    this.insert.method
+    document.querySelectorAll(this.insert.element)
+    .forEach((element) => {
+      element.insertAdjacentElement(this.insert.method, this.element)
+    })
+  }
+  autoRemove() {
+    if(
+      this.element &&
+      this.element.parentElement
+    ) this.element.parentElement.removeChild(this.element)
+  }
+  addElement(settings) {
+    settings = settings || this.settings
+    if(settings.elementName) this._elementName = settings.elementName
+    if(settings.element) this._element = settings.element
+    if(settings.attributes) this._attributes = settings.attributes
+    if(settings.templates) this._templates = settings.templates
+    if(settings.insert) this._insert = settings.insert
+  }
+  removeElement(settings) {
+    settings = settings || this.settings
+    if(
+      this.element &&
+      this.element.parentElement
+    ) this.element.parentElement.removeChild(this.element)
+    if(this.element) delete this.element
+    if(this.attributes) delete this.attributes
+    if(this.templates) delete this.templates
+    if(this.insert) delete this.insert
+  }
+  addUI(settings) {
+    settings = settings || this.settings
+    if(settings.ui) this._ui = settings.ui
+    if(settings.uiEmitters) this._uiEmitters = settings.uiEmitters
+    if(settings.uiCallbacks) this._uiCallbacks = settings.uiCallbacks
+    if(settings.uiEvents) {
+      this._uiEvents = settings.uiEvents
+      this.addUIEvents()
     }
   }
-  remove() { this.element.parentElement.removeChild(this.element) }
+  removeUI(settings) {
+    settings = settings || this.settings
+    if(settings.uiEvents) {
+      this.removeUIEvents()
+      delete this._uiEvents
+    }
+    delete this.uiEvents
+    delete this.ui
+    delete this.uiCallbacks
+  }
+  addObservers(settings) {
+    settings = settings || this.settings
+    if(settings.observerCallbacks) this._observerCallbacks = settings.observerCallbacks
+    if(settings.observers) {
+      this._observers = settings.observers
+      this.connectObservers()
+    }
+  }
+  removeObservers() {
+    if(this.observerCallbacks) delete this.observerCallbacks
+    if(this.observers) {
+      this.disconnectObservers()
+      delete this.observers
+    }
+  }
+  addUIEvents() {
+    if(
+      this.uiEvents &&
+      this.ui &&
+      this.uiCallbacks
+    ) {
+      MVC.Utils.bindEventsToTargetObjects(
+        this.uiEvents,
+        this.ui,
+        this.uiCallbacks
+      )
+    }
+  }
+  removeUIEvents() {
+    if(
+      this.uiEvents &&
+      this.ui &&
+      this.uiCallbacks
+    ) {
+      MVC.Utils.unbindEventsFromTargetObjects(
+        this.uiEvents,
+        this.ui,
+        this.uiCallbacks
+      )
+    }
+  }
+  connectObservers() {
+    Object.entries(this._observers)
+      .forEach(([observerName, observer]) => {
+        observer.connect()
+      })
+  }
+  disconnectObservers() {
+    Object.entries(this._observers)
+      .forEach(([observerName, observer]) => {
+        observer.disconnect()
+      })
+  }
+  enable() {
+    let settings = this.settings
+    if(
+      settings &&
+      !this.enabled
+    ) {
+      this.addElement(settings)
+      this.addUI(settings)
+      this.addObservers(settings)
+      this._enabled = true
+    }
+  }
+  disable() {
+    let settings = this.settings
+    if(
+      settings &&
+      this.enabled
+    ) {
+      this.removeUI(settings)
+      this.removeElement(settings)
+      this.removeObservers(settings)
+      this._enabled = false
+    }
+  }
 }
 
 MVC.Controller = class extends MVC.Base {
   constructor() {
     super(...arguments)
-    this.addSettings()
+    this.enable()
   }
   get _emitters() {
     this.emitters = (this.emitters)
@@ -984,7 +1165,7 @@ MVC.Controller = class extends MVC.Base {
     return this.emitters
   }
   set _emitters(emitters) {
-    this.emitters = MVC.Utils.addPropertiesToTargetObject(
+    this.emitters = MVC.Utils.addPropertiesToObject(
       emitters, this._emitters
     )
   }
@@ -995,7 +1176,7 @@ MVC.Controller = class extends MVC.Base {
     return this.modelCallbacks
   }
   set _modelCallbacks(modelCallbacks) {
-    this.modelCallbacks = MVC.Utils.addPropertiesToTargetObject(
+    this.modelCallbacks = MVC.Utils.addPropertiesToObject(
       modelCallbacks, this._modelCallbacks
     )
   }
@@ -1006,7 +1187,7 @@ MVC.Controller = class extends MVC.Base {
     return this.viewCallbacks
   }
   set _viewCallbacks(viewCallbacks) {
-    this.viewCallbacks = MVC.Utils.addPropertiesToTargetObject(
+    this.viewCallbacks = MVC.Utils.addPropertiesToObject(
       viewCallbacks, this._viewCallbacks
     )
   }
@@ -1017,7 +1198,7 @@ MVC.Controller = class extends MVC.Base {
     return this.controllerCallbacks
   }
   set _controllerCallbacks(controllerCallbacks) {
-    this.controllerCallbacks = MVC.Utils.addPropertiesToTargetObject(
+    this.controllerCallbacks = MVC.Utils.addPropertiesToObject(
       controllerCallbacks, this._controllerCallbacks
     )
   }
@@ -1028,7 +1209,7 @@ MVC.Controller = class extends MVC.Base {
     return this.routerCallbacks
   }
   set _routerCallbacks(routerCallbacks) {
-    this.routerCallbacks = MVC.Utils.addPropertiesToTargetObject(
+    this.routerCallbacks = MVC.Utils.addPropertiesToObject(
       routerCallbacks, this._routerCallbacks
     )
   }
@@ -1039,7 +1220,7 @@ MVC.Controller = class extends MVC.Base {
     return this.models
   }
   set _models(models) {
-    this.models = MVC.Utils.addPropertiesToTargetObject(
+    this.models = MVC.Utils.addPropertiesToObject(
       models, this._models
     )
   }
@@ -1050,7 +1231,7 @@ MVC.Controller = class extends MVC.Base {
     return this.views
   }
   set _views(views) {
-    this.views = MVC.Utils.addPropertiesToTargetObject(
+    this.views = MVC.Utils.addPropertiesToObject(
       views, this._views
     )
   }
@@ -1061,7 +1242,7 @@ MVC.Controller = class extends MVC.Base {
     return this.controllers
   }
   set _controllers(controllers) {
-    this.controllers = MVC.Utils.addPropertiesToTargetObject(
+    this.controllers = MVC.Utils.addPropertiesToObject(
       controllers, this._controllers
     )
   }
@@ -1072,33 +1253,145 @@ MVC.Controller = class extends MVC.Base {
     return this.routers
   }
   set _routers(routers) {
-    this.routers = MVC.Utils.addPropertiesToTargetObject(
+    this.routers = MVC.Utils.addPropertiesToObject(
       routers, this._routers
     )
   }
+  get _modelEvents() {
+    this.modelEvents = (this.modelEvents)
+      ? this.modelEvents
+      : {}
+    return this.modelEvents
+  }
   set _modelEvents(modelEvents) {
-    MVC.Utils.bindEventsToTargetObjects(modelEvents, this._models, this._modelCallbacks)
+    this.modelEvents = MVC.Utils.addPropertiesToObject(
+      modelEvents, this._modelEvents
+    )
+  }
+  get _viewEvents() {
+    this.viewEvents = (this.viewEvents)
+      ? this.viewEvents
+      : {}
+    return this.viewEvents
   }
   set _viewEvents(viewEvents) {
-    MVC.Utils.bindEventsToTargetObjects(viewEvents, this._views, this._viewCallbacks)
+    this.viewEvents = MVC.Utils.addPropertiesToObject(
+      viewEvents, this._viewEvents
+    )
+  }
+  get _controllerEvents() {
+    this.controllerEvents = (this.controllerEvents)
+      ? this.controllerEvents
+      : {}
+    return this.controllerEvents
   }
   set _controllerEvents(controllerEvents) {
-    MVC.Utils.bindEventsToTargetObjects(controllerEvents, this._controllers, this._controllerCallbacks)
+    this.controllerEvents = MVC.Utils.addPropertiesToObject(
+      controllerEvents, this._controllerEvents
+    )
   }
-  addSettings() {
-    if(Object.keys(this._settings).length) {
-      if(this.settings.emitters) this._emitters = this.settings.emitters
-      if(this.settings.modelCallbacks) this._modelCallbacks = this.settings.modelCallbacks
-      if(this.settings.viewCallbacks) this._viewCallbacks = this.settings.viewCallbacks
-      if(this.settings.controllerCallbacks) this._controllerCallbacks = this.settings.controllerCallbacks
-      if(this.settings.routerCallbacks) this._routerCallbacks = this.settings.routerCallbacks
-      if(this.settings.models) this._models = this.settings.models
-      if(this.settings.views) this._views = this.settings.views
-      if(this.settings.controllers) this._controllers = this.settings.controllers
-      if(this.settings.routers) this._routers = this.settings.routers
-      if(this.settings.modelEvents) this._modelEvents = this.settings.modelEvents
-      if(this.settings.viewEvents) this._viewEvents = this.settings.viewEvents
-      if(this.settings.controllerEvents) this._controllerEvents = this.settings.controllerEvents
+  get _enabled() { return this.enabled || false }
+  set _enabled(enabled) { this.enabled = enabled }
+  addModelEvents() {
+    MVC.Utils.bindEventsToTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
+  }
+  removeModelEvents() {
+    MVC.Utils.unbindEventsToTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
+  }
+  addViewEvents() {
+    MVC.Utils.bindEventsToTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
+  }
+  removeViewEvents() {
+    MVC.Utils.unbindEventsToTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
+  }
+  addControllerEvents() {
+    MVC.Utils.bindEventsToTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
+  }
+  removeControllerEvents() {
+    MVC.Utils.unbindEventsToTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
+  }
+  enable() {
+    let settings = this.settings
+    if(
+      settings &&
+      !this.enabled
+    ) {
+      if(settings.emitters) this._emitters = settings.emitters
+      if(settings.modelCallbacks) this._modelCallbacks = settings.modelCallbacks
+      if(settings.viewCallbacks) this._viewCallbacks = settings.viewCallbacks
+      if(settings.controllerCallbacks) this._controllerCallbacks = settings.controllerCallbacks
+      if(settings.routerCallbacks) this._routerCallbacks = settings.routerCallbacks
+      if(settings.models) this._models = settings.models
+      if(settings.views) this._views = settings.views
+      if(settings.controllers) this._controllers = settings.controllers
+      if(settings.routers) this._routers = settings.routers
+      if(settings.modelEvents) this._modelEvents = settings.modelEvents
+      if(settings.viewEvents) this._viewEvents = settings.viewEvents
+      if(settings.controllerEvents) this._controllerEvents = settings.controllerEvents
+      if(
+        this.modelEvents &&
+        this.models &&
+        this.modelCallbacks
+      ) {
+        this.addModelEvents()
+      }
+      if(
+        this.viewEvents &&
+        this.views &&
+        this.viewCallbacks
+      ) {
+        this.addViewEvents()
+      }
+      if(
+        this.controllerEvents &&
+        this.controllers &&
+        this.controllerCallbacks
+      ) {
+        this.addControllerEvents()
+      }
+      this._enabled = true
+    }
+  }
+  disable() {
+    let settings = this.settings
+    if(
+      settings &&
+      this.enabled
+    ) {
+      if(
+        this.modelEvents &&
+        this.models &&
+        this.modelCallbacks
+      ) {
+        this.removeModelEvents()
+      }
+      if(
+        this.viewEvents &&
+        this.views &&
+        this.viewCallbacks
+      ) {
+        this.removeViewEvents()
+      }
+      if(
+        this.controllerEvents &&
+        this.controllers &&
+        this.controllerCallbacks
+      ) {
+        this.removeControllerEvents()
+      }
+      delete this._emitters
+      delete this._modelCallbacks
+      delete this._viewCallbacks
+      delete this._controllerCallbacks
+      delete this._routerCallbacks
+      delete this._models
+      delete this._views
+      delete this._controllers
+      delete this._routers
+      delete this._modelEvents
+      delete this._viewEvents
+      delete this._controllerEvents
+      this._enabled = false
     }
   }
 }

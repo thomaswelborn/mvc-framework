@@ -1,7 +1,7 @@
 MVC.Service = class extends MVC.Base {
   constructor() {
     super(...arguments)
-    this.addSettings()
+    this.enable()
   }
   get _defaults() { return this.defaults || {
     contentType: {'Content-Type': 'application/json'},
@@ -32,15 +32,8 @@ MVC.Service = class extends MVC.Base {
       : new XMLHttpRequest()
     return this.xhr
   }
-  addSettings() {
-    if(Object.keys(this._settings).length) {
-      if(this._settings.type) this._type = this._settings.type
-      if(this._settings.url) this._url = this._settings.url
-      if(this._settings.data) this._data = this._settings.data || null
-      if(this._settings.headers) this._headers = this._settings.headers || [this._defaults.contentType]
-      if(this._settings.responseType) this._responseType = this._settings.responseType
-    }
-  }
+  get _enabled() { return this.enabled || false }
+  set _enabled(enabled) { this.enabled = enabled }
   newXHR() {
     return new Promise((resolve, reject) => {
       if(this._xhr.status === 200) this._xhr.abort()
@@ -49,5 +42,29 @@ MVC.Service = class extends MVC.Base {
       this._xhr.onerror = reject
       this._xhr.send(this._data)
     })
+  }
+  enable() {
+    let settings = this.settings
+    if(
+      settings &&
+      !this.enabled
+    ) {
+      if(settings.type) this._type = settings.type
+      if(settings.url) this._url = settings.url
+      if(settings.data) this._data = settings.data || null
+      if(settings.headers) this._headers = settings.headers || [this._defaults.contentType]
+      if(this.settings.responseType) this._responseType = this._settings.responseType
+      this._enabled = true
+    }
+  }
+  disable() {
+    if(Object.keys(this.settings).length) {
+      delete this.settings.type
+      delete this.settings.url
+      delete this.settings.data
+      delete this.settings.headers
+      delete this.settings.responseType
+      this._enabled = true
+    }
   }
 }
