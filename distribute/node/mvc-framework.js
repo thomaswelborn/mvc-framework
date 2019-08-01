@@ -525,12 +525,29 @@ MVC.Observer = class extends MVC.Base {
     }
   }
   connect() {
-    this.observer.observe(this.target, this.options)
-    this._connected = true
+    if(
+      !this.connected &&
+      (
+        (
+          this.target instanceof NodeList &&
+          this.target.length
+        ) ||
+        (
+          this.target instanceof Node
+        )
+      )
+    ) {
+      this.observer.observe(this.target, this.options)
+      this._connected = true
+    }
   }
   disconnect() {
-    this.observer.disconnect()
-    this._connected = false
+    if(
+      this.connected
+    ) {
+      this.observer.disconnect()
+      this._connected = false
+    }
   }
 }
 
@@ -948,41 +965,6 @@ MVC.View = class extends MVC.Base {
       _uiEmitters, this._uiEmitters
     )
   }
-  get _observers() {
-    this.observers = (this.observers)
-      ? this.observers
-      : {}
-    return this.observers
-  }
-  set _observers(observers) {
-    for(let [observerConfiguration, mutationSettings] of Object.entries(observers)) {
-      let observerConfigurationData = observerConfiguration.split(' ')
-      let observerName = observerConfigurationData[0]
-      let observerTarget = MVC.Utils.objectQuery(
-        observerName,
-        this.ui
-      )
-      let observerOptions = (observerConfigurationData[1])
-        ? observerConfigurationData[1]
-          .split(':')
-          .reduce((_observerOptions, currentValue) => {
-            _observerOptions[currentValue] = true
-            return _observerOptions
-          }, {})
-        : {}
-      let observerSettings = {
-        target: observerTarget[0][1],
-        options: observerOptions,
-        mutations: {
-          targets: this.ui,
-          settings: mutationSettings,
-          callbacks: this.observerCallbacks,
-        },
-      }
-      let observer = new MVC.Observer(observerSettings)
-      this._observers[observerName] = observer
-    }
-  }
   get elementObserver() {
     this._elementObserver = (this._elementObserver)
       ? this._elementObserver
@@ -996,10 +978,7 @@ MVC.View = class extends MVC.Base {
           let mutationRecordCategories = ['addedNodes', 'removedNodes']
           for(let mutationRecordCategory of mutationRecordCategories) {
             if(mutationRecord[mutationRecordCategory].length) {
-              this.removeObservers()
-              this.removeUI()
-              this.addUI()
-              this.addObservers()
+              this.resetUI()
             }
           }
           break
@@ -1022,12 +1001,10 @@ MVC.View = class extends MVC.Base {
     }
   }
   autoInsert() {
-    this.insert.element
-    this.insert.method
-    document.querySelectorAll(this.insert.element)
-    .forEach((element) => {
-      element.insertAdjacentElement(this.insert.method, this.element)
-    })
+    return document.querySelectorAll(this.insert.element)
+      .forEach((element) => {
+        element.insertAdjacentElement(this.insert.method, this.element)
+      })
   }
   autoRemove() {
     if(
@@ -1054,6 +1031,10 @@ MVC.View = class extends MVC.Base {
     if(this.templates) delete this.templates
     if(this.insert) delete this.insert
   }
+  resetUI() {
+    this.removeUI()
+    this.addUI()
+  }
   addUI(settings) {
     settings = settings || this.settings
     if(settings.ui) this._ui = settings.ui
@@ -1073,21 +1054,6 @@ MVC.View = class extends MVC.Base {
     delete this.uiEvents
     delete this.ui
     delete this.uiCallbacks
-  }
-  addObservers(settings) {
-    settings = settings || this.settings
-    if(settings.observerCallbacks) this._observerCallbacks = settings.observerCallbacks
-    if(settings.observers) {
-      this._observers = settings.observers
-      this.connectObservers()
-    }
-  }
-  removeObservers() {
-    if(this.observerCallbacks) delete this.observerCallbacks
-    if(this.observers) {
-      this.disconnectObservers()
-      delete this.observers
-    }
   }
   addUIEvents() {
     if(
@@ -1115,18 +1081,6 @@ MVC.View = class extends MVC.Base {
       )
     }
   }
-  connectObservers() {
-    Object.entries(this._observers)
-      .forEach(([observerName, observer]) => {
-        observer.connect()
-      })
-  }
-  disconnectObservers() {
-    Object.entries(this._observers)
-      .forEach(([observerName, observer]) => {
-        observer.disconnect()
-      })
-  }
   enable() {
     let settings = this.settings
     if(
@@ -1135,7 +1089,6 @@ MVC.View = class extends MVC.Base {
     ) {
       this.addElement(settings)
       this.addUI(settings)
-      this.addObservers(settings)
       this._enabled = true
     }
   }
@@ -1147,7 +1100,6 @@ MVC.View = class extends MVC.Base {
     ) {
       this.removeUI(settings)
       this.removeElement(settings)
-      this.removeObservers(settings)
       this._enabled = false
     }
   }

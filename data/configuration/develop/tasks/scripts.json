@@ -17,7 +17,6 @@
         "source/scripts/modules/MVC/Channels/Channels.js",
         "source/scripts/modules/MVC/Channels/Channel/Channel.js",
         "source/scripts/modules/MVC/Base.js",
-        "source/scripts/modules/MVC/Observer.js",
         "source/scripts/modules/MVC/Service.js",
         "source/scripts/modules/MVC/Model.js",
         "source/scripts/modules/MVC/Emitter.js",
