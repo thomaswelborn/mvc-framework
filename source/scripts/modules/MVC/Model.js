@@ -1,7 +1,6 @@
 MVC.Model = class extends MVC.Base {
   constructor() {
     super(...arguments)
-    this.enable()
   }
   get _isSetting() { return this.isSetting }
   set _isSetting(isSetting) { this.isSetting = isSetting }
@@ -67,8 +66,11 @@ MVC.Model = class extends MVC.Base {
   }
   get _enabled() { return this.enabled || false }
   set _enabled(enabled) { this.enabled = enabled }
-  addDataEvents() {
+  enableDataEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
+  }
+  disableDataEvents() {
+    MVC.Utils.unbindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
   }
   get() {
     let property = arguments[0]
@@ -209,7 +211,7 @@ MVC.Model = class extends MVC.Base {
         this.dataEvents &&
         this.dataCallbacks
       ) {
-        this.addDataEvents()
+        this.enableDataEvents()
       }
       this._enabled = true
     }
@@ -224,7 +226,7 @@ MVC.Model = class extends MVC.Base {
         this.dataEvents &&
         this.dataCallbacks
       ) {
-        this.removeDataEvents()
+        this.disableDataEvents()
       }
       delete this._histiogram
       delete this._data
@@ -232,6 +234,12 @@ MVC.Model = class extends MVC.Base {
       delete this._dataEvents
       delete this._schema
       delete this._defaults
+      if(
+        this.dataEvents &&
+        this.dataCallbacks
+      ) {
+        this.disableDataEvents()
+      }
       this._enabled = false
     }
   }

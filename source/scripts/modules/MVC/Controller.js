@@ -1,7 +1,6 @@
 MVC.Controller = class extends MVC.Base {
   constructor() {
     super(...arguments)
-    this.enable()
   }
   get _emitters() {
     this.emitters = (this.emitters)
@@ -12,6 +11,17 @@ MVC.Controller = class extends MVC.Base {
   set _emitters(emitters) {
     this.emitters = MVC.Utils.addPropertiesToObject(
       emitters, this._emitters
+    )
+  }
+  get _emitterCallbacks() {
+    this.emitterCallbacks = (this.emitterCallbacks)
+      ? this.emitterCallbacks
+      : {}
+    return this.emitterCallbacks
+  }
+  set _emitterCallbacks(emitterCallbacks) {
+    this.emitterCallbacks = MVC.Utils.addPropertiesToObject(
+      emitterCallbacks, this._emitterCallbacks
     )
   }
   get _modelCallbacks() {
@@ -102,6 +112,17 @@ MVC.Controller = class extends MVC.Base {
       routers, this._routers
     )
   }
+  get _emitterEvents() {
+    this.emitterEvents = (this.emitterEvents)
+      ? this.emitterEvents
+      : {}
+    return this.emitterEvents
+  }
+  set _emitterEvents(emitterEvents) {
+    this.emitterEvents = MVC.Utils.addPropertiesToObject(
+      emitterEvents, this._emitterEvents
+    )
+  }
   get _modelEvents() {
     this.modelEvents = (this.modelEvents)
       ? this.modelEvents
@@ -137,23 +158,29 @@ MVC.Controller = class extends MVC.Base {
   }
   get _enabled() { return this.enabled || false }
   set _enabled(enabled) { this.enabled = enabled }
-  addModelEvents() {
+  enableModelEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
   }
-  removeModelEvents() {
+  disableModelEvents() {
     MVC.Utils.unbindEventsToTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
   }
-  addViewEvents() {
+  enableViewEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
   }
-  removeViewEvents() {
+  disableViewEvents() {
     MVC.Utils.unbindEventsToTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
   }
-  addControllerEvents() {
+  enableControllerEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
   }
-  removeControllerEvents() {
+  disableControllerEvents() {
     MVC.Utils.unbindEventsToTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
+  }
+  enableEmitterEvents() {
+    MVC.Utils.bindEventsToTargetObjects(this.emitterEvents, this.emitters, this.emitterCallbacks)
+  }
+  disableEmitterEvents() {
+    MVC.Utils.unbindEventsToTargetObjects(this.emitterEvents, this.emitters, this.emitterCallbacks)
   }
   enable() {
     let settings = this.settings
@@ -161,38 +188,47 @@ MVC.Controller = class extends MVC.Base {
       settings &&
       !this.enabled
     ) {
-      if(settings.emitters) this._emitters = settings.emitters
+      if(settings.emitterCallbacks) this._emitterCallbacks = settings.emitterCallbacks
       if(settings.modelCallbacks) this._modelCallbacks = settings.modelCallbacks
       if(settings.viewCallbacks) this._viewCallbacks = settings.viewCallbacks
       if(settings.controllerCallbacks) this._controllerCallbacks = settings.controllerCallbacks
       if(settings.routerCallbacks) this._routerCallbacks = settings.routerCallbacks
+      if(settings.emitters) this._emitters = settings.emitters
       if(settings.models) this._models = settings.models
       if(settings.views) this._views = settings.views
       if(settings.controllers) this._controllers = settings.controllers
       if(settings.routers) this._routers = settings.routers
+      if(settings.emitterEvents) this._emitterEvents = settings.emitterEvents
       if(settings.modelEvents) this._modelEvents = settings.modelEvents
       if(settings.viewEvents) this._viewEvents = settings.viewEvents
       if(settings.controllerEvents) this._controllerEvents = settings.controllerEvents
+      if(
+        this.emitterEvents &&
+        this.emitters &&
+        this.emitterCallbacks
+      ) {
+        this.enableEmitterEvents()
+      }
       if(
         this.modelEvents &&
         this.models &&
         this.modelCallbacks
       ) {
-        this.addModelEvents()
+        this.enableModelEvents()
       }
       if(
         this.viewEvents &&
         this.views &&
         this.viewCallbacks
       ) {
-        this.addViewEvents()
+        this.enableViewEvents()
       }
       if(
         this.controllerEvents &&
         this.controllers &&
         this.controllerCallbacks
       ) {
-        this.addControllerEvents()
+        this.enableControllerEvents()
       }
       this._enabled = true
     }
@@ -208,21 +244,21 @@ MVC.Controller = class extends MVC.Base {
         this.models &&
         this.modelCallbacks
       ) {
-        this.removeModelEvents()
+        this.disableModelEvents()
       }
       if(
         this.viewEvents &&
         this.views &&
         this.viewCallbacks
       ) {
-        this.removeViewEvents()
+        this.disableViewEvents()
       }
       if(
         this.controllerEvents &&
         this.controllers &&
         this.controllerCallbacks
       ) {
-        this.removeControllerEvents()
+        this.disableControllerEvents()
       }
       delete this._emitters
       delete this._modelCallbacks

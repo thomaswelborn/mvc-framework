@@ -1,7 +1,6 @@
 MVC.View = class extends MVC.Base {
   constructor() {
     super(...arguments)
-    this.enable()
   }
   get _elementName() { return this._element.tagName }
   set _elementName(elementName) {
@@ -69,20 +68,15 @@ MVC.View = class extends MVC.Base {
       observerCallbacks, this._observerCallbacks
     )
   }
-  get _uiEmitters() {
-    this.uiEmitters = (this.uiEmitters)
-      ? this.uiEmitters
+  get _emitters() {
+    this.emitters = (this.emitters)
+      ? this.emitters
       : {}
-    return this.uiEmitters
+    return this.emitters
   }
-  set _uiEmitters(uiEmitters) {
-    let _uiEmitters = {}
-    uiEmitters.forEach((UIEmitter) => {
-      let uiEmitter = new UIEmitter()
-      _uiEmitters[uiEmitter.name] = uiEmitter
-    })
-    this.uiEmitters = MVC.Utils.addPropertiesToObject(
-      _uiEmitters, this._uiEmitters
+  set _emitters(emitters) {
+    this.emitters = MVC.Utils.addPropertiesToObject(
+      emitters, this._emitters
     )
   }
   get elementObserver() {
@@ -102,9 +96,9 @@ MVC.View = class extends MVC.Base {
     return this.templates
   }
   set _templates(templates) {
-    for(let [templateName, templateSettings] of Object.entries(templates)) {
-      this._templates[templateName] = templateSettings
-    }
+    this.templates = MVC.Utils.addPropertiesToObject(
+      templates, this._templates
+    )
   }
   elementObserve(mutationRecordList, observer) {
     for(let [mutationRecordIndex, mutationRecord] of Object.entries(mutationRecordList)) {
@@ -121,10 +115,12 @@ MVC.View = class extends MVC.Base {
     }
   }
   autoInsert() {
-    return document.querySelectorAll(this.insert.element)
+    if(this.insert) {
+      document.querySelectorAll(this.insert.element)
       .forEach((element) => {
         element.insertAdjacentElement(this.insert.method, this.element)
       })
+    }
   }
   autoRemove() {
     if(
@@ -132,7 +128,7 @@ MVC.View = class extends MVC.Base {
       this.element.parentElement
     ) this.element.parentElement.removeChild(this.element)
   }
-  addElement(settings) {
+  enableElement(settings) {
     settings = settings || this.settings
     if(settings.elementName) this._elementName = settings.elementName
     if(settings.element) this._element = settings.element
@@ -140,7 +136,7 @@ MVC.View = class extends MVC.Base {
     if(settings.templates) this._templates = settings.templates
     if(settings.insert) this._insert = settings.insert
   }
-  removeElement(settings) {
+  disableElement(settings) {
     settings = settings || this.settings
     if(
       this.element &&
@@ -152,30 +148,29 @@ MVC.View = class extends MVC.Base {
     if(this.insert) delete this.insert
   }
   resetUI() {
-    this.removeUI()
-    this.addUI()
+    this.disableUI()
+    this.enableUI()
   }
-  addUI(settings) {
+  enableUI(settings) {
     settings = settings || this.settings
     if(settings.ui) this._ui = settings.ui
-    if(settings.uiEmitters) this._uiEmitters = settings.uiEmitters
     if(settings.uiCallbacks) this._uiCallbacks = settings.uiCallbacks
     if(settings.uiEvents) {
       this._uiEvents = settings.uiEvents
-      this.addUIEvents()
+      this.enableUIEvents()
     }
   }
-  removeUI(settings) {
+  disableUI(settings) {
     settings = settings || this.settings
     if(settings.uiEvents) {
-      this.removeUIEvents()
+      this.disableUIEvents()
       delete this._uiEvents
     }
     delete this.uiEvents
     delete this.ui
     delete this.uiCallbacks
   }
-  addUIEvents() {
+  enableUIEvents() {
     if(
       this.uiEvents &&
       this.ui &&
@@ -188,7 +183,7 @@ MVC.View = class extends MVC.Base {
       )
     }
   }
-  removeUIEvents() {
+  disableUIEvents() {
     if(
       this.uiEvents &&
       this.ui &&
@@ -201,26 +196,36 @@ MVC.View = class extends MVC.Base {
       )
     }
   }
+  enableEmitters() {
+    if(this.settings.emitters) this._emitters = this.settings.emitters
+  }
+  disableEmitters() {
+    if(this._emitters) delete this._emitters
+  }
   enable() {
     let settings = this.settings
     if(
       settings &&
-      !this.enabled
+      !this._enabled
     ) {
-      this.addElement(settings)
-      this.addUI(settings)
+      this.enableEmitters()
+      this.enableElement(settings)
+      this.enableUI(settings)
       this._enabled = true
+      return this
     }
   }
   disable() {
     let settings = this.settings
     if(
       settings &&
-      this.enabled
+      this._enabled
     ) {
-      this.removeUI(settings)
-      this.removeElement(settings)
+      this.disableUI(settings)
+      this.disableElement(settings)
+      this.disableEmitters()
       this._enabled = false
+      return thiss
     }
   }
 }

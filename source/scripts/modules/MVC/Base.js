@@ -25,5 +25,9 @@ MVC.Base = class extends MVC.Events {
       : {}
     return this.settings
   }
-  set _settings(settings) { this.settings = settings }
+  set _settings(settings) {
+    this.settings = MVC.Utils.addPropertiesToObject(
+      settings, this._settings
+    )
+  }
 }
