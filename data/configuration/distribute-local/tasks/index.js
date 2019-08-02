@@ -1,3 +1,3 @@
 module.exports = {
-  copy: require('./copy.json'),
+  Copy: require('./Copy.json'),
 }

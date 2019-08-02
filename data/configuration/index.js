@@ -1,7 +1,7 @@
 module.exports = {
-  'develop': require('./develop'),
-  'develop-local': require('./develop-local'),
-  'distribute': require('./distribute'),
-  'distribute-local': require('./distribute-local'),
-  'test-1': require('./test-1'),
+  'Develop': require('./Develop'),
+  'Develop-Local': require('./Develop-Local'),
+  'Distribute': require('./Distribute'),
+  'Distribute-Local': require('./Distribute-Local'),
+  'Test-1': require('./Test-1'),
 }

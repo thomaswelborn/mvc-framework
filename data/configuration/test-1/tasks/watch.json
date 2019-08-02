@@ -7,7 +7,7 @@
     "task": {
       "type": "series",
       "tasks": [
-        "scripts"
+        "Scripts"
       ]
     }
   },
@@ -20,7 +20,7 @@
     "task": {
       "type": "series",
       "tasks": [
-        "templates:documents"
+        "Templates:Documents"
       ]
     }
   },
@@ -32,7 +32,7 @@
     "task": {
       "type": "series",
       "tasks": [
-        "templates:scripts"
+        "Templates:Scripts"
       ]
     }
   }

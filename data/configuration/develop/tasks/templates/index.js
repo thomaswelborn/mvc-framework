@@ -1,4 +1,4 @@
 module.exports = {
-  documents: require('./documents.json'),
-  scripts: require('./scripts.json'),
+  Documents: require('./Documents.json'),
+  Scripts: require('./Scripts.json'),
 }

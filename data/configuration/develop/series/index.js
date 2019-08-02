@@ -1,3 +1,3 @@
 module.exports = {
-  develop: require('./develop.json'),
+  Develop: require('./Develop.json'),
 }

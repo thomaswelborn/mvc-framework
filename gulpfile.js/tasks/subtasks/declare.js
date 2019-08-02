@@ -19,16 +19,16 @@ module.exports = function(settings) {
             if(processNameFilePath.replace) {
               for(let replaceSettings of processNameFilePath.replace) {
                 replaceSettings['origin'] = filePath
-                filePath = $.tasks.subtasks.string.replace(replaceSettings)
+                filePath = Tasks.Subtasks.String.Replace(replaceSettings)
               }
             }
             if(processNameFilePath.transform) {
               for(let transformSettings of processNameFilePath.transform) {
                 transformSettings['origin'] = filePath
-                filePath = $.tasks.subtasks.string.transform(transformSettings)
+                filePath = Tasks.Subtasks.String.Transform(transformSettings)
               }
             }
-            return JSON.stringify(filePath)
+            return filePath
           }
           break
       }

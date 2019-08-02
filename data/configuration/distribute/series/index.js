@@ -1,3 +1,3 @@
 module.exports = {
-  distribute: require('./distribute.json'),
+  Distribute: require('./Distribute.json'),
 }

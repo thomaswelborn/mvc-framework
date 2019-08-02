@@ -1,3 +1,3 @@
 module.exports = {
-  'distribute-local': require('./distribute-local.json'),
+  'Distribute-Local': require('./Distribute-Local.json'),
 }

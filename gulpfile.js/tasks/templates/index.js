@@ -1,4 +1,4 @@
 module.exports = {
-  documents: require('./documents.js'),
-  scripts: require('./scripts.js'),
+  'Documents': require('./Documents.js'),
+  'Scripts': require('./Scripts.js'),
 }

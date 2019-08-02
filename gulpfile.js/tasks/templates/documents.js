@@ -2,14 +2,14 @@ module.exports = function(rootProcess, data) {
   let DocumentTemplates = function(callback) {
     let stream = $.lib.mergeStream()
     for(let fileSettings of data) {
-      $.tasks.subtasks.delSync(fileSettings.delSync)
+      Tasks.Subtasks.DelSync(fileSettings.delSync)
       let task = $.lib.gulp
         .src(fileSettings.src.globs, fileSettings.src.options)
-          .pipe($.tasks.subtasks.data(fileSettings.data))
-          .pipe($.tasks.subtasks.compileHandlebars(fileSettings.compileHandlebars))
-          .pipe($.tasks.subtasks.cleanHTML(fileSettings.cleanHTML))
-          .pipe($.tasks.subtasks.minifyHTML(fileSettings.minifyHTML))
-          .pipe($.tasks.subtasks.rename(fileSettings.rename))
+          .pipe(Tasks.Subtasks.Data.Switch(fileSettings.data))
+          .pipe(Tasks.Subtasks.CompileHandlebars(fileSettings.compileHandlebars))
+          .pipe(Tasks.Subtasks.CleanHTML(fileSettings.cleanHTML))
+          .pipe(Tasks.Subtasks.MinifyHTML(fileSettings.minifyHTML))
+          .pipe(Tasks.Subtasks.Rename(fileSettings.rename))
         .pipe($.lib.dest(fileSettings.dest))
       stream.add(task)
     }

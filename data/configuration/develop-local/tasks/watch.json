@@ -9,7 +9,7 @@
     "task": {
       "type": "series",
       "tasks": [
-        "spawn"
+        "Spawn"
       ]
     }
   },
@@ -21,7 +21,7 @@
     "task": {
       "type": "series",
       "tasks": [
-        "scripts"
+        "Scripts"
       ]
     }
   },
@@ -33,7 +33,7 @@
     "task": {
       "type": "series",
       "tasks": [
-        "copy"
+        "Copy"
       ]
     }
   }

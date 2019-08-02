@@ -4,15 +4,15 @@ module.exports = function(rootProcess, data) {
     for(let [packageName, packageSettings] of Object.entries(data)) {
       packageSettings.src.options = packageSettings.src.options || {}
       packageSettings.sourcemaps = packageSettings.sourcemaps || {}
-      $.tasks.subtasks.delSync(packageSettings.delSync)
+      Tasks.Subtasks.DelSync(packageSettings.delSync)
       let task = $.lib.gulp
         .src(packageSettings.src.globs, packageSettings.src.options)
-          .pipe($.tasks.subtasks.sourcemaps.init(packageSettings.sourcemaps.init))
-          .pipe($.tasks.subtasks.babel(packageSettings.babel))
-          .pipe($.tasks.subtasks.concat(packageSettings.concat))
-          .pipe($.tasks.subtasks.wrap(packageSettings.wrap))
-          .pipe($.tasks.subtasks.minify(packageSettings.minify))
-          .pipe($.tasks.subtasks.sourcemaps.write(
+          .pipe(Tasks.Subtasks.SourceMaps.init(packageSettings.sourcemaps.init))
+          .pipe(Tasks.Subtasks.Babel(packageSettings.babel))
+          .pipe(Tasks.Subtasks.Concat(packageSettings.concat))
+          .pipe(Tasks.Subtasks.Wrap(packageSettings.wrap))
+          .pipe(Tasks.Subtasks.Minify(packageSettings.minify))
+          .pipe(Tasks.Subtasks.SourceMaps.write(
             packageSettings.sourcemaps.write
           ))
         .pipe($.lib.dest(packageSettings.dest))

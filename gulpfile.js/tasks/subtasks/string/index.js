@@ -1,4 +1,4 @@
 module.exports = {
-  replace: require('./replace.js'),
-  transform: require('./transform.js'),
+  'Replace': require('./Replace.js'),
+  'Transform': require('./Transform.js'),
 }

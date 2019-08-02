@@ -26,7 +26,7 @@ module.exports = function(rootProcess, data) {
         comma_first: false,
         e4x: false,
         indent_empty_lines: true
-      }
+      },
     }
     for(let [packageName, packageSettings] of Object.entries(data)) {
       let fileData = require(
@@ -39,9 +39,9 @@ module.exports = function(rootProcess, data) {
         )
       )
       this.prettyprintSettings.options.object = fileData
-      fileData = $.tasks.subtasks.prettyprint(this.prettyprintSettings)
+      fileData = Tasks.Subtasks.PrettyPrint(this.prettyprintSettings)
       this.beautifySettings.data = fileData
-      fileData = $.tasks.subtasks.beautify(this.beautifySettings)
+      fileData = Tasks.Subtasks.Beautify(this.beautifySettings)
       fileData = packageSettings.file.namespace.concat(' = ', fileData)
       let fileDest = $.lib.path.join(
         packageSettings.dest,

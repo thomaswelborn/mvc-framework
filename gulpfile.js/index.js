@@ -1,3 +1,7 @@
-require('./global.js')
-let processes = new $.processes($.config.data)
-module.exports = processes
+(() => {
+  require('./global.js')
+
+  let processes = new Processes(Config.data)
+  module.exports = processes
+
+})()

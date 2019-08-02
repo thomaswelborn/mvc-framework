@@ -1,6 +1,6 @@
 module.exports = {
-  copy: require('./copy.json'),
-  scripts: require('./scripts.json'),
-  spawn: require('./spawn.json'),
-  watch: require('./watch.json'),
+  Copy: require('./Copy.json'),
+  Scripts: require('./Scripts.json'),
+  Spawn: require('./Spawn.json'),
+  Watch: require('./Watch.json'),
 }

@@ -1,9 +1,9 @@
 [
-  "clean",
-  "templates:documents",
-  "templates:scripts",
-  "scripts",
-  "browserSync",
-  "copy",
-  "watch"
+  "Clean",
+  "Templates:Documents",
+  "Templates:Scripts",
+  "Scripts",
+  "BrowserSync",
+  "Copy",
+  "Watch"
 ]

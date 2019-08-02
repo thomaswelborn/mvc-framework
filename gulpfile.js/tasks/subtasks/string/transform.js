@@ -1,7 +1,7 @@
 module.exports = function StringTransform(settings) {
   this.dashCaseToCamelCase = function(origin) {
     origin = origin
-      .split('/')
+      .split($.lib.path.sep)
       .map((pathSegment, pathSegmentIndex) => {
         if(pathSegment) {
           pathSegment = pathSegment
@@ -11,12 +11,12 @@ module.exports = function StringTransform(settings) {
               let caseSegmentCharacters = caseSegment.split('')
               switch(settings.options.first) {
                 case 'upperCase':
-                caseSegmentCharacters[0] = caseSegmentCharacters[0]
-                .toUpperCase()
+                  caseSegmentCharacters[0] = caseSegmentCharacters[0]
+                    .toUpperCase()
                 break
                 case 'lowerCase':
-                caseSegmentCharacters[0] = caseSegmentCharacters[0]
-                .toLowerCase()
+                  caseSegmentCharacters[0] = caseSegmentCharacters[0]
+                    .toLowerCase()
                 break
               }
               caseSegment = caseSegmentCharacters.join('')
@@ -24,15 +24,15 @@ module.exports = function StringTransform(settings) {
             return caseSegment
           })
           .join('')
-          return pathSegment
         }
+        return pathSegment
       })
-      .join('')
+      .join('.')
     return origin
   }
   this.camelCaseToDashCase = function(origin) {
     origin = origin
-      .split('/')
+      .split($.lib.path.sep)
       .map((pathSegment, pathSegmentIndex) => {
         if(pathSegment) {
           pathSegment = pathSegment
@@ -52,7 +52,7 @@ module.exports = function StringTransform(settings) {
           return pathSegment
         }
       })
-      .join('')
+      .join('.')
     return origin
   }
   let origin = settings.origin

@@ -1,4 +1,4 @@
 module.exports = {
-  clean: require('./clean.json'),
-  scripts: require('./scripts.json')
+  Clean: require('./Clean.json'),
+  Scripts: require('./Scripts.json')
 }

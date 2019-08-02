@@ -1,3 +1,3 @@
 module.exports = {
-  'test-1': require('./test-1.json'),
+  'Test-1': require('./Test-1.json'),
 }

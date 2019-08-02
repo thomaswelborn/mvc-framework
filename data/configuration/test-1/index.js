@@ -1,4 +1,4 @@
 module.exports = {
-  tasks: require('./tasks'),
-  series: require('./series'),
+  Tasks: require('./Tasks'),
+  Series: require('./Series'),
 }
