@@ -144,7 +144,7 @@ MVC.Utils.objectQuery.parseFragment = function parseFragment(fragment) {
     fragment.charAt(fragment.length - 1) == '/'
   ) {
     fragment = fragment.slice(1, -1)
-    fragment = new RegExp(fragment)
+    fragment = new RegExp('^'.concat(fragment, '$'))
   }
   return fragment
 }
@@ -383,10 +383,9 @@ MVC.Channels.Channel = class {
 }
 
 MVC.Base = class extends MVC.Events {
-  constructor(settings, options, configuration) {
+  constructor(settings, configuration) {
     super()
     if(configuration) this._configuration = configuration
-    if(options) this._options = options
     if(settings) this._settings = settings
   }
   get _configuration() {
@@ -396,13 +395,6 @@ MVC.Base = class extends MVC.Events {
     return this.configuration
   }
   set _configuration(configuration) { this.configuration = configuration }
-  get _options() {
-    this.options = (this.options)
-      ? this.options
-      : {}
-    return this.options
-  }
-  set _options(options) { this.options = options }
   get _settings() {
     this.settings = (this.settings)
       ? this.settings

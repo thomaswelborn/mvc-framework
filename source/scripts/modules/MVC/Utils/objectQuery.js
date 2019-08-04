@@ -44,7 +44,7 @@ MVC.Utils.objectQuery.parseFragment = function parseFragment(fragment) {
     fragment.charAt(fragment.length - 1) == '/'
   ) {
     fragment = fragment.slice(1, -1)
-    fragment = new RegExp(fragment)
+    fragment = new RegExp('^'.concat(fragment, '$'))
   }
   return fragment
 }
