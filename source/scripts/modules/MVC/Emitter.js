@@ -8,12 +8,14 @@ MVC.Emitter = class extends MVC.Model {
   get _name() { return this.name }
   set _name(name) { this.name = name }
   emission() {
+    let eventData = {
+      name: this.name,
+      data: this.parse()
+    }
     this.emit(
       this.name,
-      {
-        name: this.name,
-        data: this.parse()
-      }
+      eventData
     )
+    return eventData
   }
 }

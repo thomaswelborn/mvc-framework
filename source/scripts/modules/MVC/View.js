@@ -68,17 +68,6 @@ MVC.View = class extends MVC.Base {
       observerCallbacks, this._observerCallbacks
     )
   }
-  get _emitters() {
-    this.emitters = (this.emitters)
-      ? this.emitters
-      : {}
-    return this.emitters
-  }
-  set _emitters(emitters) {
-    this.emitters = MVC.Utils.addPropertiesToObject(
-      emitters, this._emitters
-    )
-  }
   get elementObserver() {
     this._elementObserver = (this._elementObserver)
       ? this._elementObserver

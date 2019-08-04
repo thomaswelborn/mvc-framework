@@ -163,6 +163,9 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
       eventTargetSettings,
       targetObjects
     )
+    eventTargets = (!MVC.Utils.isArray(eventTargets))
+      ? [['@', eventTargets]]
+      : eventTargets
     for(let [eventTargetName, eventTarget] of eventTargets) {
       let eventMethodName = (toggleMethod === 'on')
       ? (
@@ -411,6 +414,17 @@ MVC.Base = class extends MVC.Events {
       settings, this._settings
     )
   }
+  get _emitters() {
+    this.emitters = (this.emitters)
+      ? this.emitters
+      : {}
+    return this.emitters
+  }
+  set _emitters(emitters) {
+    this.emitters = MVC.Utils.addPropertiesToObject(
+      emitters, this._emitters
+    )
+  }
 }
 
 MVC.Service = class extends MVC.Base {
@@ -440,6 +454,8 @@ MVC.Service = class extends MVC.Base {
       this._headers.push(header)
     }
   }
+  get _data() { return this.data }
+  set _data(data) { this.data = data }
   get _xhr() {
     this.xhr = (this.xhr)
       ? this.xhr
@@ -448,37 +464,48 @@ MVC.Service = class extends MVC.Base {
   }
   get _enabled() { return this.enabled || false }
   set _enabled(enabled) { this.enabled = enabled }
-  newXHR() {
+  request(data) {
+    data = data || this.data || null
     return new Promise((resolve, reject) => {
       if(this._xhr.status === 200) this._xhr.abort()
-      this._xhr.open(this._type, this._url)
+      this._xhr.open(this.type, this.url)
+      this._headers = this.settings.headers || [this._defaults.contentType]
       this._xhr.onload = resolve
       this._xhr.onerror = reject
-      this._xhr.send(this._data)
+      this._xhr.send(data)
+    }).then((response) => {
+      this.emit('xhr:resolve', {
+        name: 'xhr:resolve',
+        data: response.currentTarget,
+      })
+      return response
     })
   }
   enable() {
     let settings = this.settings
     if(
-      settings &&
-      !this.enabled
+      !this.enabled &&
+      Object.keys(settings).length
     ) {
       if(settings.type) this._type = settings.type
       if(settings.url) this._url = settings.url
       if(settings.data) this._data = settings.data || null
-      if(settings.headers) this._headers = settings.headers || [this._defaults.contentType]
       if(this.settings.responseType) this._responseType = this._settings.responseType
       this._enabled = true
     }
   }
   disable() {
-    if(Object.keys(this.settings).length) {
-      delete this.settings.type
-      delete this.settings.url
-      delete this.settings.data
-      delete this.settings.headers
-      delete this.settings.responseType
-      this._enabled = true
+    let settings = this.settings
+    if(
+      this.enabled &&
+      Object.keys(settings).length
+    ) {
+      delete this._type
+      delete this._url
+      delete this._data
+      delete this._headers
+      delete this._responseType
+      this._enabled = false
     }
   }
 }
@@ -549,8 +576,47 @@ MVC.Model = class extends MVC.Base {
       dataCallbacks, this._dataCallbacks
     )
   }
+  get _services() {
+    this.services =  (this.services)
+      ? this.services
+      : {}
+    return this.services
+  }
+  set _services(services) {
+    this.services = MVC.Utils.addPropertiesToObject(
+      services, this._services
+    )
+  }
+  get _serviceEvents() {
+    this.serviceEvents = (this.serviceEvents)
+      ? this.serviceEvents
+      : {}
+    return this.serviceEvents
+  }
+  set _serviceEvents(serviceEvents) {
+    this.serviceEvents = MVC.Utils.addPropertiesToObject(
+      serviceEvents, this._serviceEvents
+    )
+  }
+  get _serviceCallbacks() {
+    this.serviceCallbacks = (this.serviceCallbacks)
+      ? this.serviceCallbacks
+      : {}
+    return this.serviceCallbacks
+  }
+  set _serviceCallbacks(serviceCallbacks) {
+    this.serviceCallbacks = MVC.Utils.addPropertiesToObject(
+      serviceCallbacks, this._serviceCallbacks
+    )
+  }
   get _enabled() { return this.enabled || false }
   set _enabled(enabled) { this.enabled = enabled }
+  enableServiceEvents() {
+    MVC.Utils.bindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+  }
+  disableServiceEvents() {
+    MVC.Utils.unbindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+  }
   enableDataEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
   }
@@ -687,11 +753,22 @@ MVC.Model = class extends MVC.Base {
       !this.enabled
     ) {
       if(this.settings.histiogram) this._histiogram = this.settings.histiogram
+      if(this.settings.emitters) this._emitters = this.settings.emitters
+      if(this.settings.services) this._services = this.settings.services
+      if(this.settings.serviceCallbacks) this._serviceCallbacks = this.settings.serviceCallbacks
+      if(this.settings.serviceEvents) this._serviceEvents = this.settings.serviceEvents
       if(this.settings.data) this.set(this.settings.data)
       if(this.settings.dataCallbacks) this._dataCallbacks = this.settings.dataCallbacks
       if(this.settings.dataEvents) this._dataEvents = this.settings.dataEvents
       if(this.settings.schema) this._schema = this.settings.schema
       if(this.settings.defaults) this._defaults = this.settings.defaults
+      if(
+        this.services &&
+        this.serviceEvents &&
+        this.serviceCallbacks
+      ) {
+        this.enableServiceEvents()
+      }
       if(
         this.dataEvents &&
         this.dataCallbacks
@@ -708,24 +785,27 @@ MVC.Model = class extends MVC.Base {
       !this.enabled
     ) {
       if(
-        this.dataEvents &&
-        this.dataCallbacks
+        this.services &&
+        this.serviceEvents &&
+        this.serviceCallbacks
       ) {
-        this.disableDataEvents()
+        this.disableServiceEvents()
       }
-      delete this._histiogram
-      delete this._data
-      delete this._dataCallbacks
-      delete this._dataEvents
-      delete this._schema
-      delete this._defaults
       if(
         this.dataEvents &&
         this.dataCallbacks
       ) {
         this.disableDataEvents()
       }
-      this._enabled = false
+      delete this._histiogram
+      delete this._services
+      delete this._serviceCallbacks
+      delete this._serviceEvents
+      delete this._data
+      delete this._dataCallbacks
+      delete this._dataEvents
+      delete this._schema
+      delete this._emitters
     }
   }
 }
@@ -740,13 +820,15 @@ MVC.Emitter = class extends MVC.Model {
   get _name() { return this.name }
   set _name(name) { this.name = name }
   emission() {
+    let eventData = {
+      name: this.name,
+      data: this.parse()
+    }
     this.emit(
       this.name,
-      {
-        name: this.name,
-        data: this.parse()
-      }
+      eventData
     )
+    return eventData
   }
 }
 
@@ -818,17 +900,6 @@ MVC.View = class extends MVC.Base {
   set _observerCallbacks(observerCallbacks) {
     this.observerCallbacks = MVC.Utils.addPropertiesToObject(
       observerCallbacks, this._observerCallbacks
-    )
-  }
-  get _emitters() {
-    this.emitters = (this.emitters)
-      ? this.emitters
-      : {}
-    return this.emitters
-  }
-  set _emitters(emitters) {
-    this.emitters = MVC.Utils.addPropertiesToObject(
-      emitters, this._emitters
     )
   }
   get elementObserver() {
@@ -985,17 +1056,6 @@ MVC.View = class extends MVC.Base {
 MVC.Controller = class extends MVC.Base {
   constructor() {
     super(...arguments)
-  }
-  get _emitters() {
-    this.emitters = (this.emitters)
-      ? this.emitters
-      : {}
-    return this.emitters
-  }
-  set _emitters(emitters) {
-    this.emitters = MVC.Utils.addPropertiesToObject(
-      emitters, this._emitters
-    )
   }
   get _emitterCallbacks() {
     this.emitterCallbacks = (this.emitterCallbacks)
@@ -1223,6 +1283,13 @@ MVC.Controller = class extends MVC.Base {
       settings &&
       this.enabled
     ) {
+      if(
+        this.emitterEvents &&
+        this.emitters &&
+        this.emitterCallbacks
+      ) {
+        this.disableEmitterEvents()
+      }
       if(
         this.modelEvents &&
         this.models &&

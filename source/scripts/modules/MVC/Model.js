@@ -64,8 +64,47 @@ MVC.Model = class extends MVC.Base {
       dataCallbacks, this._dataCallbacks
     )
   }
+  get _services() {
+    this.services =  (this.services)
+      ? this.services
+      : {}
+    return this.services
+  }
+  set _services(services) {
+    this.services = MVC.Utils.addPropertiesToObject(
+      services, this._services
+    )
+  }
+  get _serviceEvents() {
+    this.serviceEvents = (this.serviceEvents)
+      ? this.serviceEvents
+      : {}
+    return this.serviceEvents
+  }
+  set _serviceEvents(serviceEvents) {
+    this.serviceEvents = MVC.Utils.addPropertiesToObject(
+      serviceEvents, this._serviceEvents
+    )
+  }
+  get _serviceCallbacks() {
+    this.serviceCallbacks = (this.serviceCallbacks)
+      ? this.serviceCallbacks
+      : {}
+    return this.serviceCallbacks
+  }
+  set _serviceCallbacks(serviceCallbacks) {
+    this.serviceCallbacks = MVC.Utils.addPropertiesToObject(
+      serviceCallbacks, this._serviceCallbacks
+    )
+  }
   get _enabled() { return this.enabled || false }
   set _enabled(enabled) { this.enabled = enabled }
+  enableServiceEvents() {
+    MVC.Utils.bindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+  }
+  disableServiceEvents() {
+    MVC.Utils.unbindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+  }
   enableDataEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
   }
@@ -202,11 +241,22 @@ MVC.Model = class extends MVC.Base {
       !this.enabled
     ) {
       if(this.settings.histiogram) this._histiogram = this.settings.histiogram
+      if(this.settings.emitters) this._emitters = this.settings.emitters
+      if(this.settings.services) this._services = this.settings.services
+      if(this.settings.serviceCallbacks) this._serviceCallbacks = this.settings.serviceCallbacks
+      if(this.settings.serviceEvents) this._serviceEvents = this.settings.serviceEvents
       if(this.settings.data) this.set(this.settings.data)
       if(this.settings.dataCallbacks) this._dataCallbacks = this.settings.dataCallbacks
       if(this.settings.dataEvents) this._dataEvents = this.settings.dataEvents
       if(this.settings.schema) this._schema = this.settings.schema
       if(this.settings.defaults) this._defaults = this.settings.defaults
+      if(
+        this.services &&
+        this.serviceEvents &&
+        this.serviceCallbacks
+      ) {
+        this.enableServiceEvents()
+      }
       if(
         this.dataEvents &&
         this.dataCallbacks
@@ -223,24 +273,27 @@ MVC.Model = class extends MVC.Base {
       !this.enabled
     ) {
       if(
-        this.dataEvents &&
-        this.dataCallbacks
+        this.services &&
+        this.serviceEvents &&
+        this.serviceCallbacks
       ) {
-        this.disableDataEvents()
+        this.disableServiceEvents()
       }
-      delete this._histiogram
-      delete this._data
-      delete this._dataCallbacks
-      delete this._dataEvents
-      delete this._schema
-      delete this._defaults
       if(
         this.dataEvents &&
         this.dataCallbacks
       ) {
         this.disableDataEvents()
       }
-      this._enabled = false
+      delete this._histiogram
+      delete this._services
+      delete this._serviceCallbacks
+      delete this._serviceEvents
+      delete this._data
+      delete this._dataCallbacks
+      delete this._dataEvents
+      delete this._schema
+      delete this._emitters
     }
   }
 }

@@ -2,17 +2,6 @@ MVC.Controller = class extends MVC.Base {
   constructor() {
     super(...arguments)
   }
-  get _emitters() {
-    this.emitters = (this.emitters)
-      ? this.emitters
-      : {}
-    return this.emitters
-  }
-  set _emitters(emitters) {
-    this.emitters = MVC.Utils.addPropertiesToObject(
-      emitters, this._emitters
-    )
-  }
   get _emitterCallbacks() {
     this.emitterCallbacks = (this.emitterCallbacks)
       ? this.emitterCallbacks
@@ -239,6 +228,13 @@ MVC.Controller = class extends MVC.Base {
       settings &&
       this.enabled
     ) {
+      if(
+        this.emitterEvents &&
+        this.emitters &&
+        this.emitterCallbacks
+      ) {
+        this.disableEmitterEvents()
+      }
       if(
         this.modelEvents &&
         this.models &&

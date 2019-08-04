@@ -25,6 +25,8 @@ MVC.Service = class extends MVC.Base {
       this._headers.push(header)
     }
   }
+  get _data() { return this.data }
+  set _data(data) { this.data = data }
   get _xhr() {
     this.xhr = (this.xhr)
       ? this.xhr
@@ -33,37 +35,48 @@ MVC.Service = class extends MVC.Base {
   }
   get _enabled() { return this.enabled || false }
   set _enabled(enabled) { this.enabled = enabled }
-  newXHR() {
+  request(data) {
+    data = data || this.data || null
     return new Promise((resolve, reject) => {
       if(this._xhr.status === 200) this._xhr.abort()
-      this._xhr.open(this._type, this._url)
+      this._xhr.open(this.type, this.url)
+      this._headers = this.settings.headers || [this._defaults.contentType]
       this._xhr.onload = resolve
       this._xhr.onerror = reject
-      this._xhr.send(this._data)
+      this._xhr.send(data)
+    }).then((response) => {
+      this.emit('xhr:resolve', {
+        name: 'xhr:resolve',
+        data: response.currentTarget,
+      })
+      return response
     })
   }
   enable() {
     let settings = this.settings
     if(
-      settings &&
-      !this.enabled
+      !this.enabled &&
+      Object.keys(settings).length
     ) {
       if(settings.type) this._type = settings.type
       if(settings.url) this._url = settings.url
       if(settings.data) this._data = settings.data || null
-      if(settings.headers) this._headers = settings.headers || [this._defaults.contentType]
       if(this.settings.responseType) this._responseType = this._settings.responseType
       this._enabled = true
     }
   }
   disable() {
-    if(Object.keys(this.settings).length) {
-      delete this.settings.type
-      delete this.settings.url
-      delete this.settings.data
-      delete this.settings.headers
-      delete this.settings.responseType
-      this._enabled = true
+    let settings = this.settings
+    if(
+      this.enabled &&
+      Object.keys(settings).length
+    ) {
+      delete this._type
+      delete this._url
+      delete this._data
+      delete this._headers
+      delete this._responseType
+      this._enabled = false
     }
   }
 }

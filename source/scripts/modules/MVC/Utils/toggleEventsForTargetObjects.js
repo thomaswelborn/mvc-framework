@@ -12,6 +12,9 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
       eventTargetSettings,
       targetObjects
     )
+    eventTargets = (!MVC.Utils.isArray(eventTargets))
+      ? [['@', eventTargets]]
+      : eventTargets
     for(let [eventTargetName, eventTarget] of eventTargets) {
       let eventMethodName = (toggleMethod === 'on')
       ? (
