@@ -170,12 +170,18 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
       let eventMethodName = (toggleMethod === 'on')
       ? (
         eventTarget instanceof NodeList ||
-        eventTarget instanceof HTMLElement
+        (
+          eventTarget instanceof HTMLElement ||
+          eventTarget instanceof Document
+        )
       ) ? 'addEventListener'
         : 'on'
       : (
         eventTarget instanceof NodeList ||
-        eventTarget instanceof HTMLElement
+        (
+          eventTarget instanceof HTMLElement ||
+          eventTarget instanceof Document
+        )
       ) ? 'removeEventListener'
         : 'off'
       let eventCallback = MVC.Utils.objectQuery(
@@ -814,7 +820,7 @@ MVC.Emitter = class extends MVC.Model {
   emission() {
     let eventData = {
       name: this.name,
-      data: this.parse()
+      data: this.data
     }
     this.emit(
       this.name,
@@ -834,7 +840,10 @@ MVC.View = class extends MVC.Base {
   }
   get _element() { return this.element }
   set _element(element) {
-    if(element instanceof HTMLElement) {
+    if(
+      element instanceof HTMLElement ||
+      element instanceof Document
+    ) {
       this.element = element
     } else if(typeof element === 'string') {
       this.element = document.querySelector(element)
@@ -863,10 +872,13 @@ MVC.View = class extends MVC.Base {
   set _ui(ui) {
     if(!this._ui['$element']) this._ui['$element'] = this.element
     for(let [uiKey, uiValue] of Object.entries(ui)) {
-      if(uiValue instanceof HTMLElement) {
-        this._ui[uiKey] = uiValue
-      } else if(typeof uiValue === 'string') {
+      if(typeof uiValue === 'string') {
         this._ui[uiKey] = this._element.querySelectorAll(uiValue)
+      } else if(
+        uiValue instanceof HTMLElement ||
+        uiValue instanceof Document
+      ) {
+        this._ui[uiKey] = uiValue
       }
     }
   }

@@ -16,5 +16,14 @@
       "options": {}
     },
     "dest": "../test-framework/node_modules/mvc-framework/distribute"
+  },
+  "ui": {
+    "src": {
+      "globs": [
+        "distribute/**/*.*"
+      ],
+      "options": {}
+    },
+    "dest": "../ui/node_modules/mvc-framework/distribute"
   }
 }

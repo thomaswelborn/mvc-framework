@@ -19,12 +19,18 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
       let eventMethodName = (toggleMethod === 'on')
       ? (
         eventTarget instanceof NodeList ||
-        eventTarget instanceof HTMLElement
+        (
+          eventTarget instanceof HTMLElement ||
+          eventTarget instanceof Document
+        )
       ) ? 'addEventListener'
         : 'on'
       : (
         eventTarget instanceof NodeList ||
-        eventTarget instanceof HTMLElement
+        (
+          eventTarget instanceof HTMLElement ||
+          eventTarget instanceof Document
+        )
       ) ? 'removeEventListener'
         : 'off'
       let eventCallback = MVC.Utils.objectQuery(
