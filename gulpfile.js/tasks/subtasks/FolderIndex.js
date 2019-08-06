@@ -98,7 +98,7 @@ let FolderIndex = class {
       let fileDestination = $.lib.path.join(src, this.file.name.concat(
         this.file.extension
       ))
-      $.lib.fs.writeFile(fileDestination, fileData, () => console.log)
+      $.lib.fs.writeFileSync(fileDestination, fileData)
     }
   }
 }

@@ -1,7 +1,6 @@
-(() => {
-  require('./global.js')
+require('./global.js')
 
-  let processes = new Processes(Config.data)
-  module.exports = processes
-
-})()
+let Configuration = require('./Configuration.js')
+let Processes = require('./Processes')(Configuration.data)
+let processes = new Processes()
+module.exports = processes

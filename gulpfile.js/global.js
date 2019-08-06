@@ -24,7 +24,7 @@ global.$ = {
     fs: require('fs'),
     beautify: require('js-beautify').js,
     path: require('path'),
-    browserSync: require('browser-sync').create(),
+    browserSync: require('browser-sync'),
     decache: require('decache'),
     express: require('express'),
     lodash: require('lodash'),
@@ -40,7 +40,4 @@ $.lib = $.libraries
 $.lib.lodash.mixin(require('../utils/scripts/lodash/mixins.js'))
 $.lib.sass.compiler = require('node-sass')
 $.basedir = $.lib.path.join(__dirname, '..')
-global.Configuration = require('./Configuration.js')
-global.Config = Configuration
-global.Processes = require('./Processes')
 global.Tasks = require('./Tasks')

@@ -1,13 +1,13 @@
-let Processes = class {
-  constructor(settings) {
-    this._settings = settings
-    for(let [processName, processMethod] of Object.entries(this.settings)) {
-      let process = new Processes.Process(processName, processMethod)
-      Object.assign(this, process.tasks, process.series, process.parallel)
+module.exports = function(_settings) {
+  let Process = require('./Process')
+  let Processes = class {
+    constructor() {
+      let settings = _settings
+      for(let [processName, processMethod] of Object.entries(settings)) {
+        let process = new Process(processName, processMethod)
+        Object.assign(this, process.tasks, process.series, process.parallel)
+      }
     }
   }
-  get _settings() { return this.settings }
-  set _settings(settings) { this.settings = Object.assign({}, settings) }
+  return Processes
 }
-
-module.exports = Processes

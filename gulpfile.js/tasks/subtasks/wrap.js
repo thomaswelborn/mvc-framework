@@ -5,7 +5,6 @@ module.exports = function(settings) {
         if(settings.options.imports.processPartialName) {
           let processPartialName
           let processPartialNameOptions = settings.options.imports.processPartialName
-          console.log('\n', 'processPartialNameOptions', '\n', processPartialNameOptions)
           let processPartialNameFilePath = processPartialNameOptions.filePath
           switch(typeof processPartialNameFilePath) {
             case 'string':

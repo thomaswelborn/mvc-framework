@@ -1,7 +1,7 @@
 module.exports = function(rootProcess, data) {
   let BrowserSync = function(callback) {
-    $.process.on('reload', () => {
-      $.lib.browserSync.cleanup()
+    process.on('process:spawn', function processExit() {
+      $.lib.browserSync.get('boilerplate').exit()
     })
     let settings = Object.assign(
       {},
@@ -11,14 +11,23 @@ module.exports = function(rootProcess, data) {
           rule: {
             match: /<\/body>/i,
             fn: function (snippet, match) {
-              return snippet + match;
+              return snippet + match
             }
           }
         }
       }
     )
-    $.lib.browserSync.init(settings)
-    callback()
+    let browserSync
+    if ($.lib.browserSync.has('boilerplate')) {
+      browserSync = $.lib.browserSync.get('boilerplate')
+      browserSync.exit()
+    } else {
+      browserSync = $.lib.browserSync.create('boilerplate')
+      browserSync.emitter.on('init', function browserSyncInit() {
+        callback()
+      })
+    }
+    browserSync.init(settings)
   }
   return BrowserSync
 }
