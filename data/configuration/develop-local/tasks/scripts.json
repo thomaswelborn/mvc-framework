@@ -20,11 +20,15 @@
         "source/scripts/modules/MVC/Service.js",
         "source/scripts/modules/MVC/Model.js",
         "source/scripts/modules/MVC/Emitter.js",
+        "source/scripts/modules/MVC/Emitters/index.js",
+        "source/scripts/modules/MVC/Emitters/Navigate.js",
         "source/scripts/modules/MVC/View.js",
         "source/scripts/modules/MVC/Controller.js",
         "source/scripts/modules/MVC/Router.js"
       ],
-      "options": {}
+      "options": {
+        "allowEmpty": true
+      }
     },
     "babel": {
       "options": {

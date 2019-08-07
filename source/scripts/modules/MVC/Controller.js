@@ -46,17 +46,6 @@ MVC.Controller = class extends MVC.Base {
       controllerCallbacks, this._controllerCallbacks
     )
   }
-  get _routerCallbacks() {
-    this.routerCallbacks = (this.routerCallbacks)
-      ? this.routerCallbacks
-      : {}
-    return this.routerCallbacks
-  }
-  set _routerCallbacks(routerCallbacks) {
-    this.routerCallbacks = MVC.Utils.addPropertiesToObject(
-      routerCallbacks, this._routerCallbacks
-    )
-  }
   get _models() {
     this.models = (this.models)
       ? this.models
@@ -99,6 +88,28 @@ MVC.Controller = class extends MVC.Base {
   set _routers(routers) {
     this.routers = MVC.Utils.addPropertiesToObject(
       routers, this._routers
+    )
+  }
+  get _routerEvents() {
+    this.routerEvents = (this.routerEvents)
+      ? this.routerEvents
+      : {}
+    return this.routerEvents
+  }
+  set _routerEvents(routerEvents) {
+    this.routerEvents = MVC.Utils.addPropertiesToObject(
+      routerEvents, this._routerEvents
+    )
+  }
+  get _routerCallbacks() {
+    this.routerCallbacks = (this.routerCallbacks)
+      ? this.routerCallbacks
+      : {}
+    return this.routerCallbacks
+  }
+  set _routerCallbacks(routerCallbacks) {
+    this.routerCallbacks = MVC.Utils.addPropertiesToObject(
+      routerCallbacks, this._routerCallbacks
     )
   }
   get _emitterEvents() {
@@ -171,6 +182,12 @@ MVC.Controller = class extends MVC.Base {
   disableEmitterEvents() {
     MVC.Utils.unbindEventsToTargetObjects(this.emitterEvents, this.emitters, this.emitterCallbacks)
   }
+  enableRouterEvents() {
+    MVC.Utils.bindEventsToTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
+  }
+  disableRouterEvents() {
+    MVC.Utils.unbindEventsToTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
+  }
   enable() {
     let settings = this.settings
     if(
@@ -187,6 +204,7 @@ MVC.Controller = class extends MVC.Base {
       if(settings.views) this._views = settings.views
       if(settings.controllers) this._controllers = settings.controllers
       if(settings.routers) this._routers = settings.routers
+      if(settings.routerEvents) this._routerEvents = settings.routerEvents
       if(settings.emitterEvents) this._emitterEvents = settings.emitterEvents
       if(settings.modelEvents) this._modelEvents = settings.modelEvents
       if(settings.viewEvents) this._viewEvents = settings.viewEvents
@@ -197,6 +215,13 @@ MVC.Controller = class extends MVC.Base {
         this.emitterCallbacks
       ) {
         this.enableEmitterEvents()
+      }
+      if(
+        this.routerEvents &&
+        this.routers &&
+        this.routerCallbacks
+      ) {
+        this.enableRouterEvents()
       }
       if(
         this.modelEvents &&
@@ -234,6 +259,13 @@ MVC.Controller = class extends MVC.Base {
         this.emitterCallbacks
       ) {
         this.disableEmitterEvents()
+      }
+      if(
+        this.routerEvents &&
+        this.routers &&
+        this.routerCallbacks
+      ) {
+        this.disableRouterEvents()
       }
       if(
         this.modelEvents &&

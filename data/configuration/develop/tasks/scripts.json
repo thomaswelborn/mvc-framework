@@ -6,6 +6,8 @@
         "source/scripts/modules/MVC/Constants/Constants.js",
         "source/scripts/modules/MVC/Constants/Events.js",
         "source/scripts/modules/MVC/Templates/Templates.js",
+        "source/scripts/modules/MVC/Emitters/index.js",
+        "source/scripts/modules/MVC/Emitters/Navigation.js",
         "source/scripts/modules/MVC/Utils/Utils.js",
         "source/scripts/modules/MVC/Utils/is.js",
         "source/scripts/modules/MVC/Utils/typeOf.js",
