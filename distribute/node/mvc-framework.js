@@ -512,6 +512,8 @@ MVC.Model = class extends MVC.Base {
   constructor() {
     super(...arguments)
   }
+  get _localStorage() { return this.localStorage }
+  set _localStorage(localStorage) { this.localStorage = localStorage }
   get _isSetting() { return this.isSetting }
   set _isSetting(isSetting) { this.isSetting = isSetting }
   get _defaults() { return this._defaults }
@@ -545,6 +547,17 @@ MVC.Model = class extends MVC.Base {
         this._history.splice(this._histiogram.length)
       }
     }
+  }
+  get _db() {
+    let db = localStorage.getItem(this.localStorage.endpoint)
+    this.db = (db)
+      ? db
+      : '{}'
+    return JSON.parse(this.db)
+  }
+  set _db(db) {
+    db = JSON.stringify(db)
+    localStorage.setItem(this.localStorage.endpoint, db)
   }
   get _data() {
     this.data =  (this.data)
@@ -637,18 +650,21 @@ MVC.Model = class extends MVC.Base {
             this._isSetting = false
           }
           this.setDataProperty(key, value)
+          if(this.localStorage) this.setDB(key, value)
         })
         break
       case 2:
         var key = arguments[0]
         var value = arguments[1]
         this.setDataProperty(key, value)
+        if(this.localStorage) this.setDB(key, value)
         break
       case 3:
         var key = arguments[0]
         var value = arguments[1]
         var silent = arguments[2]
         this.setDataProperty(key, value, silent)
+        if(this.localStorage) this.setDB(key, value)
         break
     }
   }
@@ -663,6 +679,36 @@ MVC.Model = class extends MVC.Base {
       case 1:
         let key = arguments[0]
         this.unsetDataProperty(key)
+        break
+    }
+  }
+  setDB() {
+    let db = this._db
+    switch(arguments.length) {
+      case 1:
+        var _arguments = Object.entries(arguments[0])
+        _arguments.forEach(([key, value]) => {
+          db[key] = value
+        })
+        break
+      case 2:
+        let key = arguments[0]
+        let value = arguments[1]
+        db[key] = value
+        break
+    }
+    this._db = db
+  }
+  unsetDB() {
+    switch(arguments.length) {
+      case 0:
+        delete this._db
+        break
+      case 1:
+        let db = this._db
+        let key = arguments[0]
+        delete db[key]
+        this._db = db
         break
     }
   }
@@ -750,6 +796,7 @@ MVC.Model = class extends MVC.Base {
       settings &&
       !this.enabled
     ) {
+      if(this.settings.localStorage) this.localStorage = this.settings.localStorage
       if(this.settings.histiogram) this._histiogram = this.settings.histiogram
       if(this.settings.emitters) this._emitters = this.settings.emitters
       if(this.settings.services) this._services = this.settings.services
@@ -795,6 +842,7 @@ MVC.Model = class extends MVC.Base {
       ) {
         this.disableDataEvents()
       }
+      delete this.localStorage
       delete this._histiogram
       delete this._services
       delete this._serviceCallbacks
