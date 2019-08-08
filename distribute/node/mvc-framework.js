@@ -192,7 +192,7 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
         for(let _eventTarget of eventTarget) {
           _eventTarget[eventMethodName](eventName, eventCallback)
         }
-      } else if(eventTarget instanceof HTMLElement){
+      } else if(eventTarget instanceof HTMLElement) {
         eventTarget[eventMethodName](eventName, eventCallback)
       } else {
         eventTarget[eventMethodName](eventName, eventCallback)
@@ -331,7 +331,7 @@ MVC.Events = class {
     let eventCallbacks = this.eventCallbacks(eventName)
     for(let [eventCallbackGroupName, eventCallbackGroup] of Object.entries(eventCallbacks)) {
       for(let eventCallback of eventCallbackGroup) {
-        let additionalArguments = Object.values(arguments).splice(2)
+        let additionalArguments = Object.values(arguments).splice(2) || []
         eventCallback(eventData, ...additionalArguments)
       }
     }
@@ -514,13 +514,8 @@ MVC.Model = class extends MVC.Base {
   }
   get _localStorage() { return this.localStorage }
   set _localStorage(localStorage) { this.localStorage = localStorage }
-  get _isSetting() { return this.isSetting }
-  set _isSetting(isSetting) { this.isSetting = isSetting }
-  get _defaults() { return this._defaults }
-  set _defaults(defaults) {
-    this.defaults = defaults
-    this.set(this.defaults)
-  }
+  get _defaults() { return this.defaults }
+  set _defaults(defaults) { this.defaults = defaults }
   get _schema() { return this._schema }
   set _schema(schema) { this.schema = schema }
   get _histiogram() { return this.histiogram || {
@@ -626,13 +621,19 @@ MVC.Model = class extends MVC.Base {
     MVC.Utils.bindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
   }
   disableServiceEvents() {
-    MVC.Utils.unbindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+    MVC.Utils.unbindEventsFromTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
   }
   enableDataEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
   }
   disableDataEvents() {
-    MVC.Utils.unbindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
+    MVC.Utils.unbindEventsFromTargetObjects(this.dataEvents, this, this.dataCallbacks)
+  }
+  setDefaults() {
+    let _defaults = {}
+    if(this.defaults) Object.assign(_defaults, this.defaults)
+    if(this.localStorage) Object.assign(_defaults, this._db)
+    if(Object.keys(_defaults)) this.set(_defaults)
   }
   get() {
     let property = arguments[0]
@@ -642,28 +643,16 @@ MVC.Model = class extends MVC.Base {
     this._history = this.parse()
     switch(arguments.length) {
       case 1:
-        let _arguments = Object.entries(arguments[0])
-        _arguments.forEach(([key, value], index) => {
-          if(index === 0) {
-            this._isSetting = true
-          } else if(index === (_arguments.length - 1)) {
-            this._isSetting = false
-          }
-          this.setDataProperty(key, value)
-          if(this.localStorage) this.setDB(key, value)
-        })
+        Object.entries(arguments[0])
+          .forEach(([key, value], index) => {
+            this.setDataProperty(key, value)
+            if(this.localStorage) this.setDB(key, value)
+          })
         break
       case 2:
         var key = arguments[0]
         var value = arguments[1]
         this.setDataProperty(key, value)
-        if(this.localStorage) this.setDB(key, value)
-        break
-      case 3:
-        var key = arguments[0]
-        var value = arguments[1]
-        var silent = arguments[2]
-        this.setDataProperty(key, value, silent)
         if(this.localStorage) this.setDB(key, value)
         break
     }
@@ -712,7 +701,7 @@ MVC.Model = class extends MVC.Base {
         break
     }
   }
-  setDataProperty(key, value, silent) {
+  setDataProperty(key, value) {
     if(!this._data['_'.concat(key)]) {
       let context = this
       Object.defineProperties(
@@ -723,35 +712,30 @@ MVC.Model = class extends MVC.Base {
             get() { return this[key] },
             set(value) {
               this[key] = value
-              if(
-                !silent &&
-                !context._isSetting
-              ) {
-                let setValueEventName = ['set', ':', key].join('')
-                let setEventName = 'set'
-                context.emit(
-                  setValueEventName,
-                  {
-                    name: setValueEventName,
-                    data: {
-                      key: key,
-                      value: value,
-                    },
+              let setValueEventName = ['set', ':', key].join('')
+              let setEventName = 'set'
+              context.emit(
+                setValueEventName,
+                {
+                  name: setValueEventName,
+                  data: {
+                    key: key,
+                    value: value,
                   },
-                  context
-                )
-                context.emit(
-                  setEventName,
-                  {
-                    name: setEventName,
-                    data: {
-                      key: key,
-                      value: value,
-                    },
+                },
+                context
+              )
+              context.emit(
+                setEventName,
+                {
+                  name: setEventName,
+                  data: {
+                    key: key,
+                    value: value,
                   },
-                  context
-                )
-              }
+                },
+                context
+              )
             }
           }
         }
@@ -796,7 +780,7 @@ MVC.Model = class extends MVC.Base {
       settings &&
       !this.enabled
     ) {
-      if(this.settings.localStorage) this.localStorage = this.settings.localStorage
+      if(this.settings.localStorage) this._localStorage = this.settings.localStorage
       if(this.settings.histiogram) this._histiogram = this.settings.histiogram
       if(this.settings.emitters) this._emitters = this.settings.emitters
       if(this.settings.services) this._services = this.settings.services
@@ -842,7 +826,7 @@ MVC.Model = class extends MVC.Base {
       ) {
         this.disableDataEvents()
       }
-      delete this.localStorage
+      delete this._localStorage
       delete this._histiogram
       delete this._services
       delete this._serviceCallbacks
@@ -1269,31 +1253,31 @@ MVC.Controller = class extends MVC.Base {
     MVC.Utils.bindEventsToTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
   }
   disableModelEvents() {
-    MVC.Utils.unbindEventsToTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
+    MVC.Utils.unbindEventsFromTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
   }
   enableViewEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
   }
   disableViewEvents() {
-    MVC.Utils.unbindEventsToTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
+    MVC.Utils.unbindEventsFromTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
   }
   enableControllerEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
   }
   disableControllerEvents() {
-    MVC.Utils.unbindEventsToTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
+    MVC.Utils.unbindEventsFromTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
   }
   enableEmitterEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.emitterEvents, this.emitters, this.emitterCallbacks)
   }
   disableEmitterEvents() {
-    MVC.Utils.unbindEventsToTargetObjects(this.emitterEvents, this.emitters, this.emitterCallbacks)
+    MVC.Utils.unbindEventsFromTargetObjects(this.emitterEvents, this.emitters, this.emitterCallbacks)
   }
   enableRouterEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
   }
   disableRouterEvents() {
-    MVC.Utils.unbindEventsToTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
+    MVC.Utils.unbindEventsFromTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
   }
   enable() {
     let settings = this.settings
@@ -1301,35 +1285,21 @@ MVC.Controller = class extends MVC.Base {
       settings &&
       !this.enabled
     ) {
-      if(settings.emitterCallbacks) this._emitterCallbacks = settings.emitterCallbacks
       if(settings.modelCallbacks) this._modelCallbacks = settings.modelCallbacks
       if(settings.viewCallbacks) this._viewCallbacks = settings.viewCallbacks
       if(settings.controllerCallbacks) this._controllerCallbacks = settings.controllerCallbacks
+      if(settings.emitterCallbacks) this._emitterCallbacks = settings.emitterCallbacks
       if(settings.routerCallbacks) this._routerCallbacks = settings.routerCallbacks
-      if(settings.emitters) this._emitters = settings.emitters
       if(settings.models) this._models = settings.models
       if(settings.views) this._views = settings.views
       if(settings.controllers) this._controllers = settings.controllers
+      if(settings.emitters) this._emitters = settings.emitters
       if(settings.routers) this._routers = settings.routers
       if(settings.routerEvents) this._routerEvents = settings.routerEvents
-      if(settings.emitterEvents) this._emitterEvents = settings.emitterEvents
       if(settings.modelEvents) this._modelEvents = settings.modelEvents
       if(settings.viewEvents) this._viewEvents = settings.viewEvents
       if(settings.controllerEvents) this._controllerEvents = settings.controllerEvents
-      if(
-        this.emitterEvents &&
-        this.emitters &&
-        this.emitterCallbacks
-      ) {
-        this.enableEmitterEvents()
-      }
-      if(
-        this.routerEvents &&
-        this.routers &&
-        this.routerCallbacks
-      ) {
-        this.enableRouterEvents()
-      }
+      if(settings.emitterEvents) this._emitterEvents = settings.emitterEvents
       if(
         this.modelEvents &&
         this.models &&
@@ -1351,8 +1321,26 @@ MVC.Controller = class extends MVC.Base {
       ) {
         this.enableControllerEvents()
       }
+      if(
+        this.routerEvents &&
+        this.routers &&
+        this.routerCallbacks
+      ) {
+        this.enableRouterEvents()
+      }
+      if(
+        this.emitterEvents &&
+        this.emitters &&
+        this.emitterCallbacks
+      ) {
+        this.enableEmitterEvents()
+      }
       this._enabled = true
     }
+  }
+  reset() {
+    this.disable()
+    this.enable()
   }
   disable() {
     let settings = this.settings
@@ -1360,20 +1348,6 @@ MVC.Controller = class extends MVC.Base {
       settings &&
       this.enabled
     ) {
-      if(
-        this.emitterEvents &&
-        this.emitters &&
-        this.emitterCallbacks
-      ) {
-        this.disableEmitterEvents()
-      }
-      if(
-        this.routerEvents &&
-        this.routers &&
-        this.routerCallbacks
-      ) {
-        this.disableRouterEvents()
-      }
       if(
         this.modelEvents &&
         this.models &&
@@ -1394,19 +1368,35 @@ MVC.Controller = class extends MVC.Base {
         this.controllerCallbacks
       ) {
         this.disableControllerEvents()
+      }}
+      if(
+        this.routerEvents &&
+        this.routers &&
+        this.routerCallbacks
+      ) {
+        this.disableRouterEvents()
       }
-      delete this._emitters
-      delete this._modelCallbacks
-      delete this._viewCallbacks
-      delete this._controllerCallbacks
-      delete this._routerCallbacks
-      delete this._models
-      delete this._views
-      delete this._controllers
-      delete this._routers
-      delete this._modelEvents
-      delete this._viewEvents
-      delete this._controllerEvents
+      if(
+        this.emitterEvents &&
+        this.emitters &&
+        this.emitterCallbacks
+      ) {
+        this.disableEmitterEvents()
+        delete this._modelCallbacks
+        delete this._viewCallbacks
+        delete this._controllerCallbacks
+        delete this._emitterCallbacks
+        delete this._routerCallbacks
+        delete this._models
+        delete this._views
+        delete this._controllers
+        delete this._emitters
+        delete this._routers
+        delete this._routerEvents
+        delete this._modelEvents
+        delete this._viewEvents
+        delete this._controllerEvents
+        delete this._emitterEvents
       this._enabled = false
     }
   }

@@ -41,7 +41,7 @@ MVC.Events = class {
     let eventCallbacks = this.eventCallbacks(eventName)
     for(let [eventCallbackGroupName, eventCallbackGroup] of Object.entries(eventCallbacks)) {
       for(let eventCallback of eventCallbackGroup) {
-        let additionalArguments = Object.values(arguments).splice(2)
+        let additionalArguments = Object.values(arguments).splice(2) || []
         eventCallback(eventData, ...additionalArguments)
       }
     }

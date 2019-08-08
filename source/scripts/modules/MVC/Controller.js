@@ -162,31 +162,31 @@ MVC.Controller = class extends MVC.Base {
     MVC.Utils.bindEventsToTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
   }
   disableModelEvents() {
-    MVC.Utils.unbindEventsToTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
+    MVC.Utils.unbindEventsFromTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
   }
   enableViewEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
   }
   disableViewEvents() {
-    MVC.Utils.unbindEventsToTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
+    MVC.Utils.unbindEventsFromTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
   }
   enableControllerEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
   }
   disableControllerEvents() {
-    MVC.Utils.unbindEventsToTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
+    MVC.Utils.unbindEventsFromTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
   }
   enableEmitterEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.emitterEvents, this.emitters, this.emitterCallbacks)
   }
   disableEmitterEvents() {
-    MVC.Utils.unbindEventsToTargetObjects(this.emitterEvents, this.emitters, this.emitterCallbacks)
+    MVC.Utils.unbindEventsFromTargetObjects(this.emitterEvents, this.emitters, this.emitterCallbacks)
   }
   enableRouterEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
   }
   disableRouterEvents() {
-    MVC.Utils.unbindEventsToTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
+    MVC.Utils.unbindEventsFromTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
   }
   enable() {
     let settings = this.settings
@@ -194,35 +194,21 @@ MVC.Controller = class extends MVC.Base {
       settings &&
       !this.enabled
     ) {
-      if(settings.emitterCallbacks) this._emitterCallbacks = settings.emitterCallbacks
       if(settings.modelCallbacks) this._modelCallbacks = settings.modelCallbacks
       if(settings.viewCallbacks) this._viewCallbacks = settings.viewCallbacks
       if(settings.controllerCallbacks) this._controllerCallbacks = settings.controllerCallbacks
+      if(settings.emitterCallbacks) this._emitterCallbacks = settings.emitterCallbacks
       if(settings.routerCallbacks) this._routerCallbacks = settings.routerCallbacks
-      if(settings.emitters) this._emitters = settings.emitters
       if(settings.models) this._models = settings.models
       if(settings.views) this._views = settings.views
       if(settings.controllers) this._controllers = settings.controllers
+      if(settings.emitters) this._emitters = settings.emitters
       if(settings.routers) this._routers = settings.routers
       if(settings.routerEvents) this._routerEvents = settings.routerEvents
-      if(settings.emitterEvents) this._emitterEvents = settings.emitterEvents
       if(settings.modelEvents) this._modelEvents = settings.modelEvents
       if(settings.viewEvents) this._viewEvents = settings.viewEvents
       if(settings.controllerEvents) this._controllerEvents = settings.controllerEvents
-      if(
-        this.emitterEvents &&
-        this.emitters &&
-        this.emitterCallbacks
-      ) {
-        this.enableEmitterEvents()
-      }
-      if(
-        this.routerEvents &&
-        this.routers &&
-        this.routerCallbacks
-      ) {
-        this.enableRouterEvents()
-      }
+      if(settings.emitterEvents) this._emitterEvents = settings.emitterEvents
       if(
         this.modelEvents &&
         this.models &&
@@ -244,8 +230,26 @@ MVC.Controller = class extends MVC.Base {
       ) {
         this.enableControllerEvents()
       }
+      if(
+        this.routerEvents &&
+        this.routers &&
+        this.routerCallbacks
+      ) {
+        this.enableRouterEvents()
+      }
+      if(
+        this.emitterEvents &&
+        this.emitters &&
+        this.emitterCallbacks
+      ) {
+        this.enableEmitterEvents()
+      }
       this._enabled = true
     }
+  }
+  reset() {
+    this.disable()
+    this.enable()
   }
   disable() {
     let settings = this.settings
@@ -253,20 +257,6 @@ MVC.Controller = class extends MVC.Base {
       settings &&
       this.enabled
     ) {
-      if(
-        this.emitterEvents &&
-        this.emitters &&
-        this.emitterCallbacks
-      ) {
-        this.disableEmitterEvents()
-      }
-      if(
-        this.routerEvents &&
-        this.routers &&
-        this.routerCallbacks
-      ) {
-        this.disableRouterEvents()
-      }
       if(
         this.modelEvents &&
         this.models &&
@@ -287,19 +277,35 @@ MVC.Controller = class extends MVC.Base {
         this.controllerCallbacks
       ) {
         this.disableControllerEvents()
+      }}
+      if(
+        this.routerEvents &&
+        this.routers &&
+        this.routerCallbacks
+      ) {
+        this.disableRouterEvents()
       }
-      delete this._emitters
-      delete this._modelCallbacks
-      delete this._viewCallbacks
-      delete this._controllerCallbacks
-      delete this._routerCallbacks
-      delete this._models
-      delete this._views
-      delete this._controllers
-      delete this._routers
-      delete this._modelEvents
-      delete this._viewEvents
-      delete this._controllerEvents
+      if(
+        this.emitterEvents &&
+        this.emitters &&
+        this.emitterCallbacks
+      ) {
+        this.disableEmitterEvents()
+        delete this._modelCallbacks
+        delete this._viewCallbacks
+        delete this._controllerCallbacks
+        delete this._emitterCallbacks
+        delete this._routerCallbacks
+        delete this._models
+        delete this._views
+        delete this._controllers
+        delete this._emitters
+        delete this._routers
+        delete this._routerEvents
+        delete this._modelEvents
+        delete this._viewEvents
+        delete this._controllerEvents
+        delete this._emitterEvents
       this._enabled = false
     }
   }

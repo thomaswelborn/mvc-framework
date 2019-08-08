@@ -41,7 +41,7 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
         for(let _eventTarget of eventTarget) {
           _eventTarget[eventMethodName](eventName, eventCallback)
         }
-      } else if(eventTarget instanceof HTMLElement){
+      } else if(eventTarget instanceof HTMLElement) {
         eventTarget[eventMethodName](eventName, eventCallback)
       } else {
         eventTarget[eventMethodName](eventName, eventCallback)

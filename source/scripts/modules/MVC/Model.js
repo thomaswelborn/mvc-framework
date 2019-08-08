@@ -4,13 +4,8 @@ MVC.Model = class extends MVC.Base {
   }
   get _localStorage() { return this.localStorage }
   set _localStorage(localStorage) { this.localStorage = localStorage }
-  get _isSetting() { return this.isSetting }
-  set _isSetting(isSetting) { this.isSetting = isSetting }
-  get _defaults() { return this._defaults }
-  set _defaults(defaults) {
-    this.defaults = defaults
-    this.set(this.defaults)
-  }
+  get _defaults() { return this.defaults }
+  set _defaults(defaults) { this.defaults = defaults }
   get _schema() { return this._schema }
   set _schema(schema) { this.schema = schema }
   get _histiogram() { return this.histiogram || {
@@ -116,13 +111,19 @@ MVC.Model = class extends MVC.Base {
     MVC.Utils.bindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
   }
   disableServiceEvents() {
-    MVC.Utils.unbindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+    MVC.Utils.unbindEventsFromTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
   }
   enableDataEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
   }
   disableDataEvents() {
-    MVC.Utils.unbindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
+    MVC.Utils.unbindEventsFromTargetObjects(this.dataEvents, this, this.dataCallbacks)
+  }
+  setDefaults() {
+    let _defaults = {}
+    if(this.defaults) Object.assign(_defaults, this.defaults)
+    if(this.localStorage) Object.assign(_defaults, this._db)
+    if(Object.keys(_defaults)) this.set(_defaults)
   }
   get() {
     let property = arguments[0]
@@ -132,28 +133,16 @@ MVC.Model = class extends MVC.Base {
     this._history = this.parse()
     switch(arguments.length) {
       case 1:
-        let _arguments = Object.entries(arguments[0])
-        _arguments.forEach(([key, value], index) => {
-          if(index === 0) {
-            this._isSetting = true
-          } else if(index === (_arguments.length - 1)) {
-            this._isSetting = false
-          }
-          this.setDataProperty(key, value)
-          if(this.localStorage) this.setDB(key, value)
-        })
+        Object.entries(arguments[0])
+          .forEach(([key, value], index) => {
+            this.setDataProperty(key, value)
+            if(this.localStorage) this.setDB(key, value)
+          })
         break
       case 2:
         var key = arguments[0]
         var value = arguments[1]
         this.setDataProperty(key, value)
-        if(this.localStorage) this.setDB(key, value)
-        break
-      case 3:
-        var key = arguments[0]
-        var value = arguments[1]
-        var silent = arguments[2]
-        this.setDataProperty(key, value, silent)
         if(this.localStorage) this.setDB(key, value)
         break
     }
@@ -202,7 +191,7 @@ MVC.Model = class extends MVC.Base {
         break
     }
   }
-  setDataProperty(key, value, silent) {
+  setDataProperty(key, value) {
     if(!this._data['_'.concat(key)]) {
       let context = this
       Object.defineProperties(
@@ -213,35 +202,30 @@ MVC.Model = class extends MVC.Base {
             get() { return this[key] },
             set(value) {
               this[key] = value
-              if(
-                !silent &&
-                !context._isSetting
-              ) {
-                let setValueEventName = ['set', ':', key].join('')
-                let setEventName = 'set'
-                context.emit(
-                  setValueEventName,
-                  {
-                    name: setValueEventName,
-                    data: {
-                      key: key,
-                      value: value,
-                    },
+              let setValueEventName = ['set', ':', key].join('')
+              let setEventName = 'set'
+              context.emit(
+                setValueEventName,
+                {
+                  name: setValueEventName,
+                  data: {
+                    key: key,
+                    value: value,
                   },
-                  context
-                )
-                context.emit(
-                  setEventName,
-                  {
-                    name: setEventName,
-                    data: {
-                      key: key,
-                      value: value,
-                    },
+                },
+                context
+              )
+              context.emit(
+                setEventName,
+                {
+                  name: setEventName,
+                  data: {
+                    key: key,
+                    value: value,
                   },
-                  context
-                )
-              }
+                },
+                context
+              )
             }
           }
         }
@@ -286,7 +270,7 @@ MVC.Model = class extends MVC.Base {
       settings &&
       !this.enabled
     ) {
-      if(this.settings.localStorage) this.localStorage = this.settings.localStorage
+      if(this.settings.localStorage) this._localStorage = this.settings.localStorage
       if(this.settings.histiogram) this._histiogram = this.settings.histiogram
       if(this.settings.emitters) this._emitters = this.settings.emitters
       if(this.settings.services) this._services = this.settings.services
@@ -332,7 +316,7 @@ MVC.Model = class extends MVC.Base {
       ) {
         this.disableDataEvents()
       }
-      delete this.localStorage
+      delete this._localStorage
       delete this._histiogram
       delete this._services
       delete this._serviceCallbacks
