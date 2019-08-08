@@ -326,6 +326,7 @@ MVC.Model = class extends MVC.Base {
       delete this._dataEvents
       delete this._schema
       delete this._emitters
+      this._enabled = false
     }
   }
 }

@@ -70,7 +70,7 @@ MVC.Router = class extends MVC.Base {
         routeIndex,
         originalRoutes,
       ) => {
-        _routes[routePath] = this.controller[routeCallback]
+        _routes[routePath] = this.controller[routeCallback].bind(this.controller)
         return _routes
       },
       {}
@@ -110,6 +110,7 @@ MVC.Router = class extends MVC.Base {
           route.length &&
           route.length === routerPath.length
         ) {
+          routerPath
           let match
           return routerPath.filter((fragment, fragmentIndex) => {
             if(
@@ -152,7 +153,7 @@ MVC.Router = class extends MVC.Base {
       )
       routeController(navigateEmitter.emission())
     } catch(error) {
-      throw 'Route Definition Error'
+      throw error
     }
   }
   navigate(path) {

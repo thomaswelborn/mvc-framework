@@ -20,10 +20,11 @@ MVC.Service = class extends MVC.Base {
   get _headers() { return this.headers || [] }
   set _headers(headers) {
     this._headers.length = 0
-    for(let header of headers) {
-      this._xhr.setRequestHeader({header}[0], {header}[1])
+    headers.forEach((header) => {
       this._headers.push(header)
-    }
+      header = Object.entries(header)[0]
+      this._xhr.setRequestHeader(header[0], header[1])
+    })
   }
   get _data() { return this.data }
   set _data(data) { this.data = data }
@@ -64,6 +65,7 @@ MVC.Service = class extends MVC.Base {
       if(this.settings.responseType) this._responseType = this._settings.responseType
       this._enabled = true
     }
+    return this
   }
   disable() {
     let settings = this.settings
@@ -78,5 +80,6 @@ MVC.Service = class extends MVC.Base {
       delete this._responseType
       this._enabled = false
     }
+    return this
   }
 }

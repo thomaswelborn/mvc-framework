@@ -447,10 +447,11 @@ MVC.Service = class extends MVC.Base {
   get _headers() { return this.headers || [] }
   set _headers(headers) {
     this._headers.length = 0
-    for(let header of headers) {
-      this._xhr.setRequestHeader({header}[0], {header}[1])
+    headers.forEach((header) => {
       this._headers.push(header)
-    }
+      header = Object.entries(header)[0]
+      this._xhr.setRequestHeader(header[0], header[1])
+    })
   }
   get _data() { return this.data }
   set _data(data) { this.data = data }
@@ -491,6 +492,7 @@ MVC.Service = class extends MVC.Base {
       if(this.settings.responseType) this._responseType = this._settings.responseType
       this._enabled = true
     }
+    return this
   }
   disable() {
     let settings = this.settings
@@ -505,6 +507,7 @@ MVC.Service = class extends MVC.Base {
       delete this._responseType
       this._enabled = false
     }
+    return this
   }
 }
 
@@ -836,6 +839,7 @@ MVC.Model = class extends MVC.Base {
       delete this._dataEvents
       delete this._schema
       delete this._emitters
+      this._enabled = false
     }
   }
 }
@@ -1474,7 +1478,7 @@ MVC.Router = class extends MVC.Base {
         routeIndex,
         originalRoutes,
       ) => {
-        _routes[routePath] = this.controller[routeCallback]
+        _routes[routePath] = this.controller[routeCallback].bind(this.controller)
         return _routes
       },
       {}
@@ -1514,6 +1518,7 @@ MVC.Router = class extends MVC.Base {
           route.length &&
           route.length === routerPath.length
         ) {
+          routerPath
           let match
           return routerPath.filter((fragment, fragmentIndex) => {
             if(
@@ -1556,7 +1561,7 @@ MVC.Router = class extends MVC.Base {
       )
       routeController(navigateEmitter.emission())
     } catch(error) {
-      throw 'Route Definition Error'
+      throw error
     }
   }
   navigate(path) {
