@@ -8,6 +8,47 @@ MVC.CONST.EV = MVC.Constants.Events
 
 MVC.Utils = {}
 
+MVC.Utils.isArray = function isArray(object) { return Array.isArray(object) }
+MVC.Utils.isObject = function isObject(object) {
+  return (!Array.isArray(object))
+    ? typeof object === 'object'
+    : false
+}
+MVC.Utils.isEqualType = function isEqualType(valueA, valueB) { return valueA === valueB }
+MVC.Utils.isHTMLElement = function isHTMLElement(object) {
+  return object instanceof HTMLElement
+}
+
+MVC.Utils.typeOf =  function typeOf(data) {
+  switch(typeof data) {
+    case 'object':
+      let _object
+      if(MVC.Utils.isArray(data)) {
+        // Array
+        return 'array'
+      } else if(
+        MVC.Utils.isObject(data)
+      ) {
+        // Object
+        return 'object'
+      } else if(
+        data === null
+      ) {
+        // Null
+        return 'null'
+      }
+      return _object
+      break
+    case 'string':
+    case 'number':
+    case 'boolean':
+    case 'undefined':
+    case 'function':
+      return typeof data
+      break
+  }
+}
+
 MVC.Utils.addPropertiesToObject = function addPropertiesToObject() {
   let targetObject
   switch(arguments.length) {
@@ -26,17 +67,6 @@ MVC.Utils.addPropertiesToObject = function addPropertiesToObject() {
       break
   }
   return targetObject
-}
-
-MVC.Utils.isArray = function isArray(object) { return Array.isArray(object) }
-MVC.Utils.isObject = function isObject(object) {
-  return (!Array.isArray(object))
-    ? typeof object === 'object'
-    : false
-}
-MVC.Utils.isEqualType = function isEqualType(valueA, valueB) { return valueA === valueB }
-MVC.Utils.isHTMLElement = function isHTMLElement(object) {
-  return object instanceof HTMLElement
 }
 
 MVC.Utils.objectQuery = function objectQuery(
@@ -88,16 +118,6 @@ MVC.Utils.objectQuery.parseFragment = function parseFragment(fragment) {
     fragment = new RegExp('^'.concat(fragment, '$'))
   }
   return fragment
-}
-
-MVC.Utils.paramsToObject = function paramsToObject(params) {
-    var params = params.split('&')
-    var object = {}
-    params.forEach((paramData) => {
-      paramData = paramData.split('=')
-      object[paramData[0]] = decodeURIComponent(paramData[1] || '')
-    })
-    return JSON.parse(JSON.stringify(object))
 }
 
 MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
@@ -156,36 +176,6 @@ MVC.Utils.bindEventsToTargetObjects = function bindEventsToTargetObjects() {
 }
 MVC.Utils.unbindEventsFromTargetObjects = function unbindEventsFromTargetObjects() {
   this.toggleEventsForTargetObjects('off', ...arguments)
-}
-
-MVC.Utils.typeOf =  function typeOf(data) {
-  switch(typeof data) {
-    case 'object':
-      let _object
-      if(MVC.Utils.isArray(data)) {
-        // Array
-        return 'array'
-      } else if(
-        MVC.Utils.isObject(data)
-      ) {
-        // Object
-        return 'object'
-      } else if(
-        data === null
-      ) {
-        // Null
-        return 'null'
-      }
-      return _object
-      break
-    case 'string':
-    case 'number':
-    case 'boolean':
-    case 'undefined':
-    case 'function':
-      return typeof data
-      break
-  }
 }
 
 MVC.Utils.validateDataSchema = function validateDataSchema(data, schema) {
@@ -498,6 +488,12 @@ MVC.Model = class extends MVC.Base {
   }
   get _isSetting() { return this.isSetting }
   set _isSetting(isSetting) { this.isSetting = isSetting }
+  get _changing() {
+    this.changing = (this.changing)
+      ? this.changing
+      : {}
+    return this.changing
+  }
   get _localStorage() { return this.localStorage }
   set _localStorage(localStorage) { this.localStorage = localStorage }
   get _defaults() { return this.defaults }
@@ -622,8 +618,15 @@ MVC.Model = class extends MVC.Base {
     if(Object.keys(_defaults)) this.set(_defaults)
   }
   get() {
-    let property = arguments[0]
-    return this._data['_'.concat(property)]
+    switch(arguments.length) {
+      case 0:
+        return this.data
+        break
+      case 1:
+        let key = arguments[0]
+        return this.data[key]
+        break
+    }
   }
   set() {
     this._history = this.parse()
@@ -633,9 +636,11 @@ MVC.Model = class extends MVC.Base {
         let _arguments = Object.entries(arguments[0])
         _arguments.forEach(([key, value], index) => {
           if(index === (_arguments.length - 1)) this._isSetting = false
+          this._changing[key] = value
           this.setDataProperty(key, value)
           if(this.localStorage) this.setDB(key, value)
         })
+        delete this._changing
         break
       case 2:
         var key = arguments[0]
@@ -704,29 +709,39 @@ MVC.Model = class extends MVC.Base {
               this[key] = value
               let setValueEventName = ['set', ':', key].join('')
               let setEventName = 'set'
+              context.emit(
+                setValueEventName,
+                {
+                  name: setValueEventName,
+                  data: {
+                    key: key,
+                    value: value,
+                  },
+                },
+                context
+              )
               if(!context._isSetting) {
-                context.emit(
-                  setValueEventName,
-                  {
-                    name: setValueEventName,
-                    data: {
-                      key: key,
-                      value: value,
+                if(!Object.values(context._changing).length) {
+                  context.emit(
+                    setEventName,
+                    {
+                      name: setEventName,
+                      data: {
+                        key: key,
+                        value: value,
+                      },
                     },
-                  },
-                  context
-                )
-                context.emit(
-                  setEventName,
-                  {
-                    name: setEventName,
-                    data: {
-                      key: key,
-                      value: value,
+                    context
+                  )
+                } else {
+                  context.emit(
+                    setEventName,
+                    {
+                      name: setEventName,
+                      data: context._changing,
                     },
-                  },
-                  context
-                )
+                  )
+                }
               }
             }
           }
@@ -1395,25 +1410,6 @@ MVC.Controller = class extends MVC.Base {
   }
 }
 
-MVC.Emitters = {}
-
-MVC.Emitters.Navigate = class extends MVC.Emitter {
-  constructor() {
-    super(...arguments)
-    this.addSettings()
-    this.enable()
-  }
-  addSettings() {
-    this._name = 'navigate'
-    this._schema = {
-      oldURL: String,
-      newURL: String,
-      currentRoute: String,
-      currentController: String,
-    }
-  }
-}
-
 MVC.Router = class extends MVC.Base {
   constructor() {
     super(...arguments)
@@ -1471,7 +1467,10 @@ MVC.Router = class extends MVC.Base {
     }
   }
   get _routeData() {
-    let routeData = {}
+    let routeData = {
+      location: {},
+      controller: {},
+    }
     let path = this.path.split('/').filter((fragment) => fragment.length)
     path = (path.length)
       ? path
@@ -1484,10 +1483,10 @@ MVC.Router = class extends MVC.Base {
     let paramData = (params)
       ? MVC.Utils.paramsToObject(params)
       : null
-    if(this.protocol) routeData.protocol = this.protocol
-    if(this.hostname) routeData.hostname = this.hostname
-    if(this.port) routeData.port = this.port
-    if(this.path) routeData.path = this.path
+    if(this.protocol) routeData.location.protocol = this.protocol
+    if(this.hostname) routeData.location.hostname = this.hostname
+    if(this.port) routeData.location.port = this.port
+    if(this.path) routeData.location.path = this.path
     if(
       hash &&
       hashFragments
@@ -1495,7 +1494,7 @@ MVC.Router = class extends MVC.Base {
       hashFragments = (hashFragments.length)
       ? hashFragments
       : ['/']
-      routeData.hash = {
+      routeData.location.hash = {
         path: hash,
         fragments: hashFragments,
       }
@@ -1504,25 +1503,29 @@ MVC.Router = class extends MVC.Base {
       params &&
       paramData
     ) {
-      routeData.params = {
+      routeData.location.params = {
         path: params,
         data: paramData,
       }
     }
-    routeData.path = {
+    routeData.location.path = {
       name: this.path,
       fragments: path,
     }
-    routeData.currentURL = this.currentURL
-    routeData = Object.assign(
-      routeData,
-      this._routeControllerData
+    routeData.location.currentURL = this.currentURL
+    let routeControllerData = this._routeControllerData
+    routeData.location = Object.assign(
+      routeData.location,
+      routeControllerData.location
     )
+    routeData.controller = routeControllerData.controller
     this.routeData = routeData
     return this.routeData
   }
   get _routeControllerData() {
-    let routeData = {}
+    let routeData = {
+      location: {},
+    }
     Object.entries(this.routes)
       .forEach(([routePath, routeSettings]) => {
         let pathFragments = this.path.split('/').filter((fragment) => fragment.length)
@@ -1544,7 +1547,13 @@ MVC.Router = class extends MVC.Base {
               match === true
             ) {
               if(routeFragment[0] === ':') {
-                routeData[routeFragment.replace(':', '')] = pathFragments[routeFragmentIndex]
+                let currentIDKey = routeFragment.replace(':', '')
+                if(
+                  routeFragmentIndex === pathFragments.length - 1
+                ) {
+                  routeData.location.currentIDKey = currentIDKey
+                }
+                routeData.location[currentIDKey] = pathFragments[routeFragmentIndex]
                 routeFragment = this.fragmentIDRegExp
               } else {
                 routeFragment = routeFragment.replace(new RegExp('/', 'gi'), '\\\/')
@@ -1555,7 +1564,7 @@ MVC.Router = class extends MVC.Base {
                 match === true &&
                 routeFragmentIndex === pathFragments.length - 1
               ) {
-                routeData.route = {
+                routeData.location.route = {
                   name: routePath,
                   fragments: routeFragments,
                 }
@@ -1593,22 +1602,18 @@ MVC.Router = class extends MVC.Base {
   get fragmentIDRegExp() { return new RegExp(/^([0-9A-Z\?\=\,\.\*\-\_\'\"\^\%\$\#\@\!\~\(\)\{\}\&\<\>\\\/])*$/, 'gi') }
   routeFragmentNameRegExp(fragment) { return new RegExp('^'.concat(fragment, '$')) }
   enable() {
-    let settings = this.settings
     if(
-      settings &&
       !this.enabled
     ) {
       this.enableEmitters()
       this.enableEvents()
       this.enableRoutes()
-      this.routeChange()
       this._enabled = true
     }
+    return this
   }
   disable() {
-    let settings = this.settings
     if(
-      settings &&
       this.enabled
     ) {
       this.disableEvents()
@@ -1636,12 +1641,13 @@ MVC.Router = class extends MVC.Base {
       },
       {}
     )
-    return
+    return this
   }
   enableEmitters() {
     this._emitters = {
       navigateEmitter: new MVC.Emitters.Navigate(),
     }
+    return this
   }
   disableEmitters() {
     delete this._emitters.navigateEmitter
@@ -1652,6 +1658,7 @@ MVC.Router = class extends MVC.Base {
   }
   enableEvents() {
     window.addEventListener('hashchange', this.routeChange.bind(this))
+    return this
   }
   disableEvents() {
     window.removeEventListener('hashchange', this.routeChange.bind(this))
@@ -1673,9 +1680,10 @@ MVC.Router = class extends MVC.Base {
         navigateEmitter.emission()
       )
     }
+    return this
   }
   navigate(path) {
-    window.location.hash = path
+    window.location.href = path
   }
 }
 

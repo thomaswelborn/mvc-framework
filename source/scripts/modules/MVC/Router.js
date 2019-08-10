@@ -55,7 +55,10 @@ MVC.Router = class extends MVC.Base {
     }
   }
   get _routeData() {
-    let routeData = {}
+    let routeData = {
+      location: {},
+      controller: {},
+    }
     let path = this.path.split('/').filter((fragment) => fragment.length)
     path = (path.length)
       ? path
@@ -68,10 +71,10 @@ MVC.Router = class extends MVC.Base {
     let paramData = (params)
       ? MVC.Utils.paramsToObject(params)
       : null
-    if(this.protocol) routeData.protocol = this.protocol
-    if(this.hostname) routeData.hostname = this.hostname
-    if(this.port) routeData.port = this.port
-    if(this.path) routeData.path = this.path
+    if(this.protocol) routeData.location.protocol = this.protocol
+    if(this.hostname) routeData.location.hostname = this.hostname
+    if(this.port) routeData.location.port = this.port
+    if(this.path) routeData.location.path = this.path
     if(
       hash &&
       hashFragments
@@ -79,7 +82,7 @@ MVC.Router = class extends MVC.Base {
       hashFragments = (hashFragments.length)
       ? hashFragments
       : ['/']
-      routeData.hash = {
+      routeData.location.hash = {
         path: hash,
         fragments: hashFragments,
       }
@@ -88,25 +91,29 @@ MVC.Router = class extends MVC.Base {
       params &&
       paramData
     ) {
-      routeData.params = {
+      routeData.location.params = {
         path: params,
         data: paramData,
       }
     }
-    routeData.path = {
+    routeData.location.path = {
       name: this.path,
       fragments: path,
     }
-    routeData.currentURL = this.currentURL
-    routeData = Object.assign(
-      routeData,
-      this._routeControllerData
+    routeData.location.currentURL = this.currentURL
+    let routeControllerData = this._routeControllerData
+    routeData.location = Object.assign(
+      routeData.location,
+      routeControllerData.location
     )
+    routeData.controller = routeControllerData.controller
     this.routeData = routeData
     return this.routeData
   }
   get _routeControllerData() {
-    let routeData = {}
+    let routeData = {
+      location: {},
+    }
     Object.entries(this.routes)
       .forEach(([routePath, routeSettings]) => {
         let pathFragments = this.path.split('/').filter((fragment) => fragment.length)
@@ -128,7 +135,13 @@ MVC.Router = class extends MVC.Base {
               match === true
             ) {
               if(routeFragment[0] === ':') {
-                routeData[routeFragment.replace(':', '')] = pathFragments[routeFragmentIndex]
+                let currentIDKey = routeFragment.replace(':', '')
+                if(
+                  routeFragmentIndex === pathFragments.length - 1
+                ) {
+                  routeData.location.currentIDKey = currentIDKey
+                }
+                routeData.location[currentIDKey] = pathFragments[routeFragmentIndex]
                 routeFragment = this.fragmentIDRegExp
               } else {
                 routeFragment = routeFragment.replace(new RegExp('/', 'gi'), '\\\/')
@@ -139,7 +152,7 @@ MVC.Router = class extends MVC.Base {
                 match === true &&
                 routeFragmentIndex === pathFragments.length - 1
               ) {
-                routeData.route = {
+                routeData.location.route = {
                   name: routePath,
                   fragments: routeFragments,
                 }
@@ -177,22 +190,18 @@ MVC.Router = class extends MVC.Base {
   get fragmentIDRegExp() { return new RegExp(/^([0-9A-Z\?\=\,\.\*\-\_\'\"\^\%\$\#\@\!\~\(\)\{\}\&\<\>\\\/])*$/, 'gi') }
   routeFragmentNameRegExp(fragment) { return new RegExp('^'.concat(fragment, '$')) }
   enable() {
-    let settings = this.settings
     if(
-      settings &&
       !this.enabled
     ) {
       this.enableEmitters()
       this.enableEvents()
       this.enableRoutes()
-      this.routeChange()
       this._enabled = true
     }
+    return this
   }
   disable() {
-    let settings = this.settings
     if(
-      settings &&
       this.enabled
     ) {
       this.disableEvents()
@@ -220,12 +229,13 @@ MVC.Router = class extends MVC.Base {
       },
       {}
     )
-    return
+    return this
   }
   enableEmitters() {
     this._emitters = {
       navigateEmitter: new MVC.Emitters.Navigate(),
     }
+    return this
   }
   disableEmitters() {
     delete this._emitters.navigateEmitter
@@ -236,6 +246,7 @@ MVC.Router = class extends MVC.Base {
   }
   enableEvents() {
     window.addEventListener('hashchange', this.routeChange.bind(this))
+    return this
   }
   disableEvents() {
     window.removeEventListener('hashchange', this.routeChange.bind(this))
@@ -257,8 +268,9 @@ MVC.Router = class extends MVC.Base {
         navigateEmitter.emission()
       )
     }
+    return this
   }
   navigate(path) {
-    window.location.hash = path
+    window.location.href = path
   }
 }

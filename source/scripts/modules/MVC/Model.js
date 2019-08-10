@@ -4,6 +4,12 @@ MVC.Model = class extends MVC.Base {
   }
   get _isSetting() { return this.isSetting }
   set _isSetting(isSetting) { this.isSetting = isSetting }
+  get _changing() {
+    this.changing = (this.changing)
+      ? this.changing
+      : {}
+    return this.changing
+  }
   get _localStorage() { return this.localStorage }
   set _localStorage(localStorage) { this.localStorage = localStorage }
   get _defaults() { return this.defaults }
@@ -128,8 +134,15 @@ MVC.Model = class extends MVC.Base {
     if(Object.keys(_defaults)) this.set(_defaults)
   }
   get() {
-    let property = arguments[0]
-    return this._data['_'.concat(property)]
+    switch(arguments.length) {
+      case 0:
+        return this.data
+        break
+      case 1:
+        let key = arguments[0]
+        return this.data[key]
+        break
+    }
   }
   set() {
     this._history = this.parse()
@@ -139,9 +152,11 @@ MVC.Model = class extends MVC.Base {
         let _arguments = Object.entries(arguments[0])
         _arguments.forEach(([key, value], index) => {
           if(index === (_arguments.length - 1)) this._isSetting = false
+          this._changing[key] = value
           this.setDataProperty(key, value)
           if(this.localStorage) this.setDB(key, value)
         })
+        delete this._changing
         break
       case 2:
         var key = arguments[0]
@@ -210,29 +225,39 @@ MVC.Model = class extends MVC.Base {
               this[key] = value
               let setValueEventName = ['set', ':', key].join('')
               let setEventName = 'set'
+              context.emit(
+                setValueEventName,
+                {
+                  name: setValueEventName,
+                  data: {
+                    key: key,
+                    value: value,
+                  },
+                },
+                context
+              )
               if(!context._isSetting) {
-                context.emit(
-                  setValueEventName,
-                  {
-                    name: setValueEventName,
-                    data: {
-                      key: key,
-                      value: value,
+                if(!Object.values(context._changing).length) {
+                  context.emit(
+                    setEventName,
+                    {
+                      name: setEventName,
+                      data: {
+                        key: key,
+                        value: value,
+                      },
                     },
-                  },
-                  context
-                )
-                context.emit(
-                  setEventName,
-                  {
-                    name: setEventName,
-                    data: {
-                      key: key,
-                      value: value,
+                    context
+                  )
+                } else {
+                  context.emit(
+                    setEventName,
+                    {
+                      name: setEventName,
+                      data: context._changing,
                     },
-                  },
-                  context
-                )
+                  )
+                }
               }
             }
           }
