@@ -496,6 +496,8 @@ MVC.Model = class extends MVC.Base {
   constructor() {
     super(...arguments)
   }
+  get _isSetting() { return this.isSetting }
+  set _isSetting(isSetting) { this.isSetting = isSetting }
   get _localStorage() { return this.localStorage }
   set _localStorage(localStorage) { this.localStorage = localStorage }
   get _defaults() { return this.defaults }
@@ -627,11 +629,13 @@ MVC.Model = class extends MVC.Base {
     this._history = this.parse()
     switch(arguments.length) {
       case 1:
-        Object.entries(arguments[0])
-          .forEach(([key, value], index) => {
-            this.setDataProperty(key, value)
-            if(this.localStorage) this.setDB(key, value)
-          })
+        this._isSetting = true
+        let _arguments = Object.entries(arguments[0])
+        _arguments.forEach(([key, value], index) => {
+          if(index === (_arguments.length - 1)) this._isSetting = false
+          this.setDataProperty(key, value)
+          if(this.localStorage) this.setDB(key, value)
+        })
         break
       case 2:
         var key = arguments[0]
@@ -700,28 +704,30 @@ MVC.Model = class extends MVC.Base {
               this[key] = value
               let setValueEventName = ['set', ':', key].join('')
               let setEventName = 'set'
-              context.emit(
-                setValueEventName,
-                {
-                  name: setValueEventName,
-                  data: {
-                    key: key,
-                    value: value,
+              if(!context._isSetting) {
+                context.emit(
+                  setValueEventName,
+                  {
+                    name: setValueEventName,
+                    data: {
+                      key: key,
+                      value: value,
+                    },
                   },
-                },
-                context
-              )
-              context.emit(
-                setEventName,
-                {
-                  name: setEventName,
-                  data: {
-                    key: key,
-                    value: value,
+                  context
+                )
+                context.emit(
+                  setEventName,
+                  {
+                    name: setEventName,
+                    data: {
+                      key: key,
+                      value: value,
+                    },
                   },
-                },
-                context
-              )
+                  context
+                )
+              }
             }
           }
         }
