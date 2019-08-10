@@ -204,11 +204,11 @@ MVC.Controller = class extends MVC.Base {
       if(settings.controllers) this._controllers = settings.controllers
       if(settings.emitters) this._emitters = settings.emitters
       if(settings.routers) this._routers = settings.routers
-      if(settings.routerEvents) this._routerEvents = settings.routerEvents
       if(settings.modelEvents) this._modelEvents = settings.modelEvents
       if(settings.viewEvents) this._viewEvents = settings.viewEvents
       if(settings.controllerEvents) this._controllerEvents = settings.controllerEvents
       if(settings.emitterEvents) this._emitterEvents = settings.emitterEvents
+      if(settings.routerEvents) this._routerEvents = settings.routerEvents
       if(
         this.modelEvents &&
         this.models &&

@@ -1,4 +1,4 @@
-MVC.Emitters.NavigateEmitter = class extends MVC.Emitter {
+MVC.Emitters.Navigate = class extends MVC.Emitter {
   constructor() {
     super(...arguments)
     this.addSettings()

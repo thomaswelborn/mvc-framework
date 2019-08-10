@@ -6,77 +6,7 @@ MVC.CONST = MVC.Constants
 MVC.Constants.Events = {}
 MVC.CONST.EV = MVC.Constants.Events
 
-MVC.Templates = {
-  ObjectQueryStringFormatInvalidRoot: function ObjectQueryStringFormatInvalid(data) {
-    return [
-      'Object Query "string" property must be formatted to first include "[@]".'
-    ].join('\n')
-  },
-  DataSchemaMismatch: function DataSchemaMismatch(data) {
-    return [
-      `Data and Schema properties do not match.`
-    ].join('\n')
-  },
-  DataFunctionInvalid: function DataFunctionInvalid(data) {
-    [
-      `Model Data property type "Function" is not valid.`
-    ].join('\n')
-  },
-  DataUndefined: function DataUndefined(data) {
-    [
-      `Model Data property undefined.`
-    ].join('\n')
-  },
-  SchemaUndefined: function SchemaUndefined(data) {
-    [
-      `Model "Schema" undefined.`
-    ].join('\n')
-  },
-}
-MVC.TMPL = MVC.Templates
-
 MVC.Utils = {}
-
-MVC.Utils.isArray = function isArray(object) { return Array.isArray(object) }
-MVC.Utils.isObject = function isObject(object) {
-  return (!Array.isArray(object))
-    ? typeof object === 'object'
-    : false
-}
-MVC.Utils.isEqualType = function isEqualType(valueA, valueB) { return valueA === valueB }
-MVC.Utils.isHTMLElement = function isHTMLElement(object) {
-  return object instanceof HTMLElement
-}
-
-MVC.Utils.typeOf =  function typeOf(data) {
-  switch(typeof data) {
-    case 'object':
-      let _object
-      if(MVC.Utils.isArray(data)) {
-        // Array
-        return 'array'
-      } else if(
-        MVC.Utils.isObject(data)
-      ) {
-        // Object
-        return 'object'
-      } else if(
-        data === null
-      ) {
-        // Null
-        return 'null'
-      }
-      return _object
-      break
-    case 'string':
-    case 'number':
-    case 'boolean':
-    case 'undefined':
-    case 'function':
-      return typeof data
-      break
-  }
-}
 
 MVC.Utils.addPropertiesToObject = function addPropertiesToObject() {
   let targetObject
@@ -96,6 +26,17 @@ MVC.Utils.addPropertiesToObject = function addPropertiesToObject() {
       break
   }
   return targetObject
+}
+
+MVC.Utils.isArray = function isArray(object) { return Array.isArray(object) }
+MVC.Utils.isObject = function isObject(object) {
+  return (!Array.isArray(object))
+    ? typeof object === 'object'
+    : false
+}
+MVC.Utils.isEqualType = function isEqualType(valueA, valueB) { return valueA === valueB }
+MVC.Utils.isHTMLElement = function isHTMLElement(object) {
+  return object instanceof HTMLElement
 }
 
 MVC.Utils.objectQuery = function objectQuery(
@@ -147,6 +88,16 @@ MVC.Utils.objectQuery.parseFragment = function parseFragment(fragment) {
     fragment = new RegExp('^'.concat(fragment, '$'))
   }
   return fragment
+}
+
+MVC.Utils.paramsToObject = function paramsToObject(params) {
+    var params = params.split('&')
+    var object = {}
+    params.forEach((paramData) => {
+      paramData = paramData.split('=')
+      object[paramData[0]] = decodeURIComponent(paramData[1] || '')
+    })
+    return JSON.parse(JSON.stringify(object))
 }
 
 MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
@@ -205,6 +156,36 @@ MVC.Utils.bindEventsToTargetObjects = function bindEventsToTargetObjects() {
 }
 MVC.Utils.unbindEventsFromTargetObjects = function unbindEventsFromTargetObjects() {
   this.toggleEventsForTargetObjects('off', ...arguments)
+}
+
+MVC.Utils.typeOf =  function typeOf(data) {
+  switch(typeof data) {
+    case 'object':
+      let _object
+      if(MVC.Utils.isArray(data)) {
+        // Array
+        return 'array'
+      } else if(
+        MVC.Utils.isObject(data)
+      ) {
+        // Object
+        return 'object'
+      } else if(
+        data === null
+      ) {
+        // Null
+        return 'null'
+      }
+      return _object
+      break
+    case 'string':
+    case 'number':
+    case 'boolean':
+    case 'undefined':
+    case 'function':
+      return typeof data
+      break
+  }
 }
 
 MVC.Utils.validateDataSchema = function validateDataSchema(data, schema) {
@@ -659,6 +640,7 @@ MVC.Model = class extends MVC.Base {
         if(this.localStorage) this.setDB(key, value)
         break
     }
+    return this
   }
   unset() {
     this._history = this.parse()
@@ -673,6 +655,7 @@ MVC.Model = class extends MVC.Base {
         this.unsetDataProperty(key)
         break
     }
+    return this
   }
   setDB() {
     let db = this._db
@@ -1299,11 +1282,11 @@ MVC.Controller = class extends MVC.Base {
       if(settings.controllers) this._controllers = settings.controllers
       if(settings.emitters) this._emitters = settings.emitters
       if(settings.routers) this._routers = settings.routers
-      if(settings.routerEvents) this._routerEvents = settings.routerEvents
       if(settings.modelEvents) this._modelEvents = settings.modelEvents
       if(settings.viewEvents) this._viewEvents = settings.viewEvents
       if(settings.controllerEvents) this._controllerEvents = settings.controllerEvents
       if(settings.emitterEvents) this._emitterEvents = settings.emitterEvents
+      if(settings.routerEvents) this._routerEvents = settings.routerEvents
       if(
         this.modelEvents &&
         this.models &&
@@ -1406,19 +1389,179 @@ MVC.Controller = class extends MVC.Base {
   }
 }
 
+MVC.Emitters = {}
+
+MVC.Emitters.Navigate = class extends MVC.Emitter {
+  constructor() {
+    super(...arguments)
+    this.addSettings()
+    this.enable()
+  }
+  addSettings() {
+    this._name = 'navigate'
+    this._schema = {
+      oldURL: String,
+      newURL: String,
+      currentRoute: String,
+      currentController: String,
+    }
+  }
+}
+
 MVC.Router = class extends MVC.Base {
   constructor() {
     super(...arguments)
   }
-  get route() {
-    if(this._hash) {
-      return String(window.location.hash).split('#').pop()
+  get protocol() { return window.location.protocol }
+  get hostname() { return window.location.hostname }
+  get port() { return window.location.port }
+  get path() { return window.location.pathname }
+  get hash() {
+    let href = window.location.href
+    let hashIndex = href.indexOf('#')
+    if(hashIndex > -1) {
+      let paramIndex = href.indexOf('?')
+      let sliceStart = hashIndex + 1
+      let sliceStop
+      if(paramIndex > -1) {
+        sliceStop = (hashIndex > paramIndex)
+          ? href.length
+          : paramIndex
+      } else {
+        sliceStop = href.length
+      }
+      href = href.slice(sliceStart, sliceStop)
+      if(href.length) {
+        return href
+      } else {
+        return null
+      }
     } else {
-      return String(window.location.pathname)
+      return null
     }
   }
-  get _hash() { return this.hash }
-  set _hash(hash) { this.hash = hash }
+  get params() {
+    let href = window.location.href
+    let paramIndex = href.indexOf('?')
+    if(paramIndex > -1) {
+      let hashIndex = href.indexOf('#')
+      let sliceStart = paramIndex + 1
+      let sliceStop
+      if(hashIndex > -1) {
+        sliceStop = (paramIndex > hashIndex)
+          ? href.length
+          : hashIndex
+      } else {
+        sliceStop = href.length
+      }
+      href = href.slice(sliceStart, sliceStop)
+      if(href.length) {
+        return href
+      } else {
+        return null
+      }
+    } else {
+      return null
+    }
+  }
+  get _routeData() {
+    let routeData = {}
+    let path = this.path.split('/').filter((fragment) => fragment.length)
+    path = (path.length)
+      ? path
+      : ['/']
+    let hash = this.hash
+    let hashFragments = (hash)
+      ? hash.split('/').filter((fragment) => fragment.length)
+      : null
+    let params = this.params
+    let paramData = (params)
+      ? MVC.Utils.paramsToObject(params)
+      : null
+    if(this.protocol) routeData.protocol = this.protocol
+    if(this.hostname) routeData.hostname = this.hostname
+    if(this.port) routeData.port = this.port
+    if(this.path) routeData.path = this.path
+    if(
+      hash &&
+      hashFragments
+    ) {
+      hashFragments = (hashFragments.length)
+      ? hashFragments
+      : ['/']
+      routeData.hash = {
+        path: hash,
+        fragments: hashFragments,
+      }
+    }
+    if(
+      params &&
+      paramData
+    ) {
+      routeData.params = {
+        path: params,
+        data: paramData,
+      }
+    }
+    routeData.path = {
+      name: this.path,
+      fragments: path,
+    }
+    routeData.currentURL = this.currentURL
+    routeData = Object.assign(
+      routeData,
+      this._routeControllerData
+    )
+    this.routeData = routeData
+    return this.routeData
+  }
+  get _routeControllerData() {
+    let routeData = {}
+    Object.entries(this.routes)
+      .forEach(([routePath, routeSettings]) => {
+        let pathFragments = this.path.split('/').filter((fragment) => fragment.length)
+        pathFragments = (pathFragments.length)
+          ? pathFragments
+          : ['/']
+        let routeFragments = routePath.split('/').filter((fragment, fragmentIndex) => fragment.length)
+        routeFragments = (routeFragments.length)
+          ? routeFragments
+          : ['/']
+        if(
+          pathFragments.length &&
+          pathFragments.length === routeFragments.length
+        ) {
+          let match
+          return routeFragments.filter((routeFragment, routeFragmentIndex) => {
+            if(
+              match === undefined ||
+              match === true
+            ) {
+              if(routeFragment[0] === ':') {
+                routeData[routeFragment.replace(':', '')] = pathFragments[routeFragmentIndex]
+                routeFragment = this.fragmentIDRegExp
+              } else {
+                routeFragment = routeFragment.replace(new RegExp('/', 'gi'), '\\\/')
+                routeFragment = this.routeFragmentNameRegExp(routeFragment)
+              }
+              match = routeFragment.test(pathFragments[routeFragmentIndex])
+              if(
+                match === true &&
+                routeFragmentIndex === pathFragments.length - 1
+              ) {
+                routeData.route = {
+                  name: routePath,
+                  fragments: routeFragments,
+                }
+                routeData.controller = routeSettings
+                return routeSettings
+              }
+            }
+          })[0]
+        }
+      })
+    return routeData
+  }
   get _enabled() { return this.enabled || false }
   set _enabled(enabled) { this.enabled = enabled }
   get _routes() {
@@ -1437,18 +1580,18 @@ MVC.Router = class extends MVC.Base {
   get _previousURL() { return this.previousURL }
   set _previousURL(previousURL) { this.previousURL = previousURL }
   get _currentURL() { return this.currentURL }
-  set _currentURL(currentURL) { this.currentURL = currentURL }
+  set _currentURL(currentURL) {
+    if(this.currentURL) this._previousURL = this.currentURL
+    this.currentURL = currentURL
+  }
   get fragmentIDRegExp() { return new RegExp(/^([0-9A-Z\?\=\,\.\*\-\_\'\"\^\%\$\#\@\!\~\(\)\{\}\&\<\>\\\/])*$/, 'gi') }
-  fragmentNameRegExp(fragment) { return new RegExp('^'.concat(fragment, '$')) }
+  routeFragmentNameRegExp(fragment) { return new RegExp('^'.concat(fragment, '$')) }
   enable() {
     let settings = this.settings
     if(
       settings &&
       !this.enabled
     ) {
-      this._hash = (typeof this.settings.hash === 'boolean')
-        ? this.settings.hash
-        : true
       this.enableEmitters()
       this.enableEvents()
       this.enableRoutes()
@@ -1462,7 +1605,6 @@ MVC.Router = class extends MVC.Base {
       settings &&
       this.enabled
     ) {
-      delete this._hash
       this.disableEvents()
       this.disableRoutes()
       this.disableEmitters()
@@ -1474,11 +1616,16 @@ MVC.Router = class extends MVC.Base {
     this._routes = Object.entries(this.settings.routes).reduce(
       (
         _routes,
-        [routePath, routeCallback],
+        [routePath, routeSettings],
         routeIndex,
         originalRoutes,
       ) => {
-        _routes[routePath] = this.controller[routeCallback].bind(this.controller)
+        _routes[routePath] = Object.assign(
+          routeSettings,
+          {
+            callback: this.controller[routeSettings.callback].bind(this.controller),
+          }
+        )
         return _routes
       },
       {}
@@ -1487,7 +1634,7 @@ MVC.Router = class extends MVC.Base {
   }
   enableEmitters() {
     this._emitters = {
-      navigateEmitter: new MVC.Emitters.NavigateEmitter(),
+      navigateEmitter: new MVC.Emitters.Navigate(),
     }
   }
   disableEmitters() {
@@ -1504,64 +1651,21 @@ MVC.Router = class extends MVC.Base {
     window.removeEventListener('hashchange', this.routeChange.bind(this))
   }
   routeChange() {
-    let route = this.route.split('/').filter((fragment) => fragment.length)
-    route = (route.length)
-      ? route
-      : ['/']
-    let routeControllerData = Object.entries(this.routes)
-      .filter(([routerPath, routerController]) => {
-        routerPath = routerPath.split('/').filter((fragment) => fragment.length)
-        routerPath = (routerPath.length)
-          ? routerPath
-          : ['/']
-        if(
-          route.length &&
-          route.length === routerPath.length
-        ) {
-          routerPath
-          let match
-          return routerPath.filter((fragment, fragmentIndex) => {
-            if(
-              match === undefined ||
-              match === true
-            ) {
-              if(fragment[0] === ':') {
-                fragment = this.fragmentIDRegExp
-              } else {
-                fragment = fragment.replace(new RegExp('/', 'gi'), '\\\/')
-                fragment = this.fragmentNameRegExp(fragment)
-              }
-              match = fragment.test(route[fragmentIndex])
-              if(
-                match === true &&
-                fragmentIndex === route.length - 1
-              ) {
-                return routerController
-              }
-            }
-          })[0]
-        }
-      })[0]
-    try {
-      if(this.currentURL) this._previousURL = this.currentURL
-      this._currentURL = window.location.href
-      let routeControllerName = routeControllerData[0]
-      let routeController = routeControllerData[1]
+    this._currentURL = window.location.href
+    let routeData = this._routeData
+    if(routeData.controller) {
       let navigateEmitter = this.emitters.navigateEmitter
-      let navigateEmitterData = {
-        currentURL: this.currentURL,
-        previousURL: this.previousURL,
-        currentRoute: this.route,
-        currentController: routeController.name
-      }
-      navigateEmitter.set(navigateEmitterData)
+      if(this.previousURL) routeData.previousURL = this.previousURL
+      navigateEmitter
+        .unset()
+        .set(routeData)
       this.emit(
         navigateEmitter.name,
         navigateEmitter.emission()
       )
-      routeController(navigateEmitter.emission())
-    } catch(error) {
-      throw error
+      routeData.controller.callback(
+        navigateEmitter.emission()
+      )
     }
   }
   navigate(path) {

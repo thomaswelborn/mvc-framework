@@ -146,6 +146,7 @@ MVC.Model = class extends MVC.Base {
         if(this.localStorage) this.setDB(key, value)
         break
     }
+    return this
   }
   unset() {
     this._history = this.parse()
@@ -160,6 +161,7 @@ MVC.Model = class extends MVC.Base {
         this.unsetDataProperty(key)
         break
     }
+    return this
   }
   setDB() {
     let db = this._db
