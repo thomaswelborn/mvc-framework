@@ -188,7 +188,9 @@ MVC.Router = class extends MVC.Base {
     this.currentURL = currentURL
   }
   get fragmentIDRegExp() { return new RegExp(/^([0-9A-Z\?\=\,\.\*\-\_\'\"\^\%\$\#\@\!\~\(\)\{\}\&\<\>\\\/])*$/, 'gi') }
-  routeFragmentNameRegExp(fragment) { return new RegExp('^'.concat(fragment, '$')) }
+  routeFragmentNameRegExp(fragment) {
+    return new RegExp('^'.concat(fragment, '$'))
+  }
   enable() {
     if(
       !this.enabled

@@ -51,7 +51,7 @@ MVC.Service = class extends MVC.Base {
         data: response.currentTarget,
       })
       return response
-    })
+    }).catch((error) => { throw error })
   }
   enable() {
     let settings = this.settings

@@ -156,7 +156,7 @@ MVC.Model = class extends MVC.Base {
           this.setDataProperty(key, value)
           if(this.localStorage) this.setDB(key, value)
         })
-        delete this._changing
+        delete this.changing
         break
       case 2:
         var key = arguments[0]
