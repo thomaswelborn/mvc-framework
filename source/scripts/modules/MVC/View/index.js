@@ -191,11 +191,11 @@ MVC.View = class extends MVC.Base {
       )
     }
   }
-  enableEmitters() {
-    if(this.settings.emitters) this._emitters = this.settings.emitters
+  enableMediators() {
+    if(this.settings.mediators) this._mediators = this.settings.mediators
   }
-  disableEmitters() {
-    if(this._emitters) delete this._emitters
+  disableMediators() {
+    if(this._mediators) delete this._mediators
   }
   enable() {
     let settings = this.settings
@@ -203,7 +203,7 @@ MVC.View = class extends MVC.Base {
       settings &&
       !this._enabled
     ) {
-      this.enableEmitters()
+      this.enableMediators()
       this.enableElement(settings)
       this.enableUI(settings)
       this._enabled = true
@@ -218,7 +218,7 @@ MVC.View = class extends MVC.Base {
     ) {
       this.disableUI(settings)
       this.disableElement(settings)
-      this.disableEmitters()
+      this.disableMediators()
       this._enabled = false
       return thiss
     }

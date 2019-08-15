@@ -1,4 +1,4 @@
-MVC.Emitters.Validate = class extends MVC.Emitter {
+MVC.Mediators.Validate = class extends MVC.Mediator {
   constructor() {
     super(...arguments)
     this.addSettings()
@@ -7,8 +7,12 @@ MVC.Emitters.Validate = class extends MVC.Emitter {
   addSettings() {
     this._name = 'validate'
     this._schema = {
-      data: Object,
-      results: Object,
+      data: {
+        type: 'object',
+      },
+      results: {
+        type: 'object',
+      },
     }
   }
 }

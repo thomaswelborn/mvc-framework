@@ -22,15 +22,15 @@ MVC.Base = class extends MVC.Events {
       settings, this._settings
     )
   }
-  get _emitters() {
-    this.emitters = (this.emitters)
-      ? this.emitters
+  get _mediators() {
+    this.mediators = (this.mediators)
+      ? this.mediators
       : {}
-    return this.emitters
+    return this.mediators
   }
-  set _emitters(emitters) {
-    this.emitters = MVC.Utils.addPropertiesToObject(
-      emitters, this._emitters
+  set _mediators(mediators) {
+    this.mediators = MVC.Utils.addPropertiesToObject(
+      mediators, this._mediators
     )
   }
 }

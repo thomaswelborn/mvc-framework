@@ -255,6 +255,7 @@ MVC.Events = class {
         ) delete this._events[eventName]
         break
     }
+    return this
   }
   emit(eventName, eventData) {
     let _arguments = Object.values(arguments)
@@ -267,6 +268,7 @@ MVC.Events = class {
         eventCallback(eventData, ...additionalArguments)
       }
     }
+    return this
   }
 }
 
@@ -344,15 +346,15 @@ MVC.Base = class extends MVC.Events {
       settings, this._settings
     )
   }
-  get _emitters() {
-    this.emitters = (this.emitters)
-      ? this.emitters
+  get _mediators() {
+    this.mediators = (this.mediators)
+      ? this.mediators
       : {}
-    return this.emitters
+    return this.mediators
   }
-  set _emitters(emitters) {
-    this.emitters = MVC.Utils.addPropertiesToObject(
-      emitters, this._emitters
+  set _mediators(mediators) {
+    this.mediators = MVC.Utils.addPropertiesToObject(
+      mediators, this._mediators
     )
   }
 }
@@ -405,10 +407,13 @@ MVC.Service = class extends MVC.Base {
       this._xhr.onerror = reject
       this._xhr.send(data)
     }).then((response) => {
-      this.emit('xhr:resolve', {
-        name: 'xhr:resolve',
-        data: response.currentTarget,
-      })
+      this.emit(
+        'xhr:resolve', {
+          name: 'xhr:resolve',
+          data: response.currentTarget,
+        },
+        this
+      )
       return response
     }).catch((error) => { throw error })
   }
@@ -648,6 +653,8 @@ MVC.Model = class extends MVC.Base {
   }
   get _validator() { return this.validator }
   set _validator(validator) { this.validator = new MVC.Validator(validator) }
+  get _schema() { return this._schema }
+  set _schema(schema) { this.schema = schema }
   get _isSetting() { return this.isSetting }
   set _isSetting(isSetting) { this.isSetting = isSetting }
   get _changing() {
@@ -660,8 +667,6 @@ MVC.Model = class extends MVC.Base {
   set _localStorage(localStorage) { this.localStorage = localStorage }
   get _defaults() { return this.defaults }
   set _defaults(defaults) { this.defaults = defaults }
-  get _schema() { return this._schema }
-  set _schema(schema) { this.schema = schema }
   get _histiogram() { return this.histiogram || {
     length: 1
   } }
@@ -761,24 +766,6 @@ MVC.Model = class extends MVC.Base {
   }
   get _enabled() { return this.enabled || false }
   set _enabled(enabled) { this.enabled = enabled }
-  enableServiceEvents() {
-    MVC.Utils.bindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
-  }
-  disableServiceEvents() {
-    MVC.Utils.unbindEventsFromTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
-  }
-  enableDataEvents() {
-    MVC.Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
-  }
-  disableDataEvents() {
-    MVC.Utils.unbindEventsFromTargetObjects(this.dataEvents, this, this.dataCallbacks)
-  }
-  setDefaults() {
-    let _defaults = {}
-    if(this.defaults) Object.assign(_defaults, this.defaults)
-    if(this.localStorage) Object.assign(_defaults, this._db)
-    if(Object.keys(_defaults)) this.set(_defaults)
-  }
   get() {
     switch(arguments.length) {
       case 0:
@@ -798,31 +785,28 @@ MVC.Model = class extends MVC.Base {
         let _arguments = Object.entries(arguments[0])
         _arguments.forEach(([key, value], index) => {
           if(index === (_arguments.length - 1)) this._isSetting = false
-          this._changing[key] = value
           this.setDataProperty(key, value)
-          if(this.localStorage) this.setDB(key, value)
         })
-        delete this.changing
         break
       case 2:
         var key = arguments[0]
         var value = arguments[1]
         this.setDataProperty(key, value)
-        if(this.localStorage) this.setDB(key, value)
         break
     }
-    if(this._validator) {
-      let validateEmitter = this.emitters.validate
+    if(this.validator) {
+      let validateMediator = this.mediators.validate
       this._validator.validate(
         JSON.parse(JSON.stringify(this.data))
       )
-      validateEmitter.set({
+      validateMediator.set({
         data: this.validator.data,
         results: this.validator.results
       })
       this.emit(
-        validateEmitter.name,
-        validateEmitter.emission()
+        validateMediator.name,
+        validateMediator.emission(),
+        this
       )
     }
     return this
@@ -884,7 +868,20 @@ MVC.Model = class extends MVC.Base {
             configurable: true,
             get() { return this[key] },
             set(value) {
-              this[key] = value
+              let emit = new Boolean()
+              let schema = context._settings.schema
+              if(
+                schema &&
+                schema[key]
+              ) {
+                this[key] = value
+                context._changing[key] = value
+                if(this.localStorage) context.setDB(key, value)
+              } else if(!schema) {
+                this[key] = value
+                context._changing[key] = value
+                if(this.localStorage) context.setDB(key, value)
+              }
               let setValueEventName = ['set', ':', key].join('')
               let setEventName = 'set'
               context.emit(
@@ -918,8 +915,10 @@ MVC.Model = class extends MVC.Base {
                       name: setEventName,
                       data: context._changing,
                     },
+                    context
                   )
                 }
+                delete context.changing
               }
             }
           }
@@ -943,7 +942,8 @@ MVC.Model = class extends MVC.Base {
           key: key,
           value: unsetValue,
         }
-      }
+      },
+      this
     )
     this.emit(
       unsetEventName,
@@ -953,26 +953,41 @@ MVC.Model = class extends MVC.Base {
           key: key,
           value: unsetValue,
         }
-      }
+      },
+      this
     )
     return this
   }
-  parse(data) {
-    data = data || this._data
-    return JSON.parse(JSON.stringify(Object.assign({}, data)))
+  setDefaults() {
+    let _defaults = {}
+    if(this.defaults) Object.assign(_defaults, this.defaults)
+    if(this.localStorage) Object.assign(_defaults, this._db)
+    if(Object.keys(_defaults)) this.set(_defaults)
   }
-  enableEmitters() {
+  enableServiceEvents() {
+    MVC.Utils.bindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+  }
+  disableServiceEvents() {
+    MVC.Utils.unbindEventsFromTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+  }
+  enableDataEvents() {
+    MVC.Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
+  }
+  disableDataEvents() {
+    MVC.Utils.unbindEventsFromTargetObjects(this.dataEvents, this, this.dataCallbacks)
+  }
+  enableMediators() {
     Object.assign(
-      this._emitters,
-      this.settings.emitters,
+      this._mediators,
+      this.settings.mediators,
       {
-        validate: new MVC.Emitters.Validate(),
+        validate: new MVC.Mediators.Validate(),
       }
     )
     return this
   }
-  disableEmitters() {
-    delete this._emitters
+  disableMediators() {
+    delete this._mediators
     return this
   }
   enable() {
@@ -981,8 +996,10 @@ MVC.Model = class extends MVC.Base {
       settings &&
       !this.enabled
     ) {
-      this.enableEmitters()
-      if(this.settings.validator) this._validator = this.settings.validator
+      this.enableMediators()
+      if(this.settings.schema) {
+        this._validator = this.settings.schema
+      }
       if(this.settings.localStorage) this._localStorage = this.settings.localStorage
       if(this.settings.histiogram) this._histiogram = this.settings.histiogram
       if(this.settings.services) this._services = this.settings.services
@@ -991,7 +1008,6 @@ MVC.Model = class extends MVC.Base {
       if(this.settings.data) this.set(this.settings.data)
       if(this.settings.dataCallbacks) this._dataCallbacks = this.settings.dataCallbacks
       if(this.settings.dataEvents) this._dataEvents = this.settings.dataEvents
-      if(this.settings.schema) this._schema = this.settings.schema
       if(this.settings.defaults) this._defaults = this.settings.defaults
       if(
         this.services &&
@@ -1039,14 +1055,18 @@ MVC.Model = class extends MVC.Base {
       delete this._dataEvents
       delete this._schema
       delete this._validator
-      delete this.disableEmitters()
+      delete this.disableMediators()
       this._enabled = false
     }
     return this
   }
+  parse(data) {
+    data = data || this._data
+    return JSON.parse(JSON.stringify(Object.assign({}, data)))
+  }
 }
 
-MVC.Emitter = class extends MVC.Model {
+MVC.Mediator = class extends MVC.Model {
   constructor() {
     super(...arguments)
     if(this.settings) {
@@ -1065,6 +1085,52 @@ MVC.Emitter = class extends MVC.Model {
       eventData
     )
     return eventData
+  }
+}
+
+MVC.Mediators = {}
+
+MVC.Mediators.Navigate = class extends MVC.Mediator {
+  constructor() {
+    super(...arguments)
+    this.addSettings()
+    this.enable()
+  }
+  addSettings() {
+    this._name = 'navigate'
+    this._schema = {
+      oldURL: {
+        type: 'string',
+      },
+      newURL: {
+        type: 'string',
+      },
+      currentRoute: {
+        type: 'string',
+      },
+      currentController: {
+        type: 'string',
+      },
+    }
+  }
+}
+
+MVC.Mediators.Validate = class extends MVC.Mediator {
+  constructor() {
+    super(...arguments)
+    this.addSettings()
+    this.enable()
+  }
+  addSettings() {
+    this._name = 'validate'
+    this._schema = {
+      data: {
+        type: 'object',
+      },
+      results: {
+        type: 'object',
+      },
+    }
   }
 }
 
@@ -1261,11 +1327,11 @@ MVC.View = class extends MVC.Base {
       )
     }
   }
-  enableEmitters() {
-    if(this.settings.emitters) this._emitters = this.settings.emitters
+  enableMediators() {
+    if(this.settings.mediators) this._mediators = this.settings.mediators
   }
-  disableEmitters() {
-    if(this._emitters) delete this._emitters
+  disableMediators() {
+    if(this._mediators) delete this._mediators
   }
   enable() {
     let settings = this.settings
@@ -1273,7 +1339,7 @@ MVC.View = class extends MVC.Base {
       settings &&
       !this._enabled
     ) {
-      this.enableEmitters()
+      this.enableMediators()
       this.enableElement(settings)
       this.enableUI(settings)
       this._enabled = true
@@ -1288,7 +1354,7 @@ MVC.View = class extends MVC.Base {
     ) {
       this.disableUI(settings)
       this.disableElement(settings)
-      this.disableEmitters()
+      this.disableMediators()
       this._enabled = false
       return thiss
     }
@@ -1299,15 +1365,15 @@ MVC.Controller = class extends MVC.Base {
   constructor() {
     super(...arguments)
   }
-  get _emitterCallbacks() {
-    this.emitterCallbacks = (this.emitterCallbacks)
-      ? this.emitterCallbacks
+  get _mediatorCallbacks() {
+    this.mediatorCallbacks = (this.mediatorCallbacks)
+      ? this.mediatorCallbacks
       : {}
-    return this.emitterCallbacks
+    return this.mediatorCallbacks
   }
-  set _emitterCallbacks(emitterCallbacks) {
-    this.emitterCallbacks = MVC.Utils.addPropertiesToObject(
-      emitterCallbacks, this._emitterCallbacks
+  set _mediatorCallbacks(mediatorCallbacks) {
+    this.mediatorCallbacks = MVC.Utils.addPropertiesToObject(
+      mediatorCallbacks, this._mediatorCallbacks
     )
   }
   get _modelCallbacks() {
@@ -1409,15 +1475,15 @@ MVC.Controller = class extends MVC.Base {
       routerCallbacks, this._routerCallbacks
     )
   }
-  get _emitterEvents() {
-    this.emitterEvents = (this.emitterEvents)
-      ? this.emitterEvents
+  get _mediatorEvents() {
+    this.mediatorEvents = (this.mediatorEvents)
+      ? this.mediatorEvents
       : {}
-    return this.emitterEvents
+    return this.mediatorEvents
   }
-  set _emitterEvents(emitterEvents) {
-    this.emitterEvents = MVC.Utils.addPropertiesToObject(
-      emitterEvents, this._emitterEvents
+  set _mediatorEvents(mediatorEvents) {
+    this.mediatorEvents = MVC.Utils.addPropertiesToObject(
+      mediatorEvents, this._mediatorEvents
     )
   }
   get _modelEvents() {
@@ -1457,33 +1523,43 @@ MVC.Controller = class extends MVC.Base {
   set _enabled(enabled) { this.enabled = enabled }
   enableModelEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
+    return this
   }
   disableModelEvents() {
     MVC.Utils.unbindEventsFromTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
+    return this
   }
   enableViewEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
+    return this
   }
   disableViewEvents() {
     MVC.Utils.unbindEventsFromTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
+    return this
   }
   enableControllerEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
+    return this
   }
   disableControllerEvents() {
     MVC.Utils.unbindEventsFromTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
+    return this
   }
-  enableEmitterEvents() {
-    MVC.Utils.bindEventsToTargetObjects(this.emitterEvents, this.emitters, this.emitterCallbacks)
+  enableMediatorEvents() {
+    MVC.Utils.bindEventsToTargetObjects(this.mediatorEvents, this.mediators, this.mediatorCallbacks)
+    return this
   }
-  disableEmitterEvents() {
-    MVC.Utils.unbindEventsFromTargetObjects(this.emitterEvents, this.emitters, this.emitterCallbacks)
+  disableMediatorEvents() {
+    MVC.Utils.unbindEventsFromTargetObjects(this.mediatorEvents, this.mediators, this.mediatorCallbacks)
+    return this
   }
   enableRouterEvents() {
     MVC.Utils.bindEventsToTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
+    return this
   }
   disableRouterEvents() {
     MVC.Utils.unbindEventsFromTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
+    return this
   }
   enable() {
     let settings = this.settings
@@ -1494,17 +1570,17 @@ MVC.Controller = class extends MVC.Base {
       if(settings.modelCallbacks) this._modelCallbacks = settings.modelCallbacks
       if(settings.viewCallbacks) this._viewCallbacks = settings.viewCallbacks
       if(settings.controllerCallbacks) this._controllerCallbacks = settings.controllerCallbacks
-      if(settings.emitterCallbacks) this._emitterCallbacks = settings.emitterCallbacks
+      if(settings.mediatorCallbacks) this._mediatorCallbacks = settings.mediatorCallbacks
       if(settings.routerCallbacks) this._routerCallbacks = settings.routerCallbacks
       if(settings.models) this._models = settings.models
       if(settings.views) this._views = settings.views
       if(settings.controllers) this._controllers = settings.controllers
-      if(settings.emitters) this._emitters = settings.emitters
+      if(settings.mediators) this._mediators = settings.mediators
       if(settings.routers) this._routers = settings.routers
       if(settings.modelEvents) this._modelEvents = settings.modelEvents
       if(settings.viewEvents) this._viewEvents = settings.viewEvents
       if(settings.controllerEvents) this._controllerEvents = settings.controllerEvents
-      if(settings.emitterEvents) this._emitterEvents = settings.emitterEvents
+      if(settings.mediatorEvents) this._mediatorEvents = settings.mediatorEvents
       if(settings.routerEvents) this._routerEvents = settings.routerEvents
       if(
         this.modelEvents &&
@@ -1535,18 +1611,20 @@ MVC.Controller = class extends MVC.Base {
         this.enableRouterEvents()
       }
       if(
-        this.emitterEvents &&
-        this.emitters &&
-        this.emitterCallbacks
+        this.mediatorEvents &&
+        this.mediators &&
+        this.mediatorCallbacks
       ) {
-        this.enableEmitterEvents()
+        this.enableMediatorEvents()
       }
       this._enabled = true
     }
+    return this
   }
   reset() {
     this.disable()
     this.enable()
+    return this
   }
   disable() {
     let settings = this.settings
@@ -1583,28 +1661,29 @@ MVC.Controller = class extends MVC.Base {
         this.disableRouterEvents()
       }
       if(
-        this.emitterEvents &&
-        this.emitters &&
-        this.emitterCallbacks
+        this.mediatorEvents &&
+        this.mediators &&
+        this.mediatorCallbacks
       ) {
-        this.disableEmitterEvents()
+        this.disableMediatorEvents()
         delete this._modelCallbacks
         delete this._viewCallbacks
         delete this._controllerCallbacks
-        delete this._emitterCallbacks
+        delete this._mediatorCallbacks
         delete this._routerCallbacks
         delete this._models
         delete this._views
         delete this._controllers
-        delete this._emitters
+        delete this._mediators
         delete this._routers
         delete this._routerEvents
         delete this._modelEvents
         delete this._viewEvents
         delete this._controllerEvents
-        delete this._emitterEvents
+        delete this._mediatorEvents
       this._enabled = false
     }
+    return this
   }
 }
 
@@ -1805,7 +1884,7 @@ MVC.Router = class extends MVC.Base {
     if(
       !this.enabled
     ) {
-      this.enableEmitters()
+      this.enableMediators()
       this.enableEvents()
       this.enableRoutes()
       this._enabled = true
@@ -1818,7 +1897,7 @@ MVC.Router = class extends MVC.Base {
     ) {
       this.disableEvents()
       this.disableRoutes()
-      this.disableEmitters()
+      this.disableMediators()
       this._enabled = false
     }
   }
@@ -1843,18 +1922,18 @@ MVC.Router = class extends MVC.Base {
     )
     return this
   }
-  enableEmitters() {
+  enableMediators() {
     Object.assign(
-      this._emitters,
-      this.settings.emitters,
+      this._mediators,
+      this.settings.mediators,
       {
-        navigateEmitter: new MVC.Emitters.Navigate(),
+        navigateMediator: new MVC.Mediators.Navigate(),
       }
     )
     return this
   }
-  disableEmitters() {
-    delete this._emitters.navigateEmitter
+  disableMediators() {
+    delete this._mediators.navigateMediator
   }
   disableRoutes() {
     delete this._routes
@@ -1871,17 +1950,17 @@ MVC.Router = class extends MVC.Base {
     this._currentURL = window.location.href
     let routeData = this._routeData
     if(routeData.controller) {
-      let navigateEmitter = this.emitters.navigateEmitter
+      let navigateMediator = this.mediators.navigateMediator
       if(this.previousURL) routeData.previousURL = this.previousURL
-      navigateEmitter
+      navigateMediator
         .unset()
         .set(routeData)
       this.emit(
-        navigateEmitter.name,
-        navigateEmitter.emission()
+        navigateMediator.name,
+        navigateMediator.emission()
       )
       routeData.controller.callback(
-        navigateEmitter.emission()
+        navigateMediator.emission()
       )
     }
     return this

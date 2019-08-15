@@ -1,4 +1,4 @@
-MVC.Emitter = class extends MVC.Model {
+MVC.Mediator = class extends MVC.Model {
   constructor() {
     super(...arguments)
     if(this.settings) {

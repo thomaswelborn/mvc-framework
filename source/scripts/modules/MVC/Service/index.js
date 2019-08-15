@@ -46,10 +46,13 @@ MVC.Service = class extends MVC.Base {
       this._xhr.onerror = reject
       this._xhr.send(data)
     }).then((response) => {
-      this.emit('xhr:resolve', {
-        name: 'xhr:resolve',
-        data: response.currentTarget,
-      })
+      this.emit(
+        'xhr:resolve', {
+          name: 'xhr:resolve',
+          data: response.currentTarget,
+        },
+        this
+      )
       return response
     }).catch((error) => { throw error })
   }

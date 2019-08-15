@@ -45,6 +45,7 @@ MVC.Events = class {
         ) delete this._events[eventName]
         break
     }
+    return this
   }
   emit(eventName, eventData) {
     let _arguments = Object.values(arguments)
@@ -57,5 +58,6 @@ MVC.Events = class {
         eventCallback(eventData, ...additionalArguments)
       }
     }
+    return this
   }
 }
