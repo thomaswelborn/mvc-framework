@@ -216,25 +216,29 @@ MVC.Events = class {
       : {}
     return this.events
   }
-  eventCallbacks(eventName) { return this._events[eventName] || {} }
-  eventCallbackName(eventCallback) {
+  getEventCallbacks(eventName) { return this._events[eventName] || {} }
+  getEventCallbackName(eventCallback) {
     return (eventCallback.name.length)
       ? eventCallback.name
       : 'anonymousFunction'
   }
-  eventCallbackGroup(eventCallbacks, eventCallbackName) {
+  getEventCallbackGroup(eventCallbacks, eventCallbackName) {
     return eventCallbacks[eventCallbackName] || []
   }
   on(eventName, eventCallback) {
-    let eventCallbacks = this.eventCallbacks(eventName)
-    let eventCallbackName = this.eventCallbackName(eventCallback)
-    let eventCallbackGroup = this.eventCallbackGroup(eventCallbacks, eventCallbackName)
+    let eventCallbacks = this.getEventCallbacks(eventName)
+    let eventCallbackName = this.getEventCallbackName(eventCallback)
+    let eventCallbackGroup = this.getEventCallbackGroup(eventCallbacks, eventCallbackName)
     eventCallbackGroup.push(eventCallback)
     eventCallbacks[eventCallbackName] = eventCallbackGroup
     this._events[eventName] = eventCallbacks
+    return this
   }
   off() {
     switch(arguments.length) {
+      case 0:
+        delete this._events
+        break
       case 1:
         var eventName = arguments[0]
         delete this._events[eventName]
@@ -242,16 +246,24 @@ MVC.Events = class {
       case 2:
         var eventName = arguments[0]
         var eventCallback = arguments[1]
-        var eventCallbackName = this.eventCallbackName(eventCallback)
+        var eventCallbackName = (typeof eventCallback === 'string')
+          ? eventCallback
+          : this.getEventCallbackName(eventCallback)
         delete this._events[eventName][eventCallbackName]
+        if(
+          Object.keys(this._events[eventName]).length === 0
+        ) delete this._events[eventName]
         break
     }
   }
   emit(eventName, eventData) {
-    let eventCallbacks = this.eventCallbacks(eventName)
-    for(let [eventCallbackGroupName, eventCallbackGroup] of Object.entries(eventCallbacks)) {
+    let _arguments = Object.values(arguments)
+    let eventCallbacks = Object.entries(
+      this.getEventCallbacks(eventName)
+    )
+    for(let [eventCallbackGroupName, eventCallbackGroup] of eventCallbacks) {
       for(let eventCallback of eventCallbackGroup) {
-        let additionalArguments = Object.values(arguments).splice(2) || []
+        let additionalArguments = _arguments.splice(2) || []
         eventCallback(eventData, ...additionalArguments)
       }
     }
