@@ -234,9 +234,13 @@ MVC.Router = class extends MVC.Base {
     return this
   }
   enableEmitters() {
-    this._emitters = {
-      navigateEmitter: new MVC.Emitters.Navigate(),
-    }
+    Object.assign(
+      this._emitters,
+      this.settings.emitters,
+      {
+        navigateEmitter: new MVC.Emitters.Navigate(),
+      }
+    )
     return this
   }
   disableEmitters() {

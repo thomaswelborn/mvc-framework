@@ -2,6 +2,8 @@ MVC.Model = class extends MVC.Base {
   constructor() {
     super(...arguments)
   }
+  get _validator() { return this.validator }
+  set _validator(validator) { this.validator = new MVC.Validator(validator) }
   get _isSetting() { return this.isSetting }
   set _isSetting(isSetting) { this.isSetting = isSetting }
   get _changing() {
@@ -165,6 +167,20 @@ MVC.Model = class extends MVC.Base {
         if(this.localStorage) this.setDB(key, value)
         break
     }
+    if(this._validator) {
+      let validateEmitter = this.emitters.validate
+      this._validator.validate(
+        JSON.parse(JSON.stringify(this.data))
+      )
+      validateEmitter.set({
+        data: this.validator.data,
+        results: this.validator.results
+      })
+      this.emit(
+        validateEmitter.name,
+        validateEmitter.emission()
+      )
+    }
     return this
   }
   unset() {
@@ -198,6 +214,7 @@ MVC.Model = class extends MVC.Base {
         break
     }
     this._db = db
+    return this
   }
   unsetDB() {
     switch(arguments.length) {
@@ -211,6 +228,7 @@ MVC.Model = class extends MVC.Base {
         this._db = db
         break
     }
+    return this
   }
   setDataProperty(key, value) {
     if(!this._data['_'.concat(key)]) {
@@ -265,6 +283,7 @@ MVC.Model = class extends MVC.Base {
       )
     }
     this._data['_'.concat(key)] = value
+    return this
   }
   unsetDataProperty(key) {
     let unsetValueEventName = ['unset', ':', key].join('')
@@ -292,10 +311,25 @@ MVC.Model = class extends MVC.Base {
         }
       }
     )
+    return this
   }
   parse(data) {
     data = data || this._data
     return JSON.parse(JSON.stringify(Object.assign({}, data)))
+  }
+  enableEmitters() {
+    Object.assign(
+      this._emitters,
+      this.settings.emitters,
+      {
+        validate: new MVC.Emitters.Validate(),
+      }
+    )
+    return this
+  }
+  disableEmitters() {
+    delete this._emitters
+    return this
   }
   enable() {
     let settings = this.settings
@@ -303,9 +337,10 @@ MVC.Model = class extends MVC.Base {
       settings &&
       !this.enabled
     ) {
+      this.enableEmitters()
+      if(this.settings.validator) this._validator = this.settings.validator
       if(this.settings.localStorage) this._localStorage = this.settings.localStorage
       if(this.settings.histiogram) this._histiogram = this.settings.histiogram
-      if(this.settings.emitters) this._emitters = this.settings.emitters
       if(this.settings.services) this._services = this.settings.services
       if(this.settings.serviceCallbacks) this._serviceCallbacks = this.settings.serviceCallbacks
       if(this.settings.serviceEvents) this._serviceEvents = this.settings.serviceEvents
@@ -329,6 +364,7 @@ MVC.Model = class extends MVC.Base {
       }
       this._enabled = true
     }
+    return this
   }
   disable() {
     let settings = this.settings
@@ -358,8 +394,10 @@ MVC.Model = class extends MVC.Base {
       delete this._dataCallbacks
       delete this._dataEvents
       delete this._schema
-      delete this._emitters
+      delete this._validator
+      delete this.disableEmitters()
       this._enabled = false
     }
+    return this
   }
 }
