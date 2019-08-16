@@ -1,6 +1,7 @@
 MVC.View = class extends MVC.Base {
   constructor() {
     super(...arguments)
+    return this
   }
   get _elementName() { return this._element.tagName }
   set _elementName(elementName) {
@@ -111,17 +112,32 @@ MVC.View = class extends MVC.Base {
   }
   autoInsert() {
     if(this.insert) {
-      document.querySelectorAll(this.insert.element)
-      .forEach((element) => {
-        element.insertAdjacentElement(this.insert.method, this.element)
-      })
+      let parentElement
+      if(MVC.Utils.typeOf(this.insert.element) === 'string') {
+        parentElement = document.querySelectorAll(this.insert.element)
+      } else {
+        parentElement = this.insert.element
+      }
+      if(
+        parentElement instanceof HTMLElement ||
+        parentElement instanceof Node
+      ) {
+        parentElement.insertAdjacentElement(this.insert.method, this.element)
+      } else if(parentElement instanceof NodeList) {
+        parentElement
+          .forEach((_parentElement) => {
+            _parentElement.insertAdjacentElement(this.insert.method, this.element)
+          })
+      }
     }
+    return this
   }
   autoRemove() {
     if(
       this.element &&
       this.element.parentElement
     ) this.element.parentElement.removeChild(this.element)
+    return this
   }
   enableElement(settings) {
     settings = settings || this.settings
@@ -130,21 +146,20 @@ MVC.View = class extends MVC.Base {
     if(settings.attributes) this._attributes = settings.attributes
     if(settings.templates) this._templates = settings.templates
     if(settings.insert) this._insert = settings.insert
+    return this
   }
   disableElement(settings) {
     settings = settings || this.settings
-    if(
-      this.element &&
-      this.element.parentElement
-    ) this.element.parentElement.removeChild(this.element)
     if(this.element) delete this.element
     if(this.attributes) delete this.attributes
     if(this.templates) delete this.templates
     if(this.insert) delete this.insert
+    return this
   }
   resetUI() {
     this.disableUI()
     this.enableUI()
+    return this
   }
   enableUI(settings) {
     settings = settings || this.settings
@@ -154,6 +169,7 @@ MVC.View = class extends MVC.Base {
       this._uiEvents = settings.uiEvents
       this.enableUIEvents()
     }
+    return this
   }
   disableUI(settings) {
     settings = settings || this.settings
@@ -164,6 +180,7 @@ MVC.View = class extends MVC.Base {
     delete this.uiEvents
     delete this.ui
     delete this.uiCallbacks
+    return this
   }
   enableUIEvents() {
     if(
@@ -177,6 +194,25 @@ MVC.View = class extends MVC.Base {
         this.uiCallbacks
       )
     }
+    return this
+  }
+  enableRenderers() {
+    MVC.Utils.objectQuery(
+      '[/^render.*?/]',
+      this.settings
+    ).forEach(([rendererName, rendererFunction]) => {
+      this[rendererName] = rendererFunction
+    })
+    return this
+  }
+  disableRenderers() {
+    MVC.Utils.objectQuery(
+      '[/^render.*?/]',
+      this.settings
+    ).forEach((rendererName, rendererFunction) => {
+      delete this[rendererName]
+    })
+    return this
   }
   disableUIEvents() {
     if(
@@ -190,12 +226,15 @@ MVC.View = class extends MVC.Base {
         this.uiCallbacks
       )
     }
+    return this
   }
   enableMediators() {
     if(this.settings.mediators) this._mediators = this.settings.mediators
+    return this
   }
   disableMediators() {
     if(this._mediators) delete this._mediators
+    return this
   }
   enable() {
     let settings = this.settings
@@ -203,12 +242,13 @@ MVC.View = class extends MVC.Base {
       settings &&
       !this._enabled
     ) {
+      this.enableRenderers()
       this.enableMediators()
       this.enableElement(settings)
       this.enableUI(settings)
       this._enabled = true
-      return this
     }
+    return this
   }
   disable() {
     let settings = this.settings
@@ -216,11 +256,12 @@ MVC.View = class extends MVC.Base {
       settings &&
       this._enabled
     ) {
+      this.disableRenderers()
       this.disableUI(settings)
       this.disableElement(settings)
       this.disableMediators()
       this._enabled = false
-      return thiss
     }
+    return this
   }
 }

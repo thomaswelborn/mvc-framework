@@ -1,6 +1,7 @@
 MVC.Router = class extends MVC.Base {
   constructor() {
     super(...arguments)
+    return this
   }
   get protocol() { return window.location.protocol }
   get hostname() { return window.location.hostname }
@@ -211,6 +212,7 @@ MVC.Router = class extends MVC.Base {
       this.disableMediators()
       this._enabled = false
     }
+    return this
   }
   enableRoutes() {
     if(this.settings.controller) this._controller = this.settings.controller
@@ -245,10 +247,12 @@ MVC.Router = class extends MVC.Base {
   }
   disableMediators() {
     delete this._mediators.navigateMediator
+    return this
   }
   disableRoutes() {
     delete this._routes
     delete this._controller
+    return this
   }
   enableEvents() {
     window.addEventListener('hashchange', this.routeChange.bind(this))
@@ -256,6 +260,7 @@ MVC.Router = class extends MVC.Base {
   }
   disableEvents() {
     window.removeEventListener('hashchange', this.routeChange.bind(this))
+    return this
   }
   routeChange() {
     this._currentURL = window.location.href

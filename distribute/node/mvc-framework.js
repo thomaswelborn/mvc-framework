@@ -150,6 +150,16 @@ MVC.Utils.objectQuery.parseFragment = function parseFragment(fragment) {
   return fragment
 }
 
+MVC.Utils.paramsToObject = function paramsToObject(params) {
+    var params = params.split('&')
+    var object = {}
+    params.forEach((paramData) => {
+      paramData = paramData.split('=')
+      object[paramData[0]] = decodeURIComponent(paramData[1] || '')
+    })
+    return JSON.parse(JSON.stringify(object))
+}
+
 MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
   toggleMethod,
   events,
@@ -451,6 +461,7 @@ MVC.Service = class extends MVC.Base {
 MVC.Validator = class {
   constructor(schema) {
     this._schema = schema
+    return this
   }
   get _schema() { return this.schema }
   set _schema(schema) { this.schema = schema }
@@ -466,6 +477,7 @@ MVC.Validator = class {
         let validation = {}
         let value = data[schemaKey]
         validation.key = schemaKey
+        validation.value = value
         if(schemaSettings.required) {
           validation.required = this.required(value, schemaSettings.required)
         }
@@ -482,9 +494,7 @@ MVC.Validator = class {
     return validationSummary
   }
   required(value, schemaSettings) {
-    let validationSummary = {
-      value: value,
-    }
+    let validationSummary = {}
     let messages = Object.assign(
       {
         pass: 'Value is defined.',
@@ -493,56 +503,49 @@ MVC.Validator = class {
       schemaSettings.messages
     )
     value = (value !== undefined)
-    switch(MVC.Utils.typeOf(schemaSettings)) {
-      case 'boolean':
-        validationSummary.comparator = schemaSettings
-        validationSummary.result = (value === schemaSettings)
-        break
-      case 'object':
-        validationSummary.comparator = schemaSettings.value
-        validationSummary.result = (value === schemaSettings.value)
-        break
-    }
+    validationSummary.value = value
+    validationSummary.comparator = schemaSettings
+    validationSummary.result = (value === schemaSettings)
     validationSummary.message = (validationSummary.result)
       ? messages.pass
       : messages.fail
     return validationSummary
   }
   type(value, schemaSettings) {
-    let validationSummary = {
-      value: value
-    }
+    let validationSummary = {}
     let messages = Object.assign(
       {
-        pass: 'Valid Type.',
-        fail: 'Invalid Type.',
+        pass: 'Valid type.',
+        fail: 'Invalid type.',
       },
       schemaSettings.messages
     )
-    switch(MVC.Utils.typeOf(schemaSettings)) {
-      case 'string':
-        validationSummary.comparator
-        validationSummary.result = (MVC.Utils.typeOf(value) === schemaSettings)
-        break
-      case 'object':
-        validationSummary.result = (MVC.Utils.typeOf(value) === schemaSettings.value)
-        break
-    }
+    let typeOfValue = MVC.Utils.typeOf(value)
+    validationSummary.value = typeOfValue
+    validationSummary.comparator = schemaSettings
+    validationSummary.result = (typeOfValue === schemaSettings)
     validationSummary.message = (validationSummary.result)
       ? messages.pass
       : messages.fail
     return validationSummary
   }
   evaluations(value, evaluations) {
+    let messages = {
+      pass: 'Valid.',
+      fail: 'Invalid.',
+    }
     return evaluations.reduce((_evaluations, evaluation, evaluationIndex) => {
       if(MVC.Utils.isArray(evaluation)) {
         _evaluations.push(
           ...this.evaluations(value, evaluation)
         )
       } else {
-        evaluation.value = value
+        evaluation._value = value
+        evaluation.messages = (evaluation.messages)
+          ? evaluation.messages
+          : messages
         let valueComparison = this.compareValues(
-          evaluation.value,
+          evaluation._value,
           evaluation.comparison.value,
           evaluation.comparator,
           evaluation.messages
@@ -558,6 +561,9 @@ MVC.Validator = class {
           let previousEvaluationComparisonValue = (currentEvaluation.results.statement)
             ? currentEvaluation.results.statement.result
             : currentEvaluation.results.value.result
+          currentEvaluation.messages = (currentEvaluation.messages)
+            ? currentEvaluation.messages
+            : messages
           let statementComparison = this.compareStatements(
             previousEvaluationComparisonValue,
             currentEvaluation.comparison.statement,
@@ -577,6 +583,7 @@ MVC.Validator = class {
       fail: [],
     }
     evaluations.forEach((evaluationValidation) => {
+      delete evaluationValidation.messages
       if(evaluationValidation.results.statement) {
         if(evaluationValidation.results.statement.result === false) {
           validationEvaluations.fail.push(evaluationValidation)
@@ -1137,6 +1144,7 @@ MVC.Mediators.Validate = class extends MVC.Mediator {
 MVC.View = class extends MVC.Base {
   constructor() {
     super(...arguments)
+    return this
   }
   get _elementName() { return this._element.tagName }
   set _elementName(elementName) {
@@ -1247,17 +1255,32 @@ MVC.View = class extends MVC.Base {
   }
   autoInsert() {
     if(this.insert) {
-      document.querySelectorAll(this.insert.element)
-      .forEach((element) => {
-        element.insertAdjacentElement(this.insert.method, this.element)
-      })
+      let parentElement
+      if(MVC.Utils.typeOf(this.insert.element) === 'string') {
+        parentElement = document.querySelectorAll(this.insert.element)
+      } else {
+        parentElement = this.insert.element
+      }
+      if(
+        parentElement instanceof HTMLElement ||
+        parentElement instanceof Node
+      ) {
+        parentElement.insertAdjacentElement(this.insert.method, this.element)
+      } else if(parentElement instanceof NodeList) {
+        parentElement
+          .forEach((_parentElement) => {
+            _parentElement.insertAdjacentElement(this.insert.method, this.element)
+          })
+      }
     }
+    return this
   }
   autoRemove() {
     if(
       this.element &&
       this.element.parentElement
     ) this.element.parentElement.removeChild(this.element)
+    return this
   }
   enableElement(settings) {
     settings = settings || this.settings
@@ -1266,21 +1289,20 @@ MVC.View = class extends MVC.Base {
     if(settings.attributes) this._attributes = settings.attributes
     if(settings.templates) this._templates = settings.templates
     if(settings.insert) this._insert = settings.insert
+    return this
   }
   disableElement(settings) {
     settings = settings || this.settings
-    if(
-      this.element &&
-      this.element.parentElement
-    ) this.element.parentElement.removeChild(this.element)
     if(this.element) delete this.element
     if(this.attributes) delete this.attributes
     if(this.templates) delete this.templates
     if(this.insert) delete this.insert
+    return this
   }
   resetUI() {
     this.disableUI()
     this.enableUI()
+    return this
   }
   enableUI(settings) {
     settings = settings || this.settings
@@ -1290,6 +1312,7 @@ MVC.View = class extends MVC.Base {
       this._uiEvents = settings.uiEvents
       this.enableUIEvents()
     }
+    return this
   }
   disableUI(settings) {
     settings = settings || this.settings
@@ -1300,6 +1323,7 @@ MVC.View = class extends MVC.Base {
     delete this.uiEvents
     delete this.ui
     delete this.uiCallbacks
+    return this
   }
   enableUIEvents() {
     if(
@@ -1313,6 +1337,25 @@ MVC.View = class extends MVC.Base {
         this.uiCallbacks
       )
     }
+    return this
+  }
+  enableRenderers() {
+    MVC.Utils.objectQuery(
+      '[/^render.*?/]',
+      this.settings
+    ).forEach(([rendererName, rendererFunction]) => {
+      this[rendererName] = rendererFunction
+    })
+    return this
+  }
+  disableRenderers() {
+    MVC.Utils.objectQuery(
+      '[/^render.*?/]',
+      this.settings
+    ).forEach((rendererName, rendererFunction) => {
+      delete this[rendererName]
+    })
+    return this
   }
   disableUIEvents() {
     if(
@@ -1326,12 +1369,15 @@ MVC.View = class extends MVC.Base {
         this.uiCallbacks
       )
     }
+    return this
   }
   enableMediators() {
     if(this.settings.mediators) this._mediators = this.settings.mediators
+    return this
   }
   disableMediators() {
     if(this._mediators) delete this._mediators
+    return this
   }
   enable() {
     let settings = this.settings
@@ -1339,12 +1385,13 @@ MVC.View = class extends MVC.Base {
       settings &&
       !this._enabled
     ) {
+      this.enableRenderers()
       this.enableMediators()
       this.enableElement(settings)
       this.enableUI(settings)
       this._enabled = true
-      return this
     }
+    return this
   }
   disable() {
     let settings = this.settings
@@ -1352,12 +1399,13 @@ MVC.View = class extends MVC.Base {
       settings &&
       this._enabled
     ) {
+      this.disableRenderers()
       this.disableUI(settings)
       this.disableElement(settings)
       this.disableMediators()
       this._enabled = false
-      return thiss
     }
+    return this
   }
 }
 
@@ -1690,6 +1738,7 @@ MVC.Controller = class extends MVC.Base {
 MVC.Router = class extends MVC.Base {
   constructor() {
     super(...arguments)
+    return this
   }
   get protocol() { return window.location.protocol }
   get hostname() { return window.location.hostname }
@@ -1900,6 +1949,7 @@ MVC.Router = class extends MVC.Base {
       this.disableMediators()
       this._enabled = false
     }
+    return this
   }
   enableRoutes() {
     if(this.settings.controller) this._controller = this.settings.controller
@@ -1934,10 +1984,12 @@ MVC.Router = class extends MVC.Base {
   }
   disableMediators() {
     delete this._mediators.navigateMediator
+    return this
   }
   disableRoutes() {
     delete this._routes
     delete this._controller
+    return this
   }
   enableEvents() {
     window.addEventListener('hashchange', this.routeChange.bind(this))
@@ -1945,6 +1997,7 @@ MVC.Router = class extends MVC.Base {
   }
   disableEvents() {
     window.removeEventListener('hashchange', this.routeChange.bind(this))
+    return this
   }
   routeChange() {
     this._currentURL = window.location.href

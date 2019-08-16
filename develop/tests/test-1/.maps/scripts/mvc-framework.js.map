@@ -1,1 +1,0 @@
-{"version":3,"sources":["module.js"],"names":["Tests"],"mappings":";;AAAAA,KAAK,CAAC,QAAD,CAAL,GAAmB,YAAM,CAExB,CAFiB,EAAlB","file":"../../scripts/mvc-framework.js","sourcesContent":["Tests['Test-1'] = (() => {\r\n\r\n})()\r\n"]}

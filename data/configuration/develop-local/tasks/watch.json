@@ -15,7 +15,7 @@
   },
   "scripts": {
     "globs": [
-      "source/scripts/**/*.js"
+      "source/**/*.js"
     ],
     "options": {},
     "task": {

@@ -1,1 +1,0 @@
-{"version":3,"sources":["module.js"],"names":["Tests"],"mappings":";;AAAA,IAAIA,KAAK,GAAGA,KAAK,IAAI,EAArB;;AACAA,KAAK,CAAC,QAAD,CAAL,GAAmB,YAAM;AACvB,SAAO,EAAP;AACD,CAFiB,EAAlB","file":"../../scripts/test-1.js","sourcesContent":["var Tests = Tests || {}\r\nTests['Test-1'] = (() => {\r\n  return {}\r\n})()\r\n"]}

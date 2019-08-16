@@ -1,6 +1,7 @@
 MVC.Validator = class {
   constructor(schema) {
     this._schema = schema
+    return this
   }
   get _schema() { return this.schema }
   set _schema(schema) { this.schema = schema }
@@ -16,6 +17,7 @@ MVC.Validator = class {
         let validation = {}
         let value = data[schemaKey]
         validation.key = schemaKey
+        validation.value = value
         if(schemaSettings.required) {
           validation.required = this.required(value, schemaSettings.required)
         }
@@ -32,9 +34,7 @@ MVC.Validator = class {
     return validationSummary
   }
   required(value, schemaSettings) {
-    let validationSummary = {
-      value: value,
-    }
+    let validationSummary = {}
     let messages = Object.assign(
       {
         pass: 'Value is defined.',
@@ -43,56 +43,49 @@ MVC.Validator = class {
       schemaSettings.messages
     )
     value = (value !== undefined)
-    switch(MVC.Utils.typeOf(schemaSettings)) {
-      case 'boolean':
-        validationSummary.comparator = schemaSettings
-        validationSummary.result = (value === schemaSettings)
-        break
-      case 'object':
-        validationSummary.comparator = schemaSettings.value
-        validationSummary.result = (value === schemaSettings.value)
-        break
-    }
+    validationSummary.value = value
+    validationSummary.comparator = schemaSettings
+    validationSummary.result = (value === schemaSettings)
     validationSummary.message = (validationSummary.result)
       ? messages.pass
       : messages.fail
     return validationSummary
   }
   type(value, schemaSettings) {
-    let validationSummary = {
-      value: value
-    }
+    let validationSummary = {}
     let messages = Object.assign(
       {
-        pass: 'Valid Type.',
-        fail: 'Invalid Type.',
+        pass: 'Valid type.',
+        fail: 'Invalid type.',
       },
       schemaSettings.messages
     )
-    switch(MVC.Utils.typeOf(schemaSettings)) {
-      case 'string':
-        validationSummary.comparator
-        validationSummary.result = (MVC.Utils.typeOf(value) === schemaSettings)
-        break
-      case 'object':
-        validationSummary.result = (MVC.Utils.typeOf(value) === schemaSettings.value)
-        break
-    }
+    let typeOfValue = MVC.Utils.typeOf(value)
+    validationSummary.value = typeOfValue
+    validationSummary.comparator = schemaSettings
+    validationSummary.result = (typeOfValue === schemaSettings)
     validationSummary.message = (validationSummary.result)
       ? messages.pass
       : messages.fail
     return validationSummary
   }
   evaluations(value, evaluations) {
+    let messages = {
+      pass: 'Valid.',
+      fail: 'Invalid.',
+    }
     return evaluations.reduce((_evaluations, evaluation, evaluationIndex) => {
       if(MVC.Utils.isArray(evaluation)) {
         _evaluations.push(
           ...this.evaluations(value, evaluation)
         )
       } else {
-        evaluation.value = value
+        evaluation._value = value
+        evaluation.messages = (evaluation.messages)
+          ? evaluation.messages
+          : messages
         let valueComparison = this.compareValues(
-          evaluation.value,
+          evaluation._value,
           evaluation.comparison.value,
           evaluation.comparator,
           evaluation.messages
@@ -108,6 +101,9 @@ MVC.Validator = class {
           let previousEvaluationComparisonValue = (currentEvaluation.results.statement)
             ? currentEvaluation.results.statement.result
             : currentEvaluation.results.value.result
+          currentEvaluation.messages = (currentEvaluation.messages)
+            ? currentEvaluation.messages
+            : messages
           let statementComparison = this.compareStatements(
             previousEvaluationComparisonValue,
             currentEvaluation.comparison.statement,
@@ -127,6 +123,7 @@ MVC.Validator = class {
       fail: [],
     }
     evaluations.forEach((evaluationValidation) => {
+      delete evaluationValidation.messages
       if(evaluationValidation.results.statement) {
         if(evaluationValidation.results.statement.result === false) {
           validationEvaluations.fail.push(evaluationValidation)

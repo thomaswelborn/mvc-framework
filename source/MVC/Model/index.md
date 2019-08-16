@@ -1,4 +1,6 @@
 # MVC | Model
+The MVC Model class provides methods to manage data. Model data can be get/set/unset, emitting events after individual  properties and an entire property is set.  When Local Storage is enabled, a representation of the class's `data` object is stored using get/set/clear methods.  When a Schema is enabled, properties assigned to the class's `data` object are validated against the schema's definitions.  Histiogram options are available to store the historical state of the currently enabled model.  
+
 - [Settings](#settings)
   - [Schema](#schema)
   - [Defaults](#defaults)
@@ -10,7 +12,7 @@
 - [Properties - Getters/Setters](#properties---getterssetters)
   - [Validator Getter/Setter](#validator-gettersetter)
   - [Is Setting Getter/Setter](#is-setting-gettersetter)
-  - [Get Changing Getter/Setter](#get-changing)
+  - [Changing Getter](#changing-getter)
   - [Local Storage Getter/Setter](#local-storage-gettersetter)
   - [Defaults Getter/Setter](#defaults-gettersetter)
   - [Histiogram Getter/Setter](#histiogram-gettersetter)
@@ -20,7 +22,7 @@
   - [Data Callbacks Getter/Setter](#data-callbacks-gettersetter)
   - [Services Getter/Setter](#services-gettersetter)
   - [Service Events Getter/Setter](#service-events-gettersetter)
-  - [Service Event Callbacks Getter/Setter](#service-event-callbacks-gettersetter)
+  - [Service Callbacks Getter/Setter](#service-callbacks-gettersetter)
   - [Enabled Getter/Setter](#enabled-gettersetter)
 - [Methods - Getters/Setters](#methods---getterssetters)
   - [Set DB](#set-db)
@@ -28,7 +30,6 @@
   - [Set Data Property](#set-data-property)
   - [Unset Data Property](#unset-data-property)
   - [Set Defaults](#set-defaults)
-
 - [Methods - Interface](#methods---interface)
   - [Get](#get)
   - [Set](#set)
@@ -45,8 +46,7 @@
 
 ## Settings
 ### Schema
-Type: `Object`  
-Required: `false`  
+See [Validator Schema](../Validator/index.md#schema)
 
 ### Defaults
 Type: `Object`  
@@ -63,12 +63,10 @@ Required: `false`
 ### Service Events
 Type: `Object`  
 Required: `false`  
-Service Event definitions.  
 
 ### Service Callbacks
 Type: `Object`  
 Required: `false`  
-Service Event Callback definitions.  
 
 ### Local Storage
 Type: `Object`  
@@ -76,15 +74,35 @@ Required: `false`
 
 ## Properties - Getters/Setters
 ### Validator Getter/Setter
+**Set Validator**  
+Type: `Object`  
+Creates a Validator instance from the provided `schema` object.  
+
+**Get Validator**  
+Type: `Object`  
+Returns a Validator instance.  
+
 ### Is Setting Getter/Setter
-### Get Changing
+**Set Is Setting**  
+Type: `Boolean`  
+Value is true when class's `data` object is being set; otherwise false. This property is set by the class's methods.   
+
+**Get Is Setting**  
+Type: `Boolean`  
+Returns the true/false `enabled` state.  This property is used to determine whether certain actions can be performed during set methods.   
+
+### Changing Getter
+**Get Changing**  
+Type: `Object`  
+Returns an object containing properties currently being set on the class's `data` object.
+
 ### Local Storage Getter/Setter
-**Set**  
+**Set Local Storage**  
 Type: `Object`  
 Defines class's `localStorage` property.  
 ```
 {
-  endpoint: '/ui',
+  endpoint: String,
 }
 ```
 *Endpoint*  
@@ -92,7 +110,7 @@ Type: 'string'
 Required: `true`  
 Unique string identifier indicating which key to perform Local Storage get/set/clear operations against.  
 
-**Get**  
+**Get Local Storage**  
 Type: `Object`  
 Returns the class's `localStorage` property.  
 
@@ -111,13 +129,13 @@ Type: `Object`
 Defines class's `histiogram` property.  
 ```
 {
-  length: 1,
+  length: Number,
 }
 ```
 *Length*  
 Type: 'number'  
 Required: `true`  
-Number indicating how many historical entries of class's `data` property to store in array for the currently enabled state.  
+Number indicating how many historical entries of class's `data` property to store in array for the currently enabled state. Defaults to `1`.  
 
 **Get Histiogram**  
 Type: `Object`  
@@ -127,34 +145,108 @@ Returns the class's `histiogram` property.
 **Set History**  
 Type: `Object`  
 Stores historical instances of the class's `data` value. It is configured with the class's `histiogram` value.  
+
 **Get History**  
+Type: `Array`  
+Returns an array of the class `data` object's previous definitions.  
 
 ### DB Getter/Setter
 **Set DB**  
 Type: `Object`  
 Sets a Local Storage item using the class's `localStorage` property.  
+
 **Get DB**  
 Type: `Object`  
 Returns a Local Storage Item using the class's `localStorage property.  
 `
 ### Data Events Getter/Setter
+See [Event Binding](../Events/event-binding.md]).  
 **Set Data Events**  
 Type: `Object`  
+Data Event/Callback binding configuration.  
 
-
+**Get Data Events**  
+Type: `Object`  
+Returns an object describing Data Events.  
 
 ### Data Callbacks Getter/Setter
+See [Event Binding](../Events/event-binding.md]).  
+**Set Data Callbacks**  
+Type: `Object`  
+Named functions executed after defined events.  
+
+**Get Data Callbacks**  
+Type: `Object`  
+Returns the named callback functions.  
 
 ### Services Getter/Setter
+See [Event Binding](../Events/event-binding.md]).  
+**Set Services**  
+Type: `Object`  
+Sets named Services.  
+
+**Get Services**  
+Type: `Object`  
+Returns named Services.  
 
 ### Service Events Getter/Setter
+See [Event Binding](../Events/event-binding.md]).  
+**Set Service Events**  
+Type: `Object`  
+Sets Service Event/Callback binding configuration.  
 
-### Service Event Callbacks Getter/Setter
+**Get Service Events**  
+Type: `Object`  
+Returns an object describing Service Events.  
+
+### Service Callbacks Getter/Setter
+See [Event Binding](../Events/event-binding.md]).  
+**Set Service Event Callbacks**  
+Type: `Object`  
+Sets named functions that execute after class's `services` events.  
+
+**Get Service Event Callbacks**  
+Type: `Object`  
+Returns an object describing Service Callbacks.
 
 ### Enabled Getter/Setter
+**Set Enabled**  
+Type: `Boolean`  
+Value is true after the class's `enable` method is complete; otherwise returns false.  
+
+**Get Enabled**  
+Type: `Boolean`  
+Returns `true`/`false` value indicating whether the class is currently enabled.  
+
 ## Methods - Getters/Setters
 ### Set DB
+**Arguments**  
+`(data)`  
+*data*  
+Type: `Object`  
+Key/Value pairs previously set to the class's `data` object now assigned to the `db` object.  
+
+`(key, value)`  
+*key*  
+Type: `String`  
+Key name previously set to class's `data` object now assigned to the `db` object.  
+*value*  
+Type: `[String, Object, Array, Number, Boolean]`  
+Value assigned to assigned `key` argument.  
+
 ### Unset DB
+**Arguments**  
+`()`  
+*data*  
+Type: `Object`  
+When no argument is provided, all properties are deleted from the class's `db` object.  
+
+`(key)`  
+*key*  
+Type: `String`  
+When key is provided, the matching property on the class's `db` object is delted.  
+
+
 ### Set Data Property
 Defines Getter/Setter properties on the class's `data` object. When the provided property key already exists, it assign the provided property.  
 
@@ -184,7 +276,7 @@ Required: `true`
 Deletes the getter/setter methods on the class's data property and emits `unset:key` and `unset` events.  
 
 ### Set Defaults
-When present, sets the class's `defaults` and `localStorage` properties to the `data` object.  
+Sets the class's `defaults` and `localStorage` properties to the `data` object.  
 
 ## Methods - Interface
 ### Get
@@ -231,7 +323,7 @@ When no argument is provided, all properties are deleted from the class's `data`
 
 `(key)`  
 *key*  
-When key is provided, the matching property on the class's `data` object is delted.
+When key is provided, the matching property on the class's `data` object is delted.  
 
 ### Enable Service Events
 Binds callback functions to target services.  
@@ -252,10 +344,10 @@ Binds callback functions to target mediators.
 Unbinds callback functions from target mediators.  
 
 ### Enable
-Enables class by applying properties from class constructor's `settings` argument and executing other enable methods for `serviceEvents`, `dataEvents`, and `mediators`.  
+Enables class by applying properties from class `settings` and executing other enable methods for `serviceEvents`, `dataEvents`, and `mediators`. After all able properties/methods are finished, the class's `enabled` property is set to `true`.  
 
 ### Disable
-Disables all settings on the model by deleting properties and executing other disable methods for `serviceEvents`, `dataEvents`, and `mediators`.  
+Disables all settings on the model by deleting properties and executing other disable methods for `serviceEvents`, `dataEvents`, and `mediators`. After all able properties/methods are finished, the class's `enabled` property is set to `false`.  
 
 ### Parse
 **Return**  
