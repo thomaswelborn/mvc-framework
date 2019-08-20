@@ -153,11 +153,11 @@ Returns the `insert` settings.
 ### Enabled Getter/Setter
 **Set Enabled**  
 Type: `Boolean`  
-Value is true when class's `data` object is being set; otherwise false. This property is set by the class's methods.  
+Sets `true` after the class's `enable` method is executed; sets `false after `disable` method.  
 
 **Get Enabled**  
 Type: `Boolean`  
-Returns the true/false `enabled` state.  This property is used to determine whether certain actions can be performed during set methods.  
+Returns the true/false `enabled` state.  
 
 ### Templates Getter/Setter
 
