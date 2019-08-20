@@ -25,5 +25,17 @@
       "options": {}
     },
     "dest": "../ui/node_modules/mvc-framework/distribute"
+  },
+  "gulp-boilerplate-cms": {
+    "src": {
+      "globs": [
+        "distribute/**/*.*"
+      ],
+      "options": {}
+    },
+    "dest": [
+      "../gulp-boilerplate-cms/node_modules/mvc-framework/distribute",
+      "../gulp-boilerplate-cms/ui/node_modules/mvc-framework/distribute"
+    ]
   }
 }

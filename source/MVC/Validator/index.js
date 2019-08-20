@@ -57,13 +57,29 @@ MVC.Validator = class {
       {
         pass: 'Valid type.',
         fail: 'Invalid type.',
-      },
-      schemaSettings.messages
+      }
     )
     let typeOfValue = MVC.Utils.typeOf(value)
+    let schemaType
+    if(MVC.Utils.typeOf(schemaSettings) === 'object') {
+      schemaType = schemaSettings.type
+      if(schemaSettings.messages) {
+        messages.pass = (schemaSettings.messages.pass)
+          ? schemaSettings.messages.pass
+          : messages.pass
+        messages.fail = (schemaSettings.messages.fail)
+          ? schemaSettings.messages.fail
+          : messages.fail
+      }
+    } else {
+      schemaType = schemaSettings
+    }
+    if(MVC.Utils.typeOf(schemaType) === 'array') {
+      schemaType = schemaType[schemaType.indexOf(typeOfValue)]
+    }
+    validationSummary.comparator = schemaType
     validationSummary.value = typeOfValue
-    validationSummary.comparator = schemaSettings
-    validationSummary.result = (typeOfValue === schemaSettings)
+    validationSummary.result = (typeOfValue === schemaType)
     validationSummary.message = (validationSummary.result)
       ? messages.pass
       : messages.fail

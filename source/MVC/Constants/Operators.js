@@ -14,4 +14,3 @@ MVC.CONST.Operators.Statement = {
   AND: 'AND',
   OR: 'OR'
 }
-console.log(MVC.CONST)

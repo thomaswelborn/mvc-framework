@@ -1,6 +1,7 @@
 MVC.Service = class extends MVC.Base {
   constructor() {
     super(...arguments)
+    return this
   }
   get _defaults() { return this.defaults || {
     contentType: {'Content-Type': 'application/json'},

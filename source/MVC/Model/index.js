@@ -1,6 +1,13 @@
 MVC.Model = class extends MVC.Base {
   constructor() {
     super(...arguments)
+    return this
+  }
+  get uid() {
+    this._uid = (this._uid)
+      ? this._uid
+      : MVC.Utils.uid()
+    return this._uid
   }
   get _validator() { return this.validator }
   set _validator(validator) { this.validator = new MVC.Validator(validator) }
@@ -120,11 +127,11 @@ MVC.Model = class extends MVC.Base {
   get() {
     switch(arguments.length) {
       case 0:
-        return this.data
+        return this._data
         break
       case 1:
         let key = arguments[0]
-        return this.data[key]
+        return this._data[key]
         break
     }
   }
@@ -148,7 +155,7 @@ MVC.Model = class extends MVC.Base {
     if(this.validator) {
       let validateMediator = this.mediators.validate
       this._validator.validate(
-        JSON.parse(JSON.stringify(this.data))
+        this.parse()
       )
       validateMediator.set({
         data: this.validator.data,
@@ -252,10 +259,7 @@ MVC.Model = class extends MVC.Base {
                     setEventName,
                     {
                       name: setEventName,
-                      data: {
-                        key: key,
-                        value: value,
-                      },
+                      data: context._data,
                     },
                     context
                   )
@@ -264,7 +268,11 @@ MVC.Model = class extends MVC.Base {
                     setEventName,
                     {
                       name: setEventName,
-                      data: context._changing,
+                      data: Object.assign(
+                        {},
+                        context._changing,
+                        context._data
+                      ),
                     },
                     context
                   )
@@ -348,18 +356,18 @@ MVC.Model = class extends MVC.Base {
       !this.enabled
     ) {
       this.enableMediators()
-      if(this.settings.schema) {
-        this._validator = this.settings.schema
+      if(settings.schema) {
+        this._validator = settings.schema
       }
-      if(this.settings.localStorage) this._localStorage = this.settings.localStorage
-      if(this.settings.histiogram) this._histiogram = this.settings.histiogram
-      if(this.settings.services) this._services = this.settings.services
-      if(this.settings.serviceCallbacks) this._serviceCallbacks = this.settings.serviceCallbacks
-      if(this.settings.serviceEvents) this._serviceEvents = this.settings.serviceEvents
-      if(this.settings.data) this.set(this.settings.data)
-      if(this.settings.dataCallbacks) this._dataCallbacks = this.settings.dataCallbacks
-      if(this.settings.dataEvents) this._dataEvents = this.settings.dataEvents
-      if(this.settings.defaults) this._defaults = this.settings.defaults
+      if(settings.localStorage) this._localStorage = settings.localStorage
+      if(settings.histiogram) this._histiogram = settings.histiogram
+      if(settings.services) this._services = settings.services
+      if(settings.serviceCallbacks) this._serviceCallbacks = settings.serviceCallbacks
+      if(settings.serviceEvents) this._serviceEvents = settings.serviceEvents
+      if(settings.data) this.set(settings.data)
+      if(settings.dataCallbacks) this._dataCallbacks = settings.dataCallbacks
+      if(settings.dataEvents) this._dataEvents = settings.dataEvents
+      if(settings.defaults) this._defaults = settings.defaults
       if(
         this.services &&
         this.serviceEvents &&
@@ -373,8 +381,8 @@ MVC.Model = class extends MVC.Base {
       ) {
         this.enableDataEvents()
       }
-      this._enabled = true
     }
+    this._enabled = true
     return this
   }
   disable() {
@@ -406,13 +414,13 @@ MVC.Model = class extends MVC.Base {
       delete this._dataEvents
       delete this._schema
       delete this._validator
-      delete this.disableMediators()
-      this._enabled = false
+      this.disableMediators()
     }
+    this._enabled = false
     return this
   }
   parse(data) {
-    data = data || this._data
-    return JSON.parse(JSON.stringify(Object.assign({}, data)))
+    data = data || this._data || {}
+    return JSON.parse(JSON.stringify(data))
   }
 }

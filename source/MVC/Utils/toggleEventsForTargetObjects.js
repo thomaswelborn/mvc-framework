@@ -43,7 +43,7 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
         }
       } else if(eventTarget instanceof HTMLElement) {
         eventTarget[eventMethodName](eventName, eventCallback)
-      } else {
+        } else {
         eventTarget[eventMethodName](eventName, eventCallback)
       }
     }
