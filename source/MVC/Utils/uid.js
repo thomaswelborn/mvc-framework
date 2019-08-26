@@ -1,4 +1,4 @@
-MVC.Utils.uid = function () {
+MVC.Utils.UID = function () {
   var uuid = '', ii
   for (ii = 0; ii < 32; ii += 1) {
     switch (ii) {

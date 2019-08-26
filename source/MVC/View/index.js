@@ -39,7 +39,7 @@ MVC.View = class extends MVC.Base {
     return this.ui
   }
   set _ui(ui) {
-    if(!this._ui['$element']) this._ui['$element'] = this.element
+    if(!this._ui[':scope']) this._ui[':scope'] = this.element
     for(let [uiKey, uiValue] of Object.entries(ui)) {
       if(typeof uiValue === 'string') {
         this._ui[uiKey] = this._element.querySelectorAll(uiValue)

@@ -48,7 +48,7 @@ MVC.Utils.isHTMLElement = function isHTMLElement(object) {
   return object instanceof HTMLElement
 }
 
-MVC.Utils.uid = function () {
+MVC.Utils.UID = function () {
   var uuid = '', ii
   for (ii = 0; ii < 32; ii += 1) {
     switch (ii) {
@@ -703,7 +703,7 @@ MVC.Model = class extends MVC.Base {
   get uid() {
     this._uid = (this._uid)
       ? this._uid
-      : MVC.Utils.uid()
+      : MVC.Utils.UID()
     return this._uid
   }
   get _validator() { return this.validator }
@@ -1231,7 +1231,7 @@ MVC.View = class extends MVC.Base {
     return this.ui
   }
   set _ui(ui) {
-    if(!this._ui['$element']) this._ui['$element'] = this.element
+    if(!this._ui[':scope']) this._ui[':scope'] = this.element
     for(let [uiKey, uiValue] of Object.entries(ui)) {
       if(typeof uiValue === 'string') {
         this._ui[uiKey] = this._element.querySelectorAll(uiValue)

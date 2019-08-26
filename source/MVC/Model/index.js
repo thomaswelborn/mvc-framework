@@ -6,7 +6,7 @@ MVC.Model = class extends MVC.Base {
   get uid() {
     this._uid = (this._uid)
       ? this._uid
-      : MVC.Utils.uid()
+      : MVC.Utils.UID()
     return this._uid
   }
   get _validator() { return this.validator }
