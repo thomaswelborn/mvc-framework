@@ -39,7 +39,6 @@
           [
             "@babel/preset-env",
             {
-              "modules": false,
               "targets": {
                 "esmodules": true
               }
@@ -55,14 +54,6 @@
     },
     "minify": {
       "options": {}
-    },
-    "sourcemaps": {
-      "init": {
-        "options": {}
-      },
-      "write": {
-        "options": {}
-      }
     },
     "dest": "distribute"
   },

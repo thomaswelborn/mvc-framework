@@ -3,6 +3,8 @@ MVC.Model = class extends MVC.Base {
     super(...arguments)
     return this
   }
+  get _name() { return this.name }
+  set _name(name) { this.name = name }
   get uid() {
     this._uid = (this._uid)
       ? this._uid
@@ -163,7 +165,10 @@ MVC.Model = class extends MVC.Base {
       })
       this.emit(
         validateMediator.name,
-        validateMediator.emission(),
+        {
+          name: validateMediator.name,
+          data: validateMediator.data,
+        },
         this
       )
     }
@@ -226,7 +231,6 @@ MVC.Model = class extends MVC.Base {
             configurable: true,
             get() { return this[key] },
             set(value) {
-              let emit = new Boolean()
               let schema = context._settings.schema
               if(
                 schema &&
@@ -356,6 +360,7 @@ MVC.Model = class extends MVC.Base {
       !this.enabled
     ) {
       this.enableMediators()
+      if(settings.name) this._name = settings.name
       if(settings.schema) {
         this._validator = settings.schema
       }
@@ -404,6 +409,7 @@ MVC.Model = class extends MVC.Base {
       ) {
         this.disableDataEvents()
       }
+      delete this._name
       delete this._localStorage
       delete this._histiogram
       delete this._services
