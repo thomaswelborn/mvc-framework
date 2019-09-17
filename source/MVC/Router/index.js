@@ -196,7 +196,6 @@ MVC.Router = class extends MVC.Base {
     if(
       !this.enabled
     ) {
-      this.enableMediators()
       this.enableEvents()
       this.enableRoutes()
       this._enabled = true
@@ -209,7 +208,6 @@ MVC.Router = class extends MVC.Base {
     ) {
       this.disableEvents()
       this.disableRoutes()
-      this.disableMediators()
       this._enabled = false
     }
     return this
@@ -235,20 +233,6 @@ MVC.Router = class extends MVC.Base {
     )
     return this
   }
-  enableMediators() {
-    Object.assign(
-      this._mediators,
-      this.settings.mediators,
-      {
-        navigateMediator: new MVC.Mediators.Navigate(),
-      }
-    )
-    return this
-  }
-  disableMediators() {
-    delete this._mediators.navigateMediator
-    return this
-  }
   disableRoutes() {
     delete this._routes
     delete this._controller
@@ -266,18 +250,12 @@ MVC.Router = class extends MVC.Base {
     this._currentURL = window.location.href
     let routeData = this._routeData
     if(routeData.controller) {
-      let navigateMediator = this.mediators.navigateMediator
       if(this.previousURL) routeData.previousURL = this.previousURL
-      navigateMediator
-        .unset()
-        .set(routeData)
       this.emit(
-        navigateMediator.name,
-        navigateMediator.emission()
+        'navigate',
+        routeData
       )
-      routeData.controller.callback(
-        navigateMediator.emission()
-      )
+      routeData.controller.callback(routeData)
     }
     return this
   }

@@ -22,9 +22,6 @@
         "source/MVC/Validator/index.js",
         "source/MVC/Model/index.js",
         "source/MVC/Mediator/index.js",
-        "source/MVC/Mediators/index.js",
-        "source/MVC/Mediators/Navigate.js",
-        "source/MVC/Mediators/Validate.js",
         "source/MVC/View/index.js",
         "source/MVC/Controller/index.js",
         "source/MVC/Router/index.js"
@@ -80,9 +77,6 @@
         "source/MVC/Validator/index.js",
         "source/MVC/Model/index.js",
         "source/MVC/Mediator/index.js",
-        "source/MVC/Mediators/index.js",
-        "source/MVC/Mediators/Navigate.js",
-        "source/MVC/Mediators/Validate.js",
         "source/MVC/View/index.js",
         "source/MVC/Controller/index.js",
         "source/MVC/Router/index.js"

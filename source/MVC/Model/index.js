@@ -3,14 +3,27 @@ MVC.Model = class extends MVC.Base {
     super(...arguments)
     return this
   }
-  get _name() { return this.name }
-  set _name(name) { this.name = name }
+  get keyMap() { return [
+    'name',
+    'schema',
+    'localStorage',
+    'histiogram',
+    'services',
+    'serviceCallbacks',
+    'serviceEvents',
+    'data',
+    'dataCallbacks',
+    'dataEvents',
+    'defaults'
+  ] }
   get uid() {
     this._uid = (this._uid)
-      ? this._uid
-      : MVC.Utils.UID()
+    ? this._uid
+    : MVC.Utils.UID()
     return this._uid
   }
+  get _name() { return this.name }
+  set _name(name) { this.name = name }
   get _validator() { return this.validator }
   set _validator(validator) { this.validator = new MVC.Validator(validator) }
   get _schema() { return this._schema }
@@ -155,19 +168,17 @@ MVC.Model = class extends MVC.Base {
         break
     }
     if(this.validator) {
-      let validateMediator = this.mediators.validate
       this._validator.validate(
         this.parse()
       )
-      validateMediator.set({
-        data: this.validator.data,
-        results: this.validator.results
-      })
       this.emit(
-        validateMediator.name,
+        'validate',
         {
-          name: validateMediator.name,
-          data: validateMediator.data,
+          name: 'validate',
+          data: {
+            data: this.validator.data,
+            results: this.validator.results
+          },
         },
         this
       )
@@ -339,40 +350,16 @@ MVC.Model = class extends MVC.Base {
   disableDataEvents() {
     MVC.Utils.unbindEventsFromTargetObjects(this.dataEvents, this, this.dataCallbacks)
   }
-  enableMediators() {
-    Object.assign(
-      this._mediators,
-      this.settings.mediators,
-      {
-        validate: new MVC.Mediators.Validate(),
-      }
-    )
-    return this
-  }
-  disableMediators() {
-    delete this._mediators
-    return this
-  }
   enable() {
     let settings = this.settings
     if(
-      settings &&
       !this.enabled
     ) {
-      this.enableMediators()
-      if(settings.name) this._name = settings.name
-      if(settings.schema) {
-        this._validator = settings.schema
-      }
-      if(settings.localStorage) this._localStorage = settings.localStorage
-      if(settings.histiogram) this._histiogram = settings.histiogram
-      if(settings.services) this._services = settings.services
-      if(settings.serviceCallbacks) this._serviceCallbacks = settings.serviceCallbacks
-      if(settings.serviceEvents) this._serviceEvents = settings.serviceEvents
-      if(settings.data) this.set(settings.data)
-      if(settings.dataCallbacks) this._dataCallbacks = settings.dataCallbacks
-      if(settings.dataEvents) this._dataEvents = settings.dataEvents
-      if(settings.defaults) this._defaults = settings.defaults
+      this.setProperties(settings || {}, this.keyMap, {
+        'data': function(value) {
+          this.set(value)
+        }
+      })
       if(
         this.services &&
         this.serviceEvents &&
@@ -386,15 +373,14 @@ MVC.Model = class extends MVC.Base {
       ) {
         this.enableDataEvents()
       }
+      this._enabled = true
     }
-    this._enabled = true
     return this
   }
   disable() {
     let settings = this.settings
     if(
-      settings &&
-      !this.enabled
+      this.enabled
     ) {
       if(
         this.services &&
@@ -409,20 +395,9 @@ MVC.Model = class extends MVC.Base {
       ) {
         this.disableDataEvents()
       }
-      delete this._name
-      delete this._localStorage
-      delete this._histiogram
-      delete this._services
-      delete this._serviceCallbacks
-      delete this._serviceEvents
-      delete this._data
-      delete this._dataCallbacks
-      delete this._dataEvents
-      delete this._schema
-      delete this._validator
-      this.disableMediators()
+      this.deleteProperties(settings || {}, this.keyMap)
+      this._enabled = false
     }
-    this._enabled = false
     return this
   }
   parse(data) {

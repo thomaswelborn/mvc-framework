@@ -22,15 +22,44 @@ MVC.Base = class extends MVC.Events {
       settings, this._settings
     )
   }
-  get _mediators() {
-    this.mediators = (this.mediators)
-      ? this.mediators
-      : {}
-    return this.mediators
+  setProperties(settings, keyMap, switches) {
+    switches = switches || {}
+    let settingsCount = Object.keys(settings).length
+    let keyCount = 0
+    keyMap
+      .some((key) => {
+        if(settings[key] !== undefined) {
+          keyCount += 1
+          if(switches[key]) {
+            switches[key](settings[key])
+          } else {
+            this['_'.concat(key)] = settings[key]
+          }
+        }
+        return (keyCount === settingsCount)
+          ? true
+          : false
+      })
+    return this
   }
-  set _mediators(mediators) {
-    this.mediators = MVC.Utils.addPropertiesToObject(
-      mediators, this._mediators
-    )
+  deleteProperties(settings, keyMap, switches) {
+    switches = switches || {}
+    let settingsCount = Object.keys(settings).length
+    let keyCount = 0
+    keyMap
+      .some((key) => {
+        if(settings[key] !== undefined) {
+          keyCount += 1
+          if(switches[key]) {
+            switches[key](settings[key])
+          } else {
+            delete this[key]
+          }
+        }
+        return (keyCount === settingsCount)
+          ? true
+          : false
+      })
+    return this
   }
 }

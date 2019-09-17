@@ -380,16 +380,45 @@ MVC.Base = class extends MVC.Events {
       settings, this._settings
     )
   }
-  get _mediators() {
-    this.mediators = (this.mediators)
-      ? this.mediators
-      : {}
-    return this.mediators
+  setProperties(settings, keyMap, switches) {
+    switches = switches || {}
+    let settingsCount = Object.keys(settings).length
+    let keyCount = 0
+    keyMap
+      .some((key) => {
+        if(settings[key] !== undefined) {
+          keyCount += 1
+          if(switches[key]) {
+            switches[key](settings[key])
+          } else {
+            this['_'.concat(key)] = settings[key]
+          }
+        }
+        return (keyCount === settingsCount)
+          ? true
+          : false
+      })
+    return this
   }
-  set _mediators(mediators) {
-    this.mediators = MVC.Utils.addPropertiesToObject(
-      mediators, this._mediators
-    )
+  deleteProperties(settings, keyMap, switches) {
+    switches = switches || {}
+    let settingsCount = Object.keys(settings).length
+    let keyCount = 0
+    keyMap
+      .some((key) => {
+        if(settings[key] !== undefined) {
+          keyCount += 1
+          if(switches[key]) {
+            switches[key](settings[key])
+          } else {
+            delete this[key]
+          }
+        }
+        return (keyCount === settingsCount)
+          ? true
+          : false
+      })
+    return this
   }
 }
 
@@ -700,14 +729,27 @@ MVC.Model = class extends MVC.Base {
     super(...arguments)
     return this
   }
-  get _name() { return this.name }
-  set _name(name) { this.name = name }
+  get keyMap() { return [
+    'name',
+    'schema',
+    'localStorage',
+    'histiogram',
+    'services',
+    'serviceCallbacks',
+    'serviceEvents',
+    'data',
+    'dataCallbacks',
+    'dataEvents',
+    'defaults'
+  ] }
   get uid() {
     this._uid = (this._uid)
-      ? this._uid
-      : MVC.Utils.UID()
+    ? this._uid
+    : MVC.Utils.UID()
     return this._uid
   }
+  get _name() { return this.name }
+  set _name(name) { this.name = name }
   get _validator() { return this.validator }
   set _validator(validator) { this.validator = new MVC.Validator(validator) }
   get _schema() { return this._schema }
@@ -852,19 +894,17 @@ MVC.Model = class extends MVC.Base {
         break
     }
     if(this.validator) {
-      let validateMediator = this.mediators.validate
       this._validator.validate(
         this.parse()
       )
-      validateMediator.set({
-        data: this.validator.data,
-        results: this.validator.results
-      })
       this.emit(
-        validateMediator.name,
+        'validate',
         {
-          name: validateMediator.name,
-          data: validateMediator.data,
+          name: 'validate',
+          data: {
+            data: this.validator.data,
+            results: this.validator.results
+          },
         },
         this
       )
@@ -1036,40 +1076,16 @@ MVC.Model = class extends MVC.Base {
   disableDataEvents() {
     MVC.Utils.unbindEventsFromTargetObjects(this.dataEvents, this, this.dataCallbacks)
   }
-  enableMediators() {
-    Object.assign(
-      this._mediators,
-      this.settings.mediators,
-      {
-        validate: new MVC.Mediators.Validate(),
-      }
-    )
-    return this
-  }
-  disableMediators() {
-    delete this._mediators
-    return this
-  }
   enable() {
     let settings = this.settings
     if(
-      settings &&
       !this.enabled
     ) {
-      this.enableMediators()
-      if(settings.name) this._name = settings.name
-      if(settings.schema) {
-        this._validator = settings.schema
-      }
-      if(settings.localStorage) this._localStorage = settings.localStorage
-      if(settings.histiogram) this._histiogram = settings.histiogram
-      if(settings.services) this._services = settings.services
-      if(settings.serviceCallbacks) this._serviceCallbacks = settings.serviceCallbacks
-      if(settings.serviceEvents) this._serviceEvents = settings.serviceEvents
-      if(settings.data) this.set(settings.data)
-      if(settings.dataCallbacks) this._dataCallbacks = settings.dataCallbacks
-      if(settings.dataEvents) this._dataEvents = settings.dataEvents
-      if(settings.defaults) this._defaults = settings.defaults
+      this.setProperties(settings || {}, this.keyMap, {
+        'data': function(value) {
+          this.set(value)
+        }
+      })
       if(
         this.services &&
         this.serviceEvents &&
@@ -1083,15 +1099,14 @@ MVC.Model = class extends MVC.Base {
       ) {
         this.enableDataEvents()
       }
+      this._enabled = true
     }
-    this._enabled = true
     return this
   }
   disable() {
     let settings = this.settings
     if(
-      settings &&
-      !this.enabled
+      this.enabled
     ) {
       if(
         this.services &&
@@ -1106,20 +1121,9 @@ MVC.Model = class extends MVC.Base {
       ) {
         this.disableDataEvents()
       }
-      delete this._name
-      delete this._localStorage
-      delete this._histiogram
-      delete this._services
-      delete this._serviceCallbacks
-      delete this._serviceEvents
-      delete this._data
-      delete this._dataCallbacks
-      delete this._dataEvents
-      delete this._schema
-      delete this._validator
-      this.disableMediators()
+      this.deleteProperties(settings || {}, this.keyMap)
+      this._enabled = false
     }
-    this._enabled = false
     return this
   }
   parse(data) {
@@ -1145,56 +1149,33 @@ MVC.Mediator = class extends MVC.Model {
   }
 }
 
-MVC.Mediators = {}
-
-MVC.Mediators.Navigate = class extends MVC.Mediator {
-  constructor() {
-    super(...arguments)
-    this.addSettings()
-    this.enable()
-  }
-  addSettings() {
-    this._name = 'navigate'
-    this._schema = {
-      oldURL: {
-        type: 'string',
-      },
-      newURL: {
-        type: 'string',
-      },
-      currentRoute: {
-        type: 'string',
-      },
-      currentController: {
-        type: 'string',
-      },
-    }
-  }
-}
-
-MVC.Mediators.Validate = class extends MVC.Mediator {
-  constructor() {
-    super(...arguments)
-    this.addSettings()
-    this.enable()
-  }
-  addSettings() {
-    this._name = 'validate'
-    this._schema = {
-      data: {
-        type: 'object',
-      },
-      results: {
-        type: 'object',
-      },
-    }
-  }
-}
-
 MVC.View = class extends MVC.Base {
   constructor() {
     super(...arguments)
     return this
+  }
+  get elementKeyMap() { return [
+    'elementName',
+    'element',
+    'attributes',
+    'templates',
+    'insert'
+  ] }
+  get uiKeyMap() { return [
+    'ui',
+    'uiCallbacks',
+    'uiEvents'
+  ] }
+  get _mediators() {
+    this.mediators = (this.mediators)
+      ? this.mediators
+      : {}
+    return this.mediators
+  }
+  set _mediators(mediators) {
+    this.mediators = MVC.Utils.addPropertiesToObject(
+      mediators, this._mediators
+    )
   }
   get _elementName() { return this._element.tagName }
   set _elementName(elementName) {
@@ -1332,21 +1313,12 @@ MVC.View = class extends MVC.Base {
     ) this.element.parentElement.removeChild(this.element)
     return this
   }
-  enableElement(settings) {
-    settings = settings || this.settings
-    if(settings.elementName) this._elementName = settings.elementName
-    if(settings.element) this._element = settings.element
-    if(settings.attributes) this._attributes = settings.attributes
-    if(settings.templates) this._templates = settings.templates
-    if(settings.insert) this._insert = settings.insert
+  enableElement() {
+    this.setProperties(this.settings || {}, this.elementKeyMap)
     return this
   }
-  disableElement(settings) {
-    settings = settings || this.settings
-    if(this.element) delete this.element
-    if(this.attributes) delete this.attributes
-    if(this.templates) delete this.templates
-    if(this.insert) delete this.insert
+  disableElement() {
+    this.deleteProperties(this.settings || {}, this.elementKeyMap)
     return this
   }
   resetUI() {
@@ -1354,25 +1326,14 @@ MVC.View = class extends MVC.Base {
     this.enableUI()
     return this
   }
-  enableUI(settings) {
-    settings = settings || this.settings
-    if(settings.ui) this._ui = settings.ui
-    if(settings.uiCallbacks) this._uiCallbacks = settings.uiCallbacks
-    if(settings.uiEvents) {
-      this._uiEvents = settings.uiEvents
-      this.enableUIEvents()
-    }
+  enableUI() {
+    this.setProperties(this.settings || {}, this.uiKeyMap)
+    this.enableUIEvents()
     return this
   }
-  disableUI(settings) {
-    settings = settings || this.settings
-    if(settings.uiEvents) {
-      this.disableUIEvents()
-      delete this._uiEvents
-    }
-    delete this.uiEvents
-    delete this.ui
-    delete this.uiCallbacks
+  disableUI() {
+    this.disableUIEvents()
+    this.deleteProperties(this.settings || {}, this.uiKeyMap)
     return this
   }
   enableUIEvents() {
@@ -1421,38 +1382,26 @@ MVC.View = class extends MVC.Base {
     }
     return this
   }
-  enableMediators() {
-    if(this.settings.mediators) this._mediators = this.settings.mediators
-    return this
-  }
-  disableMediators() {
-    if(this._mediators) delete this._mediators
-    return this
-  }
   enable() {
-    let settings = this.settings
     if(
-      settings &&
       !this._enabled
     ) {
       this.enableRenderers()
-      this.enableMediators()
-      this.enableElement(settings)
-      this.enableUI(settings)
+      if(this.settings.mediators) this._mediators = this.settings.mediators
+      this.enableElement()
+      this.enableUI()
       this._enabled = true
     }
     return this
   }
   disable() {
-    let settings = this.settings
     if(
-      settings &&
       this._enabled
     ) {
       this.disableRenderers()
-      this.disableUI(settings)
-      this.disableElement(settings)
-      this.disableMediators()
+      this.disableUI()
+      this.disableElement()
+      delete this._mediators
       this._enabled = false
     }
     return this
@@ -1462,6 +1411,34 @@ MVC.View = class extends MVC.Base {
 MVC.Controller = class extends MVC.Base {
   constructor() {
     super(...arguments)
+  }
+  get keyMap() { return [
+    'modelCallbacks',
+    'viewCallbacks',
+    'controllerCallbacks',
+    'mediatorCallbacks',
+    'routerCallbacks',
+    'models',
+    'views',
+    'controllers',
+    'mediators',
+    'routers',
+    'modelEvents',
+    'viewEvents',
+    'controllerEvents',
+    'mediatorEvents',
+    'routerEvents'
+  ] }
+  get _mediators() {
+    this.mediators = (this.mediators)
+      ? this.mediators
+      : {}
+    return this.mediators
+  }
+  set _mediators(mediators) {
+    this.mediators = MVC.Utils.addPropertiesToObject(
+      mediators, this._mediators
+    )
   }
   get _mediatorCallbacks() {
     this.mediatorCallbacks = (this.mediatorCallbacks)
@@ -1660,26 +1637,11 @@ MVC.Controller = class extends MVC.Base {
     return this
   }
   enable() {
-    let settings = this.settings
+    let settings = this.settings || {}
     if(
-      settings &&
       !this.enabled
     ) {
-      if(settings.modelCallbacks) this._modelCallbacks = settings.modelCallbacks
-      if(settings.viewCallbacks) this._viewCallbacks = settings.viewCallbacks
-      if(settings.controllerCallbacks) this._controllerCallbacks = settings.controllerCallbacks
-      if(settings.mediatorCallbacks) this._mediatorCallbacks = settings.mediatorCallbacks
-      if(settings.routerCallbacks) this._routerCallbacks = settings.routerCallbacks
-      if(settings.models) this._models = settings.models
-      if(settings.views) this._views = settings.views
-      if(settings.controllers) this._controllers = settings.controllers
-      if(settings.mediators) this._mediators = settings.mediators
-      if(settings.routers) this._routers = settings.routers
-      if(settings.modelEvents) this._modelEvents = settings.modelEvents
-      if(settings.viewEvents) this._viewEvents = settings.viewEvents
-      if(settings.controllerEvents) this._controllerEvents = settings.controllerEvents
-      if(settings.mediatorEvents) this._mediatorEvents = settings.mediatorEvents
-      if(settings.routerEvents) this._routerEvents = settings.routerEvents
+      this.setProperties(settings || {}, this.keyMap)
       if(
         this.modelEvents &&
         this.models &&
@@ -1727,7 +1689,6 @@ MVC.Controller = class extends MVC.Base {
   disable() {
     let settings = this.settings
     if(
-      settings &&
       this.enabled
     ) {
       if(
@@ -1750,7 +1711,7 @@ MVC.Controller = class extends MVC.Base {
         this.controllerCallbacks
       ) {
         this.disableControllerEvents()
-      }}
+      }
       if(
         this.routerEvents &&
         this.routers &&
@@ -1764,21 +1725,8 @@ MVC.Controller = class extends MVC.Base {
         this.mediatorCallbacks
       ) {
         this.disableMediatorEvents()
-        delete this._modelCallbacks
-        delete this._viewCallbacks
-        delete this._controllerCallbacks
-        delete this._mediatorCallbacks
-        delete this._routerCallbacks
-        delete this._models
-        delete this._views
-        delete this._controllers
-        delete this._mediators
-        delete this._routers
-        delete this._routerEvents
-        delete this._modelEvents
-        delete this._viewEvents
-        delete this._controllerEvents
-        delete this._mediatorEvents
+      }
+      this.deleteProperties(settings || {}, this.keyMap)
       this._enabled = false
     }
     return this
@@ -1983,7 +1931,6 @@ MVC.Router = class extends MVC.Base {
     if(
       !this.enabled
     ) {
-      this.enableMediators()
       this.enableEvents()
       this.enableRoutes()
       this._enabled = true
@@ -1996,7 +1943,6 @@ MVC.Router = class extends MVC.Base {
     ) {
       this.disableEvents()
       this.disableRoutes()
-      this.disableMediators()
       this._enabled = false
     }
     return this
@@ -2022,20 +1968,6 @@ MVC.Router = class extends MVC.Base {
     )
     return this
   }
-  enableMediators() {
-    Object.assign(
-      this._mediators,
-      this.settings.mediators,
-      {
-        navigateMediator: new MVC.Mediators.Navigate(),
-      }
-    )
-    return this
-  }
-  disableMediators() {
-    delete this._mediators.navigateMediator
-    return this
-  }
   disableRoutes() {
     delete this._routes
     delete this._controller
@@ -2053,18 +1985,12 @@ MVC.Router = class extends MVC.Base {
     this._currentURL = window.location.href
     let routeData = this._routeData
     if(routeData.controller) {
-      let navigateMediator = this.mediators.navigateMediator
       if(this.previousURL) routeData.previousURL = this.previousURL
-      navigateMediator
-        .unset()
-        .set(routeData)
       this.emit(
-        navigateMediator.name,
-        navigateMediator.emission()
+        'navigate',
+        routeData
       )
-      routeData.controller.callback(
-        navigateMediator.emission()
-      )
+      routeData.controller.callback(routeData)
     }
     return this
   }

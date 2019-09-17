@@ -2,6 +2,34 @@ MVC.Controller = class extends MVC.Base {
   constructor() {
     super(...arguments)
   }
+  get keyMap() { return [
+    'modelCallbacks',
+    'viewCallbacks',
+    'controllerCallbacks',
+    'mediatorCallbacks',
+    'routerCallbacks',
+    'models',
+    'views',
+    'controllers',
+    'mediators',
+    'routers',
+    'modelEvents',
+    'viewEvents',
+    'controllerEvents',
+    'mediatorEvents',
+    'routerEvents'
+  ] }
+  get _mediators() {
+    this.mediators = (this.mediators)
+      ? this.mediators
+      : {}
+    return this.mediators
+  }
+  set _mediators(mediators) {
+    this.mediators = MVC.Utils.addPropertiesToObject(
+      mediators, this._mediators
+    )
+  }
   get _mediatorCallbacks() {
     this.mediatorCallbacks = (this.mediatorCallbacks)
       ? this.mediatorCallbacks
@@ -199,26 +227,11 @@ MVC.Controller = class extends MVC.Base {
     return this
   }
   enable() {
-    let settings = this.settings
+    let settings = this.settings || {}
     if(
-      settings &&
       !this.enabled
     ) {
-      if(settings.modelCallbacks) this._modelCallbacks = settings.modelCallbacks
-      if(settings.viewCallbacks) this._viewCallbacks = settings.viewCallbacks
-      if(settings.controllerCallbacks) this._controllerCallbacks = settings.controllerCallbacks
-      if(settings.mediatorCallbacks) this._mediatorCallbacks = settings.mediatorCallbacks
-      if(settings.routerCallbacks) this._routerCallbacks = settings.routerCallbacks
-      if(settings.models) this._models = settings.models
-      if(settings.views) this._views = settings.views
-      if(settings.controllers) this._controllers = settings.controllers
-      if(settings.mediators) this._mediators = settings.mediators
-      if(settings.routers) this._routers = settings.routers
-      if(settings.modelEvents) this._modelEvents = settings.modelEvents
-      if(settings.viewEvents) this._viewEvents = settings.viewEvents
-      if(settings.controllerEvents) this._controllerEvents = settings.controllerEvents
-      if(settings.mediatorEvents) this._mediatorEvents = settings.mediatorEvents
-      if(settings.routerEvents) this._routerEvents = settings.routerEvents
+      this.setProperties(settings || {}, this.keyMap)
       if(
         this.modelEvents &&
         this.models &&
@@ -266,7 +279,6 @@ MVC.Controller = class extends MVC.Base {
   disable() {
     let settings = this.settings
     if(
-      settings &&
       this.enabled
     ) {
       if(
@@ -289,7 +301,7 @@ MVC.Controller = class extends MVC.Base {
         this.controllerCallbacks
       ) {
         this.disableControllerEvents()
-      }}
+      }
       if(
         this.routerEvents &&
         this.routers &&
@@ -303,21 +315,8 @@ MVC.Controller = class extends MVC.Base {
         this.mediatorCallbacks
       ) {
         this.disableMediatorEvents()
-        delete this._modelCallbacks
-        delete this._viewCallbacks
-        delete this._controllerCallbacks
-        delete this._mediatorCallbacks
-        delete this._routerCallbacks
-        delete this._models
-        delete this._views
-        delete this._controllers
-        delete this._mediators
-        delete this._routers
-        delete this._routerEvents
-        delete this._modelEvents
-        delete this._viewEvents
-        delete this._controllerEvents
-        delete this._mediatorEvents
+      }
+      this.deleteProperties(settings || {}, this.keyMap)
       this._enabled = false
     }
     return this

@@ -3,6 +3,29 @@ MVC.View = class extends MVC.Base {
     super(...arguments)
     return this
   }
+  get elementKeyMap() { return [
+    'elementName',
+    'element',
+    'attributes',
+    'templates',
+    'insert'
+  ] }
+  get uiKeyMap() { return [
+    'ui',
+    'uiCallbacks',
+    'uiEvents'
+  ] }
+  get _mediators() {
+    this.mediators = (this.mediators)
+      ? this.mediators
+      : {}
+    return this.mediators
+  }
+  set _mediators(mediators) {
+    this.mediators = MVC.Utils.addPropertiesToObject(
+      mediators, this._mediators
+    )
+  }
   get _elementName() { return this._element.tagName }
   set _elementName(elementName) {
     if(!this._element) this._element = document.createElement(elementName)
@@ -139,21 +162,12 @@ MVC.View = class extends MVC.Base {
     ) this.element.parentElement.removeChild(this.element)
     return this
   }
-  enableElement(settings) {
-    settings = settings || this.settings
-    if(settings.elementName) this._elementName = settings.elementName
-    if(settings.element) this._element = settings.element
-    if(settings.attributes) this._attributes = settings.attributes
-    if(settings.templates) this._templates = settings.templates
-    if(settings.insert) this._insert = settings.insert
+  enableElement() {
+    this.setProperties(this.settings || {}, this.elementKeyMap)
     return this
   }
-  disableElement(settings) {
-    settings = settings || this.settings
-    if(this.element) delete this.element
-    if(this.attributes) delete this.attributes
-    if(this.templates) delete this.templates
-    if(this.insert) delete this.insert
+  disableElement() {
+    this.deleteProperties(this.settings || {}, this.elementKeyMap)
     return this
   }
   resetUI() {
@@ -161,25 +175,14 @@ MVC.View = class extends MVC.Base {
     this.enableUI()
     return this
   }
-  enableUI(settings) {
-    settings = settings || this.settings
-    if(settings.ui) this._ui = settings.ui
-    if(settings.uiCallbacks) this._uiCallbacks = settings.uiCallbacks
-    if(settings.uiEvents) {
-      this._uiEvents = settings.uiEvents
-      this.enableUIEvents()
-    }
+  enableUI() {
+    this.setProperties(this.settings || {}, this.uiKeyMap)
+    this.enableUIEvents()
     return this
   }
-  disableUI(settings) {
-    settings = settings || this.settings
-    if(settings.uiEvents) {
-      this.disableUIEvents()
-      delete this._uiEvents
-    }
-    delete this.uiEvents
-    delete this.ui
-    delete this.uiCallbacks
+  disableUI() {
+    this.disableUIEvents()
+    this.deleteProperties(this.settings || {}, this.uiKeyMap)
     return this
   }
   enableUIEvents() {
@@ -228,38 +231,26 @@ MVC.View = class extends MVC.Base {
     }
     return this
   }
-  enableMediators() {
-    if(this.settings.mediators) this._mediators = this.settings.mediators
-    return this
-  }
-  disableMediators() {
-    if(this._mediators) delete this._mediators
-    return this
-  }
   enable() {
-    let settings = this.settings
     if(
-      settings &&
       !this._enabled
     ) {
       this.enableRenderers()
-      this.enableMediators()
-      this.enableElement(settings)
-      this.enableUI(settings)
+      if(this.settings.mediators) this._mediators = this.settings.mediators
+      this.enableElement()
+      this.enableUI()
       this._enabled = true
     }
     return this
   }
   disable() {
-    let settings = this.settings
     if(
-      settings &&
       this._enabled
     ) {
       this.disableRenderers()
-      this.disableUI(settings)
-      this.disableElement(settings)
-      this.disableMediators()
+      this.disableUI()
+      this.disableElement()
+      delete this._mediators
       this._enabled = false
     }
     return this
