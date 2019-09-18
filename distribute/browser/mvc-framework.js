@@ -1293,21 +1293,29 @@ MVC.View = class extends MVC.Base {
     }
   }
 
+  get ui() {
+    return this._ui;
+  }
+
   get _ui() {
-    this.ui = this.ui ? this.ui : {};
-    return this.ui;
+    var ui = {};
+    ui[':scope'] = this.element;
+    Object.entries(this.uiElements).forEach((_ref) => {
+      var [uiKey, uiValue] = _ref;
+
+      if (typeof uiValue === 'string') {
+        var scopeRegExp = new RegExp(/^(\:scope(\W){0,}>{0,})/);
+        uiValue = uiValue.replace(scopeRegExp, '');
+        ui[uiKey] = this.element.querySelectorAll(uiValue);
+      } else if (uiValue instanceof HTMLElement || uiValue instanceof Document) {
+        ui[uiKey] = uiValue;
+      }
+    });
+    return ui;
   }
 
   set _ui(ui) {
-    if (!this._ui[':scope']) this._ui[':scope'] = this.element;
-
-    for (var [uiKey, uiValue] of Object.entries(ui)) {
-      if (typeof uiValue === 'string') {
-        this._ui[uiKey] = this._element.querySelectorAll(uiValue);
-      } else if (uiValue instanceof HTMLElement || uiValue instanceof Document) {
-        this._ui[uiKey] = uiValue;
-      }
-    }
+    this.uiElements = ui;
   }
 
   get _uiEvents() {
@@ -1411,31 +1419,23 @@ MVC.View = class extends MVC.Base {
   }
 
   enableElement() {
-    this.setProperties(this.settings || {}, this.elementKeyMap);
-    return this;
+    return this.setProperties(this.settings || {}, this.elementKeyMap);
   }
 
   disableElement() {
-    this.deleteProperties(this.settings || {}, this.elementKeyMap);
-    return this;
+    return this.deleteProperties(this.settings || {}, this.elementKeyMap);
   }
 
   resetUI() {
-    this.disableUI();
-    this.enableUI();
-    return this;
+    return this.disableUI().enableUI();
   }
 
   enableUI() {
-    this.setProperties(this.settings || {}, this.uiKeyMap);
-    this.enableUIEvents();
-    return this;
+    return this.setProperties(this.settings || {}, this.uiKeyMap).enableUIEvents();
   }
 
   disableUI() {
-    this.disableUIEvents();
-    this.deleteProperties(this.settings || {}, this.uiKeyMap);
-    return this;
+    return this.disableUIEvents().deleteProperties(this.settings || {}, this.uiKeyMap);
   }
 
   enableUIEvents() {
@@ -1447,15 +1447,17 @@ MVC.View = class extends MVC.Base {
   }
 
   enableRenderers() {
-    MVC.Utils.objectQuery('[/^render.*?/]', this.settings).forEach((_ref) => {
-      var [rendererName, rendererFunction] = _ref;
+    var settings = this.settings || {};
+    MVC.Utils.objectQuery('[/^render.*?/]', settings).forEach((_ref2) => {
+      var [rendererName, rendererFunction] = _ref2;
       this[rendererName] = rendererFunction;
     });
     return this;
   }
 
   disableRenderers() {
-    MVC.Utils.objectQuery('[/^render.*?/]', this.settings).forEach((rendererName, rendererFunction) => {
+    var settings = this.settings || {};
+    MVC.Utils.objectQuery('[/^render.*?/]', settings).forEach((rendererName, rendererFunction) => {
       delete this[rendererName];
     });
     return this;
@@ -1470,12 +1472,11 @@ MVC.View = class extends MVC.Base {
   }
 
   enable() {
+    var settings = this.settings || {};
+
     if (!this._enabled) {
-      this.enableRenderers();
-      if (this.settings.mediators) this._mediators = this.settings.mediators;
-      this.enableElement();
-      this.enableUI();
-      this._enabled = true;
+      if (settings.mediators) this._mediators = settings.mediators;
+      this.enableRenderers().enableElement().enableUI()._enabled = true;
     }
 
     return this;
@@ -1483,11 +1484,8 @@ MVC.View = class extends MVC.Base {
 
   disable() {
     if (this._enabled) {
-      this.disableRenderers();
-      this.disableUI();
-      this.disableElement();
+      this.disableRenderers().disableUI().disableElement()._enabled = false;
       delete this._mediators;
-      this._enabled = false;
     }
 
     return this;

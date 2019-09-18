@@ -55,25 +55,26 @@ MVC.View = class extends MVC.Base {
       }
     }
   }
+  get ui() { return this._ui }
   get _ui() {
-    this.ui = (this.ui)
-      ? this.ui
-      : {}
-    return this.ui
+    let ui = {}
+    ui[':scope'] = this.element
+    Object.entries(this.uiElements)
+      .forEach(([uiKey, uiValue]) => {
+        if(typeof uiValue === 'string') {
+          let scopeRegExp = new RegExp(/^(\:scope(\W){0,}>{0,})/)
+          uiValue = uiValue.replace(scopeRegExp, '')
+          ui[uiKey] = this.element.querySelectorAll(uiValue)
+        } else if(
+          uiValue instanceof HTMLElement ||
+          uiValue instanceof Document
+        ) {
+          ui[uiKey] = uiValue
+        }
+      })
+    return ui
   }
-  set _ui(ui) {
-    if(!this._ui[':scope']) this._ui[':scope'] = this.element
-    for(let [uiKey, uiValue] of Object.entries(ui)) {
-      if(typeof uiValue === 'string') {
-        this._ui[uiKey] = this._element.querySelectorAll(uiValue)
-      } else if(
-        uiValue instanceof HTMLElement ||
-        uiValue instanceof Document
-      ) {
-        this._ui[uiKey] = uiValue
-      }
-    }
-  }
+  set _ui(ui) { this.uiElements = ui }
   get _uiEvents() { return this.uiEvents }
   set _uiEvents(uiEvents) { this.uiEvents = uiEvents }
   get _uiCallbacks() {
@@ -163,27 +164,25 @@ MVC.View = class extends MVC.Base {
     return this
   }
   enableElement() {
-    this.setProperties(this.settings || {}, this.elementKeyMap)
-    return this
+    return this.setProperties(this.settings || {}, this.elementKeyMap)
   }
   disableElement() {
-    this.deleteProperties(this.settings || {}, this.elementKeyMap)
-    return this
+    return this.deleteProperties(this.settings || {}, this.elementKeyMap)
   }
   resetUI() {
-    this.disableUI()
-    this.enableUI()
     return this
+      .disableUI()
+      .enableUI()
   }
   enableUI() {
-    this.setProperties(this.settings || {}, this.uiKeyMap)
-    this.enableUIEvents()
     return this
+      .setProperties(this.settings || {}, this.uiKeyMap)
+      .enableUIEvents()
   }
   disableUI() {
-    this.disableUIEvents()
-    this.deleteProperties(this.settings || {}, this.uiKeyMap)
     return this
+      .disableUIEvents()
+      .deleteProperties(this.settings || {}, this.uiKeyMap)
   }
   enableUIEvents() {
     if(
@@ -200,18 +199,20 @@ MVC.View = class extends MVC.Base {
     return this
   }
   enableRenderers() {
+    let settings = this.settings || {}
     MVC.Utils.objectQuery(
       '[/^render.*?/]',
-      this.settings
+      settings
     ).forEach(([rendererName, rendererFunction]) => {
       this[rendererName] = rendererFunction
     })
     return this
   }
   disableRenderers() {
+    let settings = this.settings || {}
     MVC.Utils.objectQuery(
       '[/^render.*?/]',
-      this.settings
+      settings
     ).forEach((rendererName, rendererFunction) => {
       delete this[rendererName]
     })
@@ -232,14 +233,17 @@ MVC.View = class extends MVC.Base {
     return this
   }
   enable() {
+    let settings = this.settings || {}
     if(
       !this._enabled
     ) {
-      this.enableRenderers()
-      if(this.settings.mediators) this._mediators = this.settings.mediators
-      this.enableElement()
-      this.enableUI()
-      this._enabled = true
+      if(settings.mediators)
+        this._mediators = settings.mediators
+      this
+        .enableRenderers()
+        .enableElement()
+        .enableUI()
+        ._enabled = true
     }
     return this
   }
@@ -247,11 +251,12 @@ MVC.View = class extends MVC.Base {
     if(
       this._enabled
     ) {
-      this.disableRenderers()
-      this.disableUI()
-      this.disableElement()
+      this
+        .disableRenderers()
+        .disableUI()
+        .disableElement()
+        ._enabled = false
       delete this._mediators
-      this._enabled = false
     }
     return this
   }
