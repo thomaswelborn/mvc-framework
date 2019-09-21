@@ -190,7 +190,7 @@ MVC.View = class extends MVC.Base {
       this.ui &&
       this.uiCallbacks
     ) {
-      MVC.Utils.bindEventsToTargetObjects(
+      MVC.Utils.bindEventsToTargetViewObjects(
         this.uiEvents,
         this.ui,
         this.uiCallbacks
@@ -224,7 +224,7 @@ MVC.View = class extends MVC.Base {
       this.ui &&
       this.uiCallbacks
     ) {
-      MVC.Utils.unbindEventsFromTargetObjects(
+      MVC.Utils.unbindEventsFromTargetViewObjects(
         this.uiEvents,
         this.ui,
         this.uiCallbacks

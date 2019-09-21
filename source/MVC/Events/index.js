@@ -39,10 +39,12 @@ MVC.Events = class {
         var eventCallbackName = (typeof eventCallback === 'string')
           ? eventCallback
           : this.getEventCallbackName(eventCallback)
-        delete this._events[eventName][eventCallbackName]
-        if(
-          Object.keys(this._events[eventName]).length === 0
-        ) delete this._events[eventName]
+        if(this._events[eventName]) {
+          delete this._events[eventName][eventCallbackName]
+          if(
+            Object.keys(this._events[eventName]).length === 0
+          ) delete this._events[eventName]
+        }
         break
     }
     return this

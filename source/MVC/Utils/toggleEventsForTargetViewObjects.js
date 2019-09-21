@@ -1,4 +1,4 @@
-MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
+MVC.Utils.toggleEventsForTargetViewObjects = function toggleEventsForTargetViewObjects(
   toggleMethod,
   events,
   targetObjects,
@@ -17,13 +17,21 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
       : eventTargets
     for(let [eventTargetName, eventTarget] of eventTargets) {
       let eventMethodName = (toggleMethod === 'on')
-        ? 'on'
-        : 'off'
+        ? 'addEventListener'
+        : 'removeEventListener'
       let eventCallback = MVC.Utils.objectQuery(
         eventCallbackName,
         callbacks
       )[0][1]
-      eventTarget[eventMethodName](eventName, eventCallback)
+      if(eventTarget instanceof NodeList) {
+        for(let _eventTarget of eventTarget) {
+          _eventTarget[eventMethodName](eventName, eventCallback)
+        }
+      } else if(eventTarget instanceof HTMLElement) {
+        eventTarget[eventMethodName](eventName, eventCallback)
+        } else {
+        eventTarget[eventMethodName](eventName, eventCallback)
+      }
     }
   }
 }

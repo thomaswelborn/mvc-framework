@@ -37,5 +37,17 @@
       "../gulp-boilerplate-cms/node_modules/mvc-framework/distribute",
       "../gulp-boilerplate-cms/ui/node_modules/mvc-framework/distribute"
     ]
+  },
+  "process-manager": {
+    "src": {
+      "globs": [
+        "distribute/**/*.*"
+      ],
+      "options": {}
+    },
+    "dest": [
+      "../process-manager/node_modules/mvc-framework/distribute",
+      "../process-manager/.ui/node_modules/mvc-framework/distribute"
+    ]
   }
 }

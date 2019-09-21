@@ -338,16 +338,48 @@ MVC.Model = class extends MVC.Base {
     if(this.localStorage) Object.assign(_defaults, this._db)
     if(Object.keys(_defaults)) this.set(_defaults)
   }
+  resetServiceEvents() {
+    return this
+      .disableServiceEvents()
+      .enableServiceEvents()
+  }
   enableServiceEvents() {
-    MVC.Utils.bindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+    if(
+      this.services &&
+      this.serviceEvents &&
+      this.serviceCallbacks
+    ) {
+      MVC.Utils.bindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+    }
   }
   disableServiceEvents() {
-    MVC.Utils.unbindEventsFromTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+    if(
+      this.services &&
+      this.serviceEvents &&
+      this.serviceCallbacks
+    ) {
+      MVC.Utils.unbindEventsFromTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+    }
+  }
+  resetDataEvents() {
+    return this
+      .disableDataEvents()
+      .enableDataEvents()
   }
   enableDataEvents() {
-    MVC.Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
+    if(
+      this.dataEvents &&
+      this.dataCallbacks
+    ) {
+      MVC.Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
+    }
   }
   disableDataEvents() {
+    if(
+      this.dataEvents &&
+      this.dataCallbacks
+    ) {
+    }
     MVC.Utils.unbindEventsFromTargetObjects(this.dataEvents, this, this.dataCallbacks)
   }
   enable() {
@@ -360,19 +392,8 @@ MVC.Model = class extends MVC.Base {
           this.set(value)
         }
       })
-      if(
-        this.services &&
-        this.serviceEvents &&
-        this.serviceCallbacks
-      ) {
-        this.enableServiceEvents()
-      }
-      if(
-        this.dataEvents &&
-        this.dataCallbacks
-      ) {
-        this.enableDataEvents()
-      }
+      this.enableServiceEvents()
+      this.enableDataEvents()
       this._enabled = true
     }
     return this
@@ -382,19 +403,8 @@ MVC.Model = class extends MVC.Base {
     if(
       this.enabled
     ) {
-      if(
-        this.services &&
-        this.serviceEvents &&
-        this.serviceCallbacks
-      ) {
-        this.disableServiceEvents()
-      }
-      if(
-        this.dataEvents &&
-        this.dataCallbacks
-      ) {
-        this.disableDataEvents()
-      }
+      this.disableServiceEvents()
+      this.disableDataEvents()
       this.deleteProperties(settings || {}, this.keyMap)
       this._enabled = false
     }

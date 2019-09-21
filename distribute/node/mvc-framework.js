@@ -25,6 +25,20 @@ MVC.CONST.Operators.Statement = {
 
 MVC.Utils = {}
 
+MVC.Utils.bindEventsToTargetObjects = function bindEventsToTargetObjects() {
+  this.toggleEventsForTargetObjects('on', ...arguments)
+}
+MVC.Utils.unbindEventsFromTargetObjects = function unbindEventsFromTargetObjects() {
+  this.toggleEventsForTargetObjects('off', ...arguments)
+}
+
+MVC.Utils.bindEventsToTargetViewObjects = function bindEventsToTargetViewObjects() {
+  this.toggleEventsForTargetViewObjects('on', ...arguments)
+}
+MVC.Utils.unbindEventsFromTargetViewObjects = function unbindEventsFromTargetViewObjects() {
+  this.toggleEventsForTargetViewObjects('off', ...arguments)
+}
+
 MVC.Utils.isArray = function isArray(object) { return Array.isArray(object) }
 MVC.Utils.isObject = function isObject(object) {
   return (
@@ -202,22 +216,38 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
       : eventTargets
     for(let [eventTargetName, eventTarget] of eventTargets) {
       let eventMethodName = (toggleMethod === 'on')
-      ? (
-        eventTarget instanceof NodeList ||
-        (
-          eventTarget instanceof HTMLElement ||
-          eventTarget instanceof Document
-        )
-      ) ? 'addEventListener'
-        : 'on'
-      : (
-        eventTarget instanceof NodeList ||
-        (
-          eventTarget instanceof HTMLElement ||
-          eventTarget instanceof Document
-        )
-      ) ? 'removeEventListener'
+        ? 'on'
         : 'off'
+      let eventCallback = MVC.Utils.objectQuery(
+        eventCallbackName,
+        callbacks
+      )[0][1]
+      eventTarget[eventMethodName](eventName, eventCallback)
+    }
+  }
+}
+
+MVC.Utils.toggleEventsForTargetViewObjects = function toggleEventsForTargetViewObjects(
+  toggleMethod,
+  events,
+  targetObjects,
+  callbacks
+) {
+  for(let [eventSettings, eventCallbackName] of Object.entries(events)) {
+    let eventData = eventSettings.split(' ')
+    let eventTargetSettings = eventData[0]
+    let eventName = eventData[1]
+    let eventTargets = MVC.Utils.objectQuery(
+      eventTargetSettings,
+      targetObjects
+    )
+    eventTargets = (!MVC.Utils.isArray(eventTargets))
+      ? [['@', eventTargets]]
+      : eventTargets
+    for(let [eventTargetName, eventTarget] of eventTargets) {
+      let eventMethodName = (toggleMethod === 'on')
+        ? 'addEventListener'
+        : 'removeEventListener'
       let eventCallback = MVC.Utils.objectQuery(
         eventCallbackName,
         callbacks
@@ -233,12 +263,6 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(
       }
     }
   }
-}
-MVC.Utils.bindEventsToTargetObjects = function bindEventsToTargetObjects() {
-  this.toggleEventsForTargetObjects('on', ...arguments)
-}
-MVC.Utils.unbindEventsFromTargetObjects = function unbindEventsFromTargetObjects() {
-  this.toggleEventsForTargetObjects('off', ...arguments)
 }
 
 MVC.Events = class {
@@ -282,10 +306,12 @@ MVC.Events = class {
         var eventCallbackName = (typeof eventCallback === 'string')
           ? eventCallback
           : this.getEventCallbackName(eventCallback)
-        delete this._events[eventName][eventCallbackName]
-        if(
-          Object.keys(this._events[eventName]).length === 0
-        ) delete this._events[eventName]
+        if(this._events[eventName]) {
+          delete this._events[eventName][eventCallbackName]
+          if(
+            Object.keys(this._events[eventName]).length === 0
+          ) delete this._events[eventName]
+        }
         break
     }
     return this
@@ -1064,16 +1090,48 @@ MVC.Model = class extends MVC.Base {
     if(this.localStorage) Object.assign(_defaults, this._db)
     if(Object.keys(_defaults)) this.set(_defaults)
   }
+  resetServiceEvents() {
+    return this
+      .disableServiceEvents()
+      .enableServiceEvents()
+  }
   enableServiceEvents() {
-    MVC.Utils.bindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+    if(
+      this.services &&
+      this.serviceEvents &&
+      this.serviceCallbacks
+    ) {
+      MVC.Utils.bindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+    }
   }
   disableServiceEvents() {
-    MVC.Utils.unbindEventsFromTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+    if(
+      this.services &&
+      this.serviceEvents &&
+      this.serviceCallbacks
+    ) {
+      MVC.Utils.unbindEventsFromTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+    }
+  }
+  resetDataEvents() {
+    return this
+      .disableDataEvents()
+      .enableDataEvents()
   }
   enableDataEvents() {
-    MVC.Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
+    if(
+      this.dataEvents &&
+      this.dataCallbacks
+    ) {
+      MVC.Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
+    }
   }
   disableDataEvents() {
+    if(
+      this.dataEvents &&
+      this.dataCallbacks
+    ) {
+    }
     MVC.Utils.unbindEventsFromTargetObjects(this.dataEvents, this, this.dataCallbacks)
   }
   enable() {
@@ -1086,19 +1144,8 @@ MVC.Model = class extends MVC.Base {
           this.set(value)
         }
       })
-      if(
-        this.services &&
-        this.serviceEvents &&
-        this.serviceCallbacks
-      ) {
-        this.enableServiceEvents()
-      }
-      if(
-        this.dataEvents &&
-        this.dataCallbacks
-      ) {
-        this.enableDataEvents()
-      }
+      this.enableServiceEvents()
+      this.enableDataEvents()
       this._enabled = true
     }
     return this
@@ -1108,19 +1155,8 @@ MVC.Model = class extends MVC.Base {
     if(
       this.enabled
     ) {
-      if(
-        this.services &&
-        this.serviceEvents &&
-        this.serviceCallbacks
-      ) {
-        this.disableServiceEvents()
-      }
-      if(
-        this.dataEvents &&
-        this.dataCallbacks
-      ) {
-        this.disableDataEvents()
-      }
+      this.disableServiceEvents()
+      this.disableDataEvents()
       this.deleteProperties(settings || {}, this.keyMap)
       this._enabled = false
     }
@@ -1341,7 +1377,7 @@ MVC.View = class extends MVC.Base {
       this.ui &&
       this.uiCallbacks
     ) {
-      MVC.Utils.bindEventsToTargetObjects(
+      MVC.Utils.bindEventsToTargetViewObjects(
         this.uiEvents,
         this.ui,
         this.uiCallbacks
@@ -1375,7 +1411,7 @@ MVC.View = class extends MVC.Base {
       this.ui &&
       this.uiCallbacks
     ) {
-      MVC.Utils.unbindEventsFromTargetObjects(
+      MVC.Utils.unbindEventsFromTargetViewObjects(
         this.uiEvents,
         this.ui,
         this.uiCallbacks
@@ -1601,44 +1637,129 @@ MVC.Controller = class extends MVC.Base {
   }
   get _enabled() { return this.enabled || false }
   set _enabled(enabled) { this.enabled = enabled }
+  resetModelEvents() {
+    return this
+      .disableModelEvents()
+      .enableModelEvents()
+  }
   enableModelEvents() {
-    MVC.Utils.bindEventsToTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
+    if(
+      this.modelEvents &&
+      this.models &&
+      this.modelCallbacks
+    ) {
+      MVC.Utils.bindEventsToTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
+    }
     return this
   }
   disableModelEvents() {
-    MVC.Utils.unbindEventsFromTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
+    if(
+      this.modelEvents &&
+      this.models &&
+      this.modelCallbacks
+    ) {
+      MVC.Utils.unbindEventsFromTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
+    }
     return this
   }
+  resetViewEvents() {
+    return this
+      .disableViewEvents()
+      .enableViewEvents()
+  }
   enableViewEvents() {
-    MVC.Utils.bindEventsToTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
+    if(
+      this.viewEvents &&
+      this.views &&
+      this.viewCallbacks
+    ) {
+      MVC.Utils.bindEventsToTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
+    }
     return this
   }
   disableViewEvents() {
-    MVC.Utils.unbindEventsFromTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
+    if(
+      this.viewEvents &&
+      this.views &&
+      this.viewCallbacks
+    ) {
+      MVC.Utils.unbindEventsFromTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
+    }
     return this
   }
+  resetControllerEvents() {
+    return this
+      .disableControllerEvents()
+      .enableControllerEvents()
+  }
   enableControllerEvents() {
-    MVC.Utils.bindEventsToTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
+    if(
+      this.controllerEvents &&
+      this.controllers &&
+      this.controllerCallbacks
+    ) {
+      MVC.Utils.bindEventsToTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
+    }
     return this
   }
   disableControllerEvents() {
-    MVC.Utils.unbindEventsFromTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
+    if(
+      this.controllerEvents &&
+      this.controllers &&
+      this.controllerCallbacks
+    ) {
+      MVC.Utils.unbindEventsFromTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
+    }
     return this
   }
+  resetMediatorEvents() {
+    return this
+      .disableMediatorEvents()
+      .enableMediatorEvents()
+  }
   enableMediatorEvents() {
-    MVC.Utils.bindEventsToTargetObjects(this.mediatorEvents, this.mediators, this.mediatorCallbacks)
+    if(
+      this.mediatorEvents &&
+      this.mediators &&
+      this.mediatorCallbacks
+    ) {
+      MVC.Utils.bindEventsToTargetObjects(this.mediatorEvents, this.mediators, this.mediatorCallbacks)
+    }
     return this
   }
   disableMediatorEvents() {
-    MVC.Utils.unbindEventsFromTargetObjects(this.mediatorEvents, this.mediators, this.mediatorCallbacks)
+    if(
+      this.mediatorEvents &&
+      this.mediators &&
+      this.mediatorCallbacks
+    ) {
+      MVC.Utils.unbindEventsFromTargetObjects(this.mediatorEvents, this.mediators, this.mediatorCallbacks)
+    }
     return this
   }
+  resetRouterEvents() {
+    return this
+      .disableRouterEvents()
+      .enableRouterEvents()
+  }
   enableRouterEvents() {
-    MVC.Utils.bindEventsToTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
+    if(
+      this.routerEvents &&
+      this.routers &&
+      this.routerCallbacks
+    ) {
+      MVC.Utils.bindEventsToTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
+    }
     return this
   }
   disableRouterEvents() {
-    MVC.Utils.unbindEventsFromTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
+    if(
+      this.routerEvents &&
+      this.routers &&
+      this.routerCallbacks
+    ) {
+      MVC.Utils.unbindEventsFromTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
+    }
     return this
   }
   enable() {
@@ -1647,41 +1768,11 @@ MVC.Controller = class extends MVC.Base {
       !this.enabled
     ) {
       this.setProperties(settings || {}, this.keyMap)
-      if(
-        this.modelEvents &&
-        this.models &&
-        this.modelCallbacks
-      ) {
-        this.enableModelEvents()
-      }
-      if(
-        this.viewEvents &&
-        this.views &&
-        this.viewCallbacks
-      ) {
-        this.enableViewEvents()
-      }
-      if(
-        this.controllerEvents &&
-        this.controllers &&
-        this.controllerCallbacks
-      ) {
-        this.enableControllerEvents()
-      }
-      if(
-        this.routerEvents &&
-        this.routers &&
-        this.routerCallbacks
-      ) {
-        this.enableRouterEvents()
-      }
-      if(
-        this.mediatorEvents &&
-        this.mediators &&
-        this.mediatorCallbacks
-      ) {
-        this.enableMediatorEvents()
-      }
+      this.enableModelEvents()
+      this.enableViewEvents()
+      this.enableControllerEvents()
+      this.enableRouterEvents()
+      this.enableMediatorEvents()
       this._enabled = true
     }
     return this
@@ -1696,41 +1787,11 @@ MVC.Controller = class extends MVC.Base {
     if(
       this.enabled
     ) {
-      if(
-        this.modelEvents &&
-        this.models &&
-        this.modelCallbacks
-      ) {
-        this.disableModelEvents()
-      }
-      if(
-        this.viewEvents &&
-        this.views &&
-        this.viewCallbacks
-      ) {
-        this.disableViewEvents()
-      }
-      if(
-        this.controllerEvents &&
-        this.controllers &&
-        this.controllerCallbacks
-      ) {
-        this.disableControllerEvents()
-      }
-      if(
-        this.routerEvents &&
-        this.routers &&
-        this.routerCallbacks
-      ) {
-        this.disableRouterEvents()
-      }
-      if(
-        this.mediatorEvents &&
-        this.mediators &&
-        this.mediatorCallbacks
-      ) {
-        this.disableMediatorEvents()
-      }
+      this.disableModelEvents()
+      this.disableViewEvents()
+      this.disableControllerEvents()
+      this.disableRouterEvents()
+      this.disableMediatorEvents()
       this.deleteProperties(settings || {}, this.keyMap)
       this._enabled = false
     }
