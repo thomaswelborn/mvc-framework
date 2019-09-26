@@ -1,13 +1,23 @@
 # MVC | View
+
+- [Instantiation](./instantiation.md)
+
+**Description**  
 The MVC View class provides methods for managing markup.
+
+**Contents**  
 [Settings](#settings)
 [Properties - Getters/Setters](#properties---getterssetters)
+  - [Element Key Map Getter](#element-key-map-getter)
+  - [UI Key Map Getter](#ui-key-map-getter)
   - [Element Name Getter/Setter](#element-name-gettersetter)
   - [Element Getter/Setter](#element-gettersetter)
   - [Attributes Getter/Setter](#attributes-gettersetter)
   - [UI Getter/Setter](#ui-gettersetter)
   - [UI Events Getter/Setter](#ui-events-gettersetter)
   - [UI Callbacks Getter/Setter](#ui-callbacks-gettersetter)
+  - [Observer Callbacks](#observer-callbacks)
+  - [Element Observer Getter](#element-observer)
   - [Insert Getter/Setter](#insert-gettersetter)
   - [Enabled Getter/Setter](#enabled-gettersetter)
   - [Templates Getter/Setter](#templates-gettersetter)
@@ -61,6 +71,16 @@ Type: `Object`
 Required: `false`
 
 ## Properties - Getters/Setters
+### Element Key Map Getter
+**Get Element Key Map Getter**  
+Type: `Array`  
+List of valid class element settings in their assignment order.  
+
+### UI Key Map Getter
+**Get UI Key Map Getter**  
+Type: `Array`  
+List of valid class UI settings in their assignment order.  
+
 ### Element Name Getter/Setter
 **Set Element Name**  
 Type: `String`  
@@ -130,6 +150,20 @@ Named functions executed after defined events.
 Type: `Object`  
 Returns the named callback functions.  
 
+### Observer Callbacks
+**Set Observer Callbacks**  
+Type: `Object`  
+Named functions executed after defined events.  
+
+**Get Observer Callbacks**  
+Type: `Object`  
+Returns the named callback functions.  
+
+### Element Observer Getter
+**Get Element Observer**  
+Type: `Object`  
+Returns Mutation Observer instance for the class's element.  
+
 ### Insert Getter/Setter
 **Set Insert**  
 Type: `Object`  
@@ -142,6 +176,7 @@ Type: `Object`
 *Element*  
 Required: `true`  
 Query Selector string of document element or an HTML Element.  
+
 *Method*  
 Required: `true`  
 String value of `document.insertAdjacentElement` `position` argument.  
@@ -153,13 +188,14 @@ Returns the `insert` settings.
 ### Enabled Getter/Setter
 **Set Enabled**  
 Type: `Boolean`  
-Sets `true` after the class's `enable` method is executed; sets `false after `disable` method.  
+Sets `true` after the class's `enable` method is executed; sets `false` after `disable` method.  
 
 **Get Enabled**  
 Type: `Boolean`  
 Returns the true/false `enabled` state.  
 
 ### Templates Getter/Setter
+**Get Template**  
 
 ## Methods - Interface
 ### Element Observe

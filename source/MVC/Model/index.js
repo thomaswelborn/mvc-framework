@@ -16,14 +16,6 @@ MVC.Model = class extends MVC.Base {
     'dataEvents',
     'defaults'
   ] }
-  get uid() {
-    this._uid = (this._uid)
-    ? this._uid
-    : MVC.Utils.UID()
-    return this._uid
-  }
-  get _name() { return this.name }
-  set _name(name) { this.name = name }
   get _validator() { return this.validator }
   set _validator(validator) { this.validator = new MVC.Validator(validator) }
   get _schema() { return this._schema }
@@ -390,7 +382,7 @@ MVC.Model = class extends MVC.Base {
       this.setProperties(settings || {}, this.keyMap, {
         'data': function(value) {
           this.set(value)
-        }
+        }.bind(this)
       })
       this.enableServiceEvents()
       this.enableDataEvents()

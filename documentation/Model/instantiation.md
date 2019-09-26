@@ -1,9 +1,12 @@
-# MVC | Model Instantiation
+# MVC | Model - Instantiation
 
-- [Instantiate With Settings and Configuration Arguments](#instantiate-with-settings-and-configuration-arguments)
+- [API](./api.md)
+
+**Contents**  
++ [Instantiate With Settings and Configuration Arguments](#instantiate-with-settings-and-configuration-arguments)
   - [Model Class Definition](#model-class-definition)
   - [Model Class Instance Output](#model-class-instance-output)
-- [Instantiate By Extending Classes](#instantiate-by-extending-classes)
++ [Instantiate By Extending Classes](#instantiate-by-extending-classes)
   - [Extended Model Class Definition](#extended-model-class-definition)
   - [Extended Model Class Instantiation](#extended-model-class-instantiation)
   - [Extended Model Instance Output](#extended-model-instance-output)

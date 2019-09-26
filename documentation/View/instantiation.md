@@ -1,5 +1,8 @@
 # MVC | View Instantiation
 
+- [API](./api.md)
+
+**Contents**  
 - [View With Element, Attributes, Templates, Insert Properties](#view-with-element-attributes-templates-insert-properties)
 - [View With UI, UI Events, and UI Callbacks](#view-with-ui-ui-events-and-ui-callbacks)
 

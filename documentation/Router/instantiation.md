@@ -1,7 +1,8 @@
-# MVC | Router Instantiation
-- [Server Location](#server-location)
+# MVC | Router - Instantiation
+
++ [Server Location](#server-location)
   - [Server Location - Single Page Application With Server Redirects To Index](#server-location---single-page-application-with-server-redirects-to-index)
-- [Hash Location](#hash-location)  
++ [Hash Location](#hash-location)  
   - [Hash Location - Single Page Application](#hash-location---single-page-application)
 
 ## Server Location

@@ -4,6 +4,14 @@ MVC.Base = class extends MVC.Events {
     if(configuration) this._configuration = configuration
     if(settings) this._settings = settings
   }
+  get uid() {
+    this._uid = (this._uid)
+    ? this._uid
+    : MVC.Utils.UID()
+    return this._uid
+  }
+  get _name() { return this.name }
+  set _name(name) { this.name = name }
   get _configuration() {
     this.configuration = (this.configuration)
       ? this.configuration

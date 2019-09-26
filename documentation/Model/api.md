@@ -1,6 +1,11 @@
 # MVC | Model
+
+- [Instantiation](./instantiation.md)
+
+**Description**  
 The MVC Model class provides methods to manage data. Model data can be get/set/unset, emitting events after individual  properties and an entire property is set.  When Local Storage is enabled, a representation of the class's `data` object is stored using get/set/clear methods.  When a Schema is enabled, properties assigned to the class's `data` object are validated against the schema's definitions.  Histiogram options are available to store the historical state of the currently enabled model.  
 
+**Contents**  
 - [Settings](#settings)
   - [Schema](#schema)
   - [Defaults](#defaults)
@@ -10,6 +15,7 @@ The MVC Model class provides methods to manage data. Model data can be get/set/u
   - [Service Callbacks](#service-callbacks)
   - [Local Storage](#local-storage)
 - [Properties - Getters/Setters](#properties---getterssetters)
+  - [Key Map](#key-map)
   - [Validator Getter/Setter](#validator-gettersetter)
   - [Is Setting Getter/Setter](#is-setting-gettersetter)
   - [Changing Getter](#changing-getter)
@@ -24,12 +30,11 @@ The MVC Model class provides methods to manage data. Model data can be get/set/u
   - [Service Events Getter/Setter](#service-events-gettersetter)
   - [Service Callbacks Getter/Setter](#service-callbacks-gettersetter)
   - [Enabled Getter/Setter](#enabled-gettersetter)
-- [Methods - Getters/Setters](#methods---getterssetters)
++ [Methods - Getters/Setters](#methods---gettersetters)
   - [Set DB](#set-db)
   - [Unset DB](#unset-db)
   - [Set Data Property](#set-data-property)
   - [Unset Data Property](#unset-data-property)
-  - [Set Defaults](#set-defaults)
 - [Methods - Interface](#methods---interface)
   - [Get](#get)
   - [Set](#set)
@@ -38,8 +43,6 @@ The MVC Model class provides methods to manage data. Model data can be get/set/u
   - [Disable Service Events](#disable-service-events)
   - [Enable Data Events](#enable-data-events)
   - [Disable Data Events](#disable-data-events)
-  - [Enable Mediators](#enable-mediators)
-  - [Disable Mediators](#disable-mediators)
   - [Enable](#enable)
   - [Disable](#disable)
   - [Parse](#parse)
@@ -73,14 +76,19 @@ Type: `Object`
 Required: `false`  
 
 ## Properties - Getters/Setters
+### Key Map Getter
+**Get Key Map**  
+Type: `Array`  
+List of valid class settings in their assignment order.  
+
 ### Validator Getter/Setter
 **Set Validator**  
 Type: `Object`  
-Creates a Validator instance from the provided `schema` object.  
+Creates a [Validator](../validator/index.md) instance from the provided `schema` object.  
 
 **Get Validator**  
 Type: `Object`  
-Returns a Validator instance.  
+Returns a [Validator](../validator/index.md) instance.  
 
 ### Is Setting Getter/Setter
 **Set Is Setting**  
@@ -153,12 +161,12 @@ Returns an array of the class `data` object's previous definitions.
 ### DB Getter/Setter
 **Set DB**  
 Type: `Object`  
-Sets a Local Storage item using the class's `localStorage` property.  
+Stores current instance of the class's `data` value, stored as a LocalStorage property. It is configured with the class's `setDB` method.  
 
 **Get DB**  
 Type: `Object`  
-Returns a Local Storage Item using the class's `localStorage property.  
-`
+Returns an object representing the class's `data` value, stored as a LocalStorage property.  
+
 ### Data Events Getter/Setter
 See [Event Binding](../Events/event-binding.md]).  
 **Set Data Events**  
@@ -219,6 +227,7 @@ Type: `Boolean`
 Returns `true`/`false` value indicating whether the class is currently enabled.  
 
 ## Methods - Getters/Setters
+
 ### Set DB
 **Arguments**  
 `(data)`  
@@ -245,7 +254,6 @@ When no argument is provided, all properties are deleted from the class's `db` o
 *key*  
 Type: `String`  
 When key is provided, the matching property on the class's `db` object is delted.  
-
 
 ### Set Data Property
 Defines Getter/Setter properties on the class's `data` object. When the provided property key already exists, it assign the provided property.  
@@ -275,10 +283,8 @@ Type: `String`
 Required: `true`  
 Deletes the getter/setter methods on the class's data property and emits `unset:key` and `unset` events.  
 
-### Set Defaults
-Sets the class's `defaults` and `localStorage` properties to the `data` object.  
-
 ## Methods - Interface
+
 ### Get
 Returns either the class's `data` object or a single `data` object property.  
 **Arguments**  
@@ -336,12 +342,6 @@ Binds callback functions to the class.
 
 ### Disable Data Events
 Unbinds callback functions from the class.  
-
-### Enable Mediators
-Binds callback functions to target mediators.  
-
-### Disable Mediators
-Unbinds callback functions from target mediators.  
 
 ### Enable
 Enables class by applying properties from class `settings` and executing other enable methods for `serviceEvents`, `dataEvents`, and `mediators`. After all able properties/methods are finished, the class's `enabled` property is set to `true`.  

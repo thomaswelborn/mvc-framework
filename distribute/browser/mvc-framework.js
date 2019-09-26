@@ -285,7 +285,7 @@ MVC.Events = class {
   off() {
     switch (arguments.length) {
       case 0:
-        delete this._events;
+        delete this.events;
         break;
 
       case 1:
@@ -389,6 +389,19 @@ MVC.Base = class extends MVC.Events {
     super();
     if (configuration) this._configuration = configuration;
     if (settings) this._settings = settings;
+  }
+
+  get uid() {
+    this._uid = this._uid ? this._uid : MVC.Utils.UID();
+    return this._uid;
+  }
+
+  get _name() {
+    return this.name;
+  }
+
+  set _name(name) {
+    this.name = name;
   }
 
   get _configuration() {
@@ -825,19 +838,6 @@ MVC.Model = class extends MVC.Base {
     return ['name', 'schema', 'localStorage', 'histiogram', 'services', 'serviceCallbacks', 'serviceEvents', 'data', 'dataCallbacks', 'dataEvents', 'defaults'];
   }
 
-  get uid() {
-    this._uid = this._uid ? this._uid : MVC.Utils.UID();
-    return this._uid;
-  }
-
-  get _name() {
-    return this.name;
-  }
-
-  set _name(name) {
-    this.name = name;
-  }
-
   get _validator() {
     return this.validator;
   }
@@ -1217,9 +1217,9 @@ MVC.Model = class extends MVC.Base {
 
     if (!this.enabled) {
       this.setProperties(settings || {}, this.keyMap, {
-        'data': function data(value) {
+        'data': function (value) {
           this.set(value);
-        }
+        }.bind(this)
       });
       this.enableServiceEvents();
       this.enableDataEvents();

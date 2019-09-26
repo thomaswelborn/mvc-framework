@@ -27,7 +27,7 @@ MVC.Events = class {
   off() {
     switch(arguments.length) {
       case 0:
-        delete this._events
+        delete this.events
         break
       case 1:
         var eventName = arguments[0]

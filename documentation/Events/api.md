@@ -1,9 +1,12 @@
 # MVC | Events
+
+- [Instantiation](./instantiation.md)
+- [Event Binding](./event-binding.md)
+
 **Description**  
-The Events class manages Events and Event Callback functions. It uses `on` and `off` methods to toggle event availability, and the `emit` method to broadcast an event name with associated event data.  
+The Events class manages Events and Event Callback functions. It uses `on` and `off` methods to toggle event availability, and the `emit` method to dispatch an event name with associated event data.  
 
 **Contents**  
-- [Constructor]()
 - [Properties - Getters/Setters](#properties---getterssetters)
   - [Get Events](#get-events)
 - [Methods - Getters](#methods---getters)
@@ -14,25 +17,10 @@ The Events class manages Events and Event Callback functions. It uses `on` and `
   - [On](#on)
   - [Off](#off)
   - [Emit](#emit)
-- [Examples](#examples)
-  - [A.1 - Model On (Single Named Function)](#a1---model-on-single-named-function)
-  - [A.2 - Model On (Multiple Named Functions)](#a2---model-on-multiple-named-functions)
-  - [A.3 - Model On (Single Anonymous Function)](#a3---model-on-single-anonymous-function)
-  - [A.4 - Model On (Multiple Anonymous Functions)](#a4---model-on-multiple-anonymous-functions)
-  - [B.1 - Model Emit (Model Emits Data)](#b1---model-emit-model-emits-data)
-  - [B.2 - Model Emit (Model Emits)](#b2---model-emit-model-emits)
-  - [B.3 - Model Emit (Model Emits Data, Additional Arguments)](#b3---model-emit-model-emits-data-additional-arguments)
-  - [C.1 - Model Off (Model Named Events Off)](#c1---model-off-model-named-events-off)
-  - [C.1 - Model Off (Model Anonymous Events Off)](#c1---model-off-model-anonymous-events-off)
-
-
-## Constructor
-The class's constructor accepts no arguments.  
 
 ## Properties - Getters/Setters
 
 ### Get Events
-**Return**  
 Type: `Object`  
 Class's `events` value where property keys represent an event name, and property values represent groups of same-named event callbacks assigned to the event.  
 

@@ -1,17 +1,22 @@
-# MVC | Event Binding
+# MVC | Events - Event Binding
 
-- [Event Binding](#event-binding)
+- [API](./instantiation.md)
+
+**Contents**  
++ [Event Binding](#event-binding)
   - [Event Binding Format](#event-binding-format)
- - [Model Event Binding](#model-event-binding)
-   - [Model Data Events](#model-data-events)
-   - [Model Service Events](#model-service-events)
- - [View Event Binding](#view-event-binding)
-   - [UI Events](#ui-events)
- - [Controller Event Binding](#controller-event-binding)
-   - [Model Events](#model-events)
-   - [View Events](#view-events)
-   - [Controller Events](#controller-events)
-   - [Mediator Events](#mediator-events)
+    - [Events](#events)
+    - [Event Data](#event-data)
++ [Model Event Binding](#model-event-binding)
+  - [Model Data Events](#model-data-events)
+  - [Model Service Events](#model-service-events)
++ [View Event Binding](#view-event-binding)
+  - [UI Events](#ui-events)
++ [Controller Event Binding](#controller-event-binding)
+  - [Model Events](#model-events)
+  - [View Events](#view-events)
+  - [Controller Events](#controller-events)
+  - [Mediator Events](#mediator-events)
 
 ## Event Binding
 Bind Event Callbacks to Event Targets with definitions from an Events object.  

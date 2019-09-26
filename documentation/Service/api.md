@@ -1,5 +1,8 @@
 # MVC | Service
-The MVC Service
+
+- [Instantiation](./instantiation.md)
+
+**Contents**  
 - [Settings](#settings)
   - [Defaults](#defaults)
   - [Response Type](#response-type)
