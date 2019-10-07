@@ -1,5 +1,5 @@
 module.exports = {
   data: require($.lib.path.join(
-    $.basedir, 'data/configuration/index.js'
+    $.basedir, 'data/configuration'
   ))
 }

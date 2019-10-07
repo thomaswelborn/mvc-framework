@@ -8,15 +8,6 @@
     },
     "dest": "../gulp-boilerplate/node_modules/gulp-boilerplate/distribute"
   },
-  "test-framework": {
-    "src": {
-      "globs": [
-        "distribute/**/*.*"
-      ],
-      "options": {}
-    },
-    "dest": "../test-framework/node_modules/mvc-framework/distribute"
-  },
   "ui": {
     "src": {
       "globs": [
@@ -49,5 +40,14 @@
       "../process-manager/node_modules/mvc-framework/distribute",
       "../process-manager/.ui/node_modules/mvc-framework/distribute"
     ]
+  },
+  "demo-project": {
+    "src": {
+      "globs": [
+        "distribute/**/*.*"
+      ],
+      "options": {}
+    },
+    "dest": "../demo-project/node_modules/mvc-framework/distribute"
   }
 }

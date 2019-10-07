@@ -1,5 +1,5 @@
 module.exports = {
-  'JS': require('./JS.js'),
-  'JSON': require('./JSON.js'),
-  'Switch': require('./Switch.js'),
+  'JS': require('./JS'),
+  'JSON': require('./JSON'),
+  'Switch': require('./Switch'),
 }
