@@ -4,9 +4,10 @@ MVC.Utils.addPropertiesToObject = function addPropertiesToObject() {
     case 2:
       let properties = arguments[0]
       targetObject = arguments[1]
-      for(let [propertyName, propertyValue] of Object.entries(properties)) {
-        targetObject[propertyName] = propertyValue
-      }
+      Object.entries(properties)
+        .forEach(([propertyName, propertyValue]) => {
+          targetObject[propertyName] = propertyValue
+        })
       break
     case 3:
       let propertyName = arguments[0]

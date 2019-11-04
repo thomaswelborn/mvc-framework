@@ -15,17 +15,6 @@ MVC.View = class extends MVC.Base {
     'uiCallbacks',
     'uiEvents'
   ] }
-  get _mediators() {
-    this.mediators = (this.mediators)
-      ? this.mediators
-      : {}
-    return this.mediators
-  }
-  set _mediators(mediators) {
-    this.mediators = MVC.Utils.addPropertiesToObject(
-      mediators, this._mediators
-    )
-  }
   get _elementName() { return this._element.tagName }
   set _elementName(elementName) {
     if(!this._element) this._element = document.createElement(elementName)
@@ -237,8 +226,6 @@ MVC.View = class extends MVC.Base {
     if(
       !this._enabled
     ) {
-      if(settings.mediators)
-        this._mediators = settings.mediators
       this
         .enableRenderers()
         .enableElement()
@@ -256,7 +243,6 @@ MVC.View = class extends MVC.Base {
         .disableUI()
         .disableElement()
         ._enabled = false
-      delete this._mediators
     }
     return this
   }

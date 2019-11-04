@@ -16,8 +16,6 @@ MVC.Model = class extends MVC.Base {
     'dataEvents',
     'defaults'
   ] }
-  get _validator() { return this.validator }
-  set _validator(validator) { this.validator = new MVC.Validator(validator) }
   get _schema() { return this._schema }
   set _schema(schema) { this.schema = schema }
   get _isSetting() { return this.isSetting }
@@ -158,22 +156,6 @@ MVC.Model = class extends MVC.Base {
         var value = arguments[1]
         this.setDataProperty(key, value)
         break
-    }
-    if(this.validator) {
-      this._validator.validate(
-        this.parse()
-      )
-      this.emit(
-        'validate',
-        {
-          name: 'validate',
-          data: {
-            data: this.validator.data,
-            results: this.validator.results
-          },
-        },
-        this
-      )
     }
     return this
   }

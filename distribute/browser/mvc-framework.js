@@ -32,21 +32,20 @@ MVC.CONST.Operators.Statement = {
 MVC.Utils = {};
 "use strict";
 
-MVC.Utils.bindEventsToTargetObjects = function bindEventsToTargetObjects() {
-  this.toggleEventsForTargetObjects('on', ...arguments);
-};
-
-MVC.Utils.unbindEventsFromTargetObjects = function unbindEventsFromTargetObjects() {
-  this.toggleEventsForTargetObjects('off', ...arguments);
-};
-"use strict";
-
 MVC.Utils.bindEventsToTargetViewObjects = function bindEventsToTargetViewObjects() {
   this.toggleEventsForTargetViewObjects('on', ...arguments);
 };
 
 MVC.Utils.unbindEventsFromTargetViewObjects = function unbindEventsFromTargetViewObjects() {
   this.toggleEventsForTargetViewObjects('off', ...arguments);
+};
+
+MVC.Utils.bindEventsToTargetObjects = function bindEventsToTargetObjects() {
+  this.toggleEventsForTargetObjects('on', ...arguments);
+};
+
+MVC.Utils.unbindEventsFromTargetObjects = function unbindEventsFromTargetObjects() {
+  this.toggleEventsForTargetObjects('off', ...arguments);
 };
 "use strict";
 
@@ -135,11 +134,10 @@ MVC.Utils.addPropertiesToObject = function addPropertiesToObject() {
     case 2:
       var properties = arguments[0];
       targetObject = arguments[1];
-
-      for (var [_propertyName, _propertyValue] of Object.entries(properties)) {
-        targetObject[_propertyName] = _propertyValue;
-      }
-
+      Object.entries(properties).forEach((_ref) => {
+        var [propertyName, propertyValue] = _ref;
+        targetObject[propertyName] = propertyValue;
+      });
       break;
 
     case 3:
@@ -210,7 +208,8 @@ MVC.Utils.paramsToObject = function paramsToObject(params) {
 "use strict";
 
 MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(toggleMethod, events, targetObjects, callbacks) {
-  for (var [eventSettings, eventCallbackName] of Object.entries(events)) {
+  Object.entries(events).forEach((_ref) => {
+    var [eventSettings, eventCallbackName] = _ref;
     var eventData = eventSettings.split(' ');
     var eventTargetSettings = eventData[0];
     var eventName = eventData[1];
@@ -222,12 +221,12 @@ MVC.Utils.toggleEventsForTargetObjects = function toggleEventsForTargetObjects(t
       var eventCallback = MVC.Utils.objectQuery(eventCallbackName, callbacks)[0][1];
       eventTarget[eventMethodName](eventName, eventCallback);
     }
-  }
+  });
 };
 "use strict";
 
 MVC.Utils.toggleEventsForTargetViewObjects = function toggleEventsForTargetViewObjects(toggleMethod, events, targetObjects, callbacks) {
-  for (var [eventSettings, eventCallbackName] of Object.entries(events)) {
+  Object.entries(events).forEach((eventSettings, eventCallbackName) => {
     var eventData = eventSettings.split(' ');
     var eventTargetSettings = eventData[0];
     var eventName = eventData[1];
@@ -248,7 +247,7 @@ MVC.Utils.toggleEventsForTargetViewObjects = function toggleEventsForTargetViewO
         eventTarget[eventMethodName](eventName, eventCallback);
       }
     }
-  }
+  });
 };
 "use strict";
 
@@ -599,235 +598,6 @@ MVC.Service = class extends MVC.Base {
 };
 "use strict";
 
-MVC.Validator = class {
-  constructor(schema) {
-    this._schema = schema;
-    return this;
-  }
-
-  get _schema() {
-    return this.schema;
-  }
-
-  set _schema(schema) {
-    this.schema = schema;
-  }
-
-  get _results() {
-    return this.results;
-  }
-
-  set _results(results) {
-    this.results = results;
-  }
-
-  get _data() {
-    return this.data;
-  }
-
-  set _data(data) {
-    this.data = data;
-  }
-
-  validate(data) {
-    this._data = data;
-    var validationSummary = {};
-    Object.entries(this._schema).forEach((_ref) => {
-      var [schemaKey, schemaSettings] = _ref;
-      var validation = {};
-      var value = data[schemaKey];
-      validation.key = schemaKey;
-      validation.value = value;
-
-      if (schemaSettings.required) {
-        validation.required = this.required(value, schemaSettings.required);
-      }
-
-      if (schemaSettings.type) {
-        validation.type = this.type(value, schemaSettings.type);
-      }
-
-      if (schemaSettings.evaluations) {
-        var validationEvaluations = this.evaluations(value, schemaSettings.evaluations);
-        validation.evaluations = this.evaluationResults(validationEvaluations);
-      }
-
-      validationSummary[schemaKey] = validation;
-    });
-    this._results = validationSummary;
-    return validationSummary;
-  }
-
-  required(value, schemaSettings) {
-    var validationSummary = {};
-    var messages = Object.assign({
-      pass: 'Value is defined.',
-      fail: 'Value is not defined.'
-    }, schemaSettings.messages);
-    value = value !== undefined;
-    validationSummary.value = value;
-    validationSummary.comparator = schemaSettings;
-    validationSummary.result = value === schemaSettings;
-    validationSummary.message = validationSummary.result ? messages.pass : messages.fail;
-    return validationSummary;
-  }
-
-  type(value, schemaSettings) {
-    var validationSummary = {};
-    var messages = Object.assign({
-      pass: 'Valid type.',
-      fail: 'Invalid type.'
-    });
-    var typeOfValue = MVC.Utils.typeOf(value);
-    var schemaType;
-
-    if (MVC.Utils.typeOf(schemaSettings) === 'object') {
-      schemaType = schemaSettings.type;
-
-      if (schemaSettings.messages) {
-        messages.pass = schemaSettings.messages.pass ? schemaSettings.messages.pass : messages.pass;
-        messages.fail = schemaSettings.messages.fail ? schemaSettings.messages.fail : messages.fail;
-      }
-    } else {
-      schemaType = schemaSettings;
-    }
-
-    if (MVC.Utils.typeOf(schemaType) === 'array') {
-      schemaType = schemaType[schemaType.indexOf(typeOfValue)];
-    }
-
-    validationSummary.comparator = schemaType;
-    validationSummary.value = typeOfValue;
-    validationSummary.result = typeOfValue === schemaType;
-    validationSummary.message = validationSummary.result ? messages.pass : messages.fail;
-    return validationSummary;
-  }
-
-  evaluations(value, evaluations) {
-    var messages = {
-      pass: 'Valid.',
-      fail: 'Invalid.'
-    };
-    return evaluations.reduce((_evaluations, evaluation, evaluationIndex) => {
-      if (MVC.Utils.isArray(evaluation)) {
-        _evaluations.push(...this.evaluations(value, evaluation));
-      } else {
-        evaluation._value = value;
-        evaluation.messages = evaluation.messages ? evaluation.messages : messages;
-        var valueComparison = this.compareValues(evaluation._value, evaluation.comparison.value, evaluation.comparator, evaluation.messages);
-        evaluation.results = evaluation.results || {};
-        evaluation.results.value = valueComparison;
-
-        _evaluations.push(evaluation);
-      }
-
-      if (_evaluations.length > 1) {
-        var currentEvaluation = _evaluations[evaluationIndex];
-
-        if (currentEvaluation.comparison.statement) {
-          var previousEvaluation = _evaluations[evaluationIndex - 1];
-          var previousEvaluationComparisonValue = currentEvaluation.results.statement ? currentEvaluation.results.statement.result : currentEvaluation.results.value.result;
-          currentEvaluation.messages = currentEvaluation.messages ? currentEvaluation.messages : messages;
-          var statementComparison = this.compareStatements(previousEvaluationComparisonValue, currentEvaluation.comparison.statement, currentEvaluation.results.value.result, currentEvaluation.messages);
-          currentEvaluation.results = currentEvaluation.results || {};
-          currentEvaluation.results.statement = statementComparison;
-        }
-      }
-
-      return _evaluations;
-    }, []);
-  }
-
-  evaluationResults(evaluations) {
-    var validationEvaluations = {
-      pass: [],
-      fail: []
-    };
-    evaluations.forEach(evaluationValidation => {
-      delete evaluationValidation.messages;
-
-      if (evaluationValidation.results.statement) {
-        if (evaluationValidation.results.statement.result === false) {
-          validationEvaluations.fail.push(evaluationValidation);
-        } else if (evaluationValidation.results.statement.result === true) {
-          validationEvaluations.pass.push(evaluationValidation);
-        }
-      } else if (evaluationValidation.results.value) {
-        if (evaluationValidation.results.value.result === false) {
-          validationEvaluations.fail.push(evaluationValidation);
-        } else if (evaluationValidation.results.value.result === true) {
-          validationEvaluations.pass.push(evaluationValidation);
-        }
-      }
-    });
-    return validationEvaluations;
-  }
-
-  compareValues(value, operator, comparator, messages) {
-    var evaluationResult;
-
-    switch (operator) {
-      case MVC.CONST.Operators.Comparison.EQ:
-        evaluationResult = value == comparator;
-        break;
-
-      case MVC.CONST.Operators.Comparison.STEQ:
-        evaluationResult = value === comparator;
-        break;
-
-      case MVC.CONST.Operators.Comparison.NOEQ:
-        evaluationResult = value != comparator;
-        break;
-
-      case MVC.CONST.Operators.Comparison.STNOEQ:
-        evaluationResult = value !== comparator;
-        break;
-
-      case MVC.CONST.Operators.Comparison.GT:
-        evaluationResult = value > comparator;
-        break;
-
-      case MVC.CONST.Operators.Comparison.LT:
-        evaluationResult = value < comparator;
-        break;
-
-      case MVC.CONST.Operators.Comparison.GTE:
-        evaluationResult = value >= comparator;
-        break;
-
-      case MVC.CONST.Operators.Comparison.LTE:
-        evaluationResult = value <= comparator;
-        break;
-    }
-
-    return {
-      result: evaluationResult,
-      message: evaluationResult ? messages.pass : messages.fail
-    };
-  }
-
-  compareStatements(value, operator, comparator, messages) {
-    var evaluationResult;
-
-    switch (operator) {
-      case MVC.CONST.Operators.Statement.AND:
-        evaluationResult = value && comparator;
-        break;
-
-      case MVC.CONST.Operators.Statement.OR:
-        evaluationResult = value || comparator;
-        break;
-    }
-
-    return {
-      result: evaluationResult,
-      message: evaluationResult ? messages.pass : messages.fail
-    };
-  }
-
-};
-"use strict";
-
 MVC.Model = class extends MVC.Base {
   constructor() {
     super(...arguments);
@@ -836,14 +606,6 @@ MVC.Model = class extends MVC.Base {
 
   get keyMap() {
     return ['name', 'schema', 'localStorage', 'histiogram', 'services', 'serviceCallbacks', 'serviceEvents', 'data', 'dataCallbacks', 'dataEvents', 'defaults'];
-  }
-
-  get _validator() {
-    return this.validator;
-  }
-
-  set _validator(validator) {
-    this.validator = new MVC.Validator(validator);
   }
 
   get _schema() {
@@ -1012,18 +774,6 @@ MVC.Model = class extends MVC.Base {
         var value = arguments[1];
         this.setDataProperty(key, value);
         break;
-    }
-
-    if (this.validator) {
-      this._validator.validate(this.parse());
-
-      this.emit('validate', {
-        name: 'validate',
-        data: {
-          data: this.validator.data,
-          results: this.validator.results
-        }
-      }, this);
     }
 
     return this;
@@ -1250,21 +1000,6 @@ MVC.Model = class extends MVC.Base {
 };
 "use strict";
 
-MVC.Mediator = class extends MVC.Model {
-  constructor() {
-    super(...arguments);
-    this.on('set', event => {
-      this.emit(this.name, {
-        name: this.name,
-        data: event.data
-      }, this);
-    });
-    return this;
-  }
-
-};
-"use strict";
-
 MVC.View = class extends MVC.Base {
   constructor() {
     super(...arguments);
@@ -1277,15 +1012,6 @@ MVC.View = class extends MVC.Base {
 
   get uiKeyMap() {
     return ['ui', 'uiCallbacks', 'uiEvents'];
-  }
-
-  get _mediators() {
-    this.mediators = this.mediators ? this.mediators : {};
-    return this.mediators;
-  }
-
-  set _mediators(mediators) {
-    this.mediators = MVC.Utils.addPropertiesToObject(mediators, this._mediators);
   }
 
   get _elementName() {
@@ -1509,7 +1235,6 @@ MVC.View = class extends MVC.Base {
     var settings = this.settings || {};
 
     if (!this._enabled) {
-      if (settings.mediators) this._mediators = settings.mediators;
       this.enableRenderers().enableElement().enableUI()._enabled = true;
     }
 
@@ -1519,7 +1244,6 @@ MVC.View = class extends MVC.Base {
   disable() {
     if (this._enabled) {
       this.disableRenderers().disableUI().disableElement()._enabled = false;
-      delete this._mediators;
     }
 
     return this;
@@ -1534,25 +1258,7 @@ MVC.Controller = class extends MVC.Base {
   }
 
   get keyMap() {
-    return ['modelCallbacks', 'viewCallbacks', 'controllerCallbacks', 'mediatorCallbacks', 'routerCallbacks', 'models', 'views', 'controllers', 'mediators', 'routers', 'modelEvents', 'viewEvents', 'controllerEvents', 'mediatorEvents', 'routerEvents'];
-  }
-
-  get _mediators() {
-    this.mediators = this.mediators ? this.mediators : {};
-    return this.mediators;
-  }
-
-  set _mediators(mediators) {
-    this.mediators = MVC.Utils.addPropertiesToObject(mediators, this._mediators);
-  }
-
-  get _mediatorCallbacks() {
-    this.mediatorCallbacks = this.mediatorCallbacks ? this.mediatorCallbacks : {};
-    return this.mediatorCallbacks;
-  }
-
-  set _mediatorCallbacks(mediatorCallbacks) {
-    this.mediatorCallbacks = MVC.Utils.addPropertiesToObject(mediatorCallbacks, this._mediatorCallbacks);
+    return ['modelCallbacks', 'viewCallbacks', 'controllerCallbacks', 'routerCallbacks', 'models', 'views', 'controllers', 'routers', 'modelEvents', 'viewEvents', 'controllerEvents', 'routerEvents'];
   }
 
   get _modelCallbacks() {
@@ -1634,15 +1340,6 @@ MVC.Controller = class extends MVC.Base {
 
   set _routerCallbacks(routerCallbacks) {
     this.routerCallbacks = MVC.Utils.addPropertiesToObject(routerCallbacks, this._routerCallbacks);
-  }
-
-  get _mediatorEvents() {
-    this.mediatorEvents = this.mediatorEvents ? this.mediatorEvents : {};
-    return this.mediatorEvents;
-  }
-
-  set _mediatorEvents(mediatorEvents) {
-    this.mediatorEvents = MVC.Utils.addPropertiesToObject(mediatorEvents, this._mediatorEvents);
   }
 
   get _modelEvents() {
@@ -1740,26 +1437,6 @@ MVC.Controller = class extends MVC.Base {
     return this;
   }
 
-  resetMediatorEvents() {
-    return this.disableMediatorEvents().enableMediatorEvents();
-  }
-
-  enableMediatorEvents() {
-    if (this.mediatorEvents && this.mediators && this.mediatorCallbacks) {
-      MVC.Utils.bindEventsToTargetObjects(this.mediatorEvents, this.mediators, this.mediatorCallbacks);
-    }
-
-    return this;
-  }
-
-  disableMediatorEvents() {
-    if (this.mediatorEvents && this.mediators && this.mediatorCallbacks) {
-      MVC.Utils.unbindEventsFromTargetObjects(this.mediatorEvents, this.mediators, this.mediatorCallbacks);
-    }
-
-    return this;
-  }
-
   resetRouterEvents() {
     return this.disableRouterEvents().enableRouterEvents();
   }
@@ -1789,7 +1466,6 @@ MVC.Controller = class extends MVC.Base {
       this.enableViewEvents();
       this.enableControllerEvents();
       this.enableRouterEvents();
-      this.enableMediatorEvents();
       this._enabled = true;
     }
 
@@ -1810,7 +1486,6 @@ MVC.Controller = class extends MVC.Base {
       this.disableViewEvents();
       this.disableControllerEvents();
       this.disableRouterEvents();
-      this.disableMediatorEvents();
       this.deleteProperties(settings || {}, this.keyMap);
       this._enabled = false;
     }

@@ -6,41 +6,16 @@ MVC.Controller = class extends MVC.Base {
     'modelCallbacks',
     'viewCallbacks',
     'controllerCallbacks',
-    'mediatorCallbacks',
     'routerCallbacks',
     'models',
     'views',
     'controllers',
-    'mediators',
     'routers',
     'modelEvents',
     'viewEvents',
     'controllerEvents',
-    'mediatorEvents',
     'routerEvents'
   ] }
-  get _mediators() {
-    this.mediators = (this.mediators)
-      ? this.mediators
-      : {}
-    return this.mediators
-  }
-  set _mediators(mediators) {
-    this.mediators = MVC.Utils.addPropertiesToObject(
-      mediators, this._mediators
-    )
-  }
-  get _mediatorCallbacks() {
-    this.mediatorCallbacks = (this.mediatorCallbacks)
-      ? this.mediatorCallbacks
-      : {}
-    return this.mediatorCallbacks
-  }
-  set _mediatorCallbacks(mediatorCallbacks) {
-    this.mediatorCallbacks = MVC.Utils.addPropertiesToObject(
-      mediatorCallbacks, this._mediatorCallbacks
-    )
-  }
   get _modelCallbacks() {
     this.modelCallbacks = (this.modelCallbacks)
       ? this.modelCallbacks
@@ -138,17 +113,6 @@ MVC.Controller = class extends MVC.Base {
   set _routerCallbacks(routerCallbacks) {
     this.routerCallbacks = MVC.Utils.addPropertiesToObject(
       routerCallbacks, this._routerCallbacks
-    )
-  }
-  get _mediatorEvents() {
-    this.mediatorEvents = (this.mediatorEvents)
-      ? this.mediatorEvents
-      : {}
-    return this.mediatorEvents
-  }
-  set _mediatorEvents(mediatorEvents) {
-    this.mediatorEvents = MVC.Utils.addPropertiesToObject(
-      mediatorEvents, this._mediatorEvents
     )
   }
   get _modelEvents() {
@@ -261,31 +225,6 @@ MVC.Controller = class extends MVC.Base {
     }
     return this
   }
-  resetMediatorEvents() {
-    return this
-      .disableMediatorEvents()
-      .enableMediatorEvents()
-  }
-  enableMediatorEvents() {
-    if(
-      this.mediatorEvents &&
-      this.mediators &&
-      this.mediatorCallbacks
-    ) {
-      MVC.Utils.bindEventsToTargetObjects(this.mediatorEvents, this.mediators, this.mediatorCallbacks)
-    }
-    return this
-  }
-  disableMediatorEvents() {
-    if(
-      this.mediatorEvents &&
-      this.mediators &&
-      this.mediatorCallbacks
-    ) {
-      MVC.Utils.unbindEventsFromTargetObjects(this.mediatorEvents, this.mediators, this.mediatorCallbacks)
-    }
-    return this
-  }
   resetRouterEvents() {
     return this
       .disableRouterEvents()
@@ -321,7 +260,6 @@ MVC.Controller = class extends MVC.Base {
       this.enableViewEvents()
       this.enableControllerEvents()
       this.enableRouterEvents()
-      this.enableMediatorEvents()
       this._enabled = true
     }
     return this
@@ -340,7 +278,6 @@ MVC.Controller = class extends MVC.Base {
       this.disableViewEvents()
       this.disableControllerEvents()
       this.disableRouterEvents()
-      this.disableMediatorEvents()
       this.deleteProperties(settings || {}, this.keyMap)
       this._enabled = false
     }
