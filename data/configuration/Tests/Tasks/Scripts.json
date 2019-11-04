@@ -1,0 +1,47 @@
+{
+  "demo-project": {
+    "src": {
+      "globs": [
+        "tests/source/test-1/index.js"
+      ],
+      "options": {
+        "allowEmpty": true,
+        "sourcemaps": true
+      }
+    },
+    "rollup": {
+      "options": {
+        "input": {
+          "input": "tests/source/test-1/index.js",
+          "plugins": [
+            [
+              "rollupPluginBabel",
+              {
+                "babelrc": false,
+                "presets": [
+                  [
+                    "@babel/preset-env"
+                  ]
+                ]
+              }
+            ]
+          ]
+        },
+        "external": [
+          "ejs"
+        ],
+        "output": {
+          "file": "tests/distribute/test-1/scripts/test-1.js",
+          "format": "umd",
+          "sourcemap": "inline",
+          "globals": {
+            "ejs": "ejs"
+          }
+        }
+      }
+    },
+    "browserSync": {
+      "stream": true
+    }
+  }
+}

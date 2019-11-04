@@ -1,0 +1,64 @@
+{
+  "reload": {
+    "globs": [
+      "utils/scripts/**/*.js",
+      "gulpfile.js/**/*.js",
+      "data/**/*.{js,json}"
+    ],
+    "options": {},
+    "task": {
+      "type": "series",
+      "tasks": [
+        "Spawn"
+      ]
+    }
+  },
+  "mvc-framework": {
+    "globs": [
+      "distribute/**/*.js"
+    ],
+    "options": {},
+    "task": {
+      "type": "series",
+      "tasks": [
+        "Copy"
+      ]
+    }
+  },
+  "test-scripts": {
+    "globs": [
+      "tests/source/**/*.js"
+    ],
+    "options": {},
+    "task": {
+      "type": "series",
+      "tasks": [
+        "Scripts"
+      ]
+    }
+  },
+  "test-script-templates": {
+    "globs": [
+      "tests/source/**/*.ejs"
+    ],
+    "options": {},
+    "task": {
+      "type": "series",
+      "tasks": [
+        "Copy"
+      ]
+    }
+  },
+  "test-document-templates": {
+    "globs": [
+      "documents/tests/**/*.handlebars"
+    ],
+    "options": {},
+    "task": {
+      "type": "series",
+      "tasks": [
+        "Templates:Documents"
+      ]
+    }
+  }
+}

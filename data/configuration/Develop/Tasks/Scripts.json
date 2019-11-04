@@ -27,7 +27,8 @@
         "source/MVC/Router/index.js"
       ],
       "options": {
-        "allowEmpty": true
+        "allowEmpty": true,
+        "sourcemaps": true
       }
     },
     "babel": {
@@ -53,7 +54,10 @@
       "options": {}
     },
     "dest": [
-      ["distribute"]
+      ["distribute"],
+      {
+        "sourcemaps": true
+      }
     ]
   },
   "node": {
@@ -83,7 +87,9 @@
         "source/MVC/Controller/index.js",
         "source/MVC/Router/index.js"
       ],
-      "options": {}
+      "options": {
+        "sourcemaps": true
+      }
     },
     "concat": {
       "options": {
@@ -95,7 +101,12 @@
       "data": {},
       "options": {}
     },
-    "dest": "distribute"
+    "dest": [
+      ["distribute"],
+      {
+        "sourcemaps": true
+      }
+    ]
   },
   "events": {
     "src": {
@@ -133,7 +144,10 @@
       "options": {}
     },
     "dest": [
-      ["distribute"]
+      ["distribute"],
+      {
+        "sourcemaps": true
+      }
     ]
   },
   "events": {
@@ -171,7 +185,10 @@
       "options": {}
     },
     "dest": [
-      ["distribute"]
+      ["distribute"],
+      {
+        "sourcemaps": true
+      }
     ]
   },
   "model": {
@@ -210,7 +227,10 @@
       "options": {}
     },
     "dest": [
-      ["distribute"]
+      ["distribute"],
+      {
+        "sourcemaps": true
+      }
     ]
   },
   "view": {
@@ -249,7 +269,10 @@
       "options": {}
     },
     "dest": [
-      ["distribute"]
+      ["distribute"],
+      {
+        "sourcemaps": true
+      }
     ]
   },
   "router": {
@@ -288,7 +311,10 @@
       "options": {}
     },
     "dest": [
-      ["distribute"]
+      ["distribute"],
+      {
+        "sourcemaps": true
+      }
     ]
   }
 }

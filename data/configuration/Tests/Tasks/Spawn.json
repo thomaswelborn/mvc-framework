@@ -1,0 +1,6 @@
+{
+  "task": "gulp",
+  "options": {
+    "stdio": "inherit"
+  }
+}

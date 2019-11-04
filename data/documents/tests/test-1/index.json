@@ -1,0 +1,53 @@
+{
+  "title": "MVC Framework | Test 1",
+  "scripts": [
+    {
+      "elementName": "script",
+      "closure": true,
+      "attributes": {
+        "type": "text/javascript",
+        "src": "../scripts/dependencies/polyfill.js"
+      }
+    },
+    {
+      "elementName": "script",
+      "closure": true,
+      "attributes": {
+        "type": "text/javascript",
+        "src": "../scripts/dependencies/ejs.js"
+      }
+    },
+    {
+      "elementName": "script",
+      "closure": true,
+      "attributes": {
+        "type": "text/javascript",
+        "src": "../scripts/dependencies/mvc-framework.js"
+      }
+    },
+    {
+      "elementName": "script",
+      "closure": true,
+      "attributes": {
+        "type": "text/javascript",
+        "src": "../scripts/dependencies/mvc-framework.js"
+      }
+    },
+    {
+      "elementName": "script",
+      "closure": true,
+      "attributes": {
+        "type": "module",
+        "src": "./scripts/test-1.js"
+      }
+    },
+    {
+      "elementName": "script",
+      "closure": true,
+      "attributes": {
+        "type": "text/javascript",
+        "src": "./scripts/test-1-templates.js"
+      }
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "browser": ["chrome"],
+  "ui": false,
+  "open": false,
+  "notify": false,
+  "port": 9000,
+  "server": {
+    "baseDir": ["tests/distribute"]
+  },
+  "online": false
+}

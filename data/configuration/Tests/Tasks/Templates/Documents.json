@@ -1,0 +1,43 @@
+[
+  {
+    "src": {
+      "globs": [
+        "documents/tests/templates/layout.handlebars"
+      ],
+      "options": {
+        "allowEmpty": false
+      }
+    },
+    "data": {
+      "document": {
+        "type": "json",
+        "request": {
+          "dir": "data/documents/tests/test-1",
+          "name": "index",
+          "ext": ".json"
+        }
+      }
+    },
+    "compileHandlebars": {
+      "options": {
+        "batch": [
+          "documents",
+          "utils/templates/partials"
+        ]
+     }
+   },
+    "rename": {
+      "options": {
+        "name": "index",
+        "ext": ".html"
+      }
+    },
+    "dest": [
+      ["tests/distribute/test-1"],
+      {}
+    ],
+    "browserSync": {
+      "stream": true
+    }
+  }
+]
