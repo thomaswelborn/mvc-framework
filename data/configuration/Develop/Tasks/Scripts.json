@@ -7,8 +7,7 @@
         "source/MVC/Constants/Events.js",
         "source/MVC/Constants/Operators.js",
         "source/MVC/Utils/index.js",
-        "source/MVC/Utils/bindEventsOnTargetObjects.js",
-        "source/MVC/Utils/bindEventsOnTargetViewObjects.js",
+        "source/MVC/Utils/bindEvents.js",
         "source/MVC/Utils/is.js",
         "source/MVC/Utils/uid.js",
         "source/MVC/Utils/typeOf.js",
@@ -22,9 +21,7 @@
         "source/MVC/Channels/Channel/index.js",
         "source/MVC/Base/index.js",
         "source/MVC/Service/index.js",
-        "source/MVC/Validator/index.js",
         "source/MVC/Model/index.js",
-        "source/MVC/Mediator/index.js",
         "source/MVC/View/index.js",
         "source/MVC/Controller/index.js",
         "source/MVC/Router/index.js"
@@ -55,7 +52,9 @@
     "minify": {
       "options": {}
     },
-    "dest": "distribute"
+    "dest": [
+      ["distribute"]
+    ]
   },
   "node": {
     "src": {
@@ -65,8 +64,7 @@
         "source/MVC/Constants/Events.js",
         "source/MVC/Constants/Operators.js",
         "source/MVC/Utils/index.js",
-        "source/MVC/Utils/bindEventsOnTargetObjects.js",
-        "source/MVC/Utils/bindEventsOnTargetViewObjects.js",
+        "source/MVC/Utils/bindEvents.js",
         "source/MVC/Utils/is.js",
         "source/MVC/Utils/uid.js",
         "source/MVC/Utils/typeOf.js",
@@ -80,9 +78,7 @@
         "source/MVC/Channels/Channel/index.js",
         "source/MVC/Base/index.js",
         "source/MVC/Service/index.js",
-        "source/MVC/Validator/index.js",
         "source/MVC/Model/index.js",
-        "source/MVC/Mediator/index.js",
         "source/MVC/View/index.js",
         "source/MVC/Controller/index.js",
         "source/MVC/Router/index.js"
@@ -136,6 +132,8 @@
     "minify": {
       "options": {}
     },
-    "dest": "distribute"
+    "dest": [
+      ["distribute"]
+    ]
   }
 }

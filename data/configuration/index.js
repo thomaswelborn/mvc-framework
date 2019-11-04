@@ -1,3 +1,3 @@
 module.exports = {
-  'Develop-Local': require('./Develop-Local'),
+  'Develop': require('./Develop'),
 }

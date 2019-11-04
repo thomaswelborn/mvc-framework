@@ -1,34 +1,24 @@
-module.exports = async function Rollup(settings) {
+module.exports = async function(settings) {
   if(settings) {
-    let plugins = {}
-    Object.entries(settings.plugins)
-      .forEach(([pluginName, pluginSettings]) => {
-        switch(pluginName) {
-          case 'babel':
-            let babel = $.lib.rollupBabel(pluginSettings)
-            plugins[pluginName] = babel
-            break
-          case 'sourcemaps':
-            let sourcemaps = $.lib.rollupSourcemaps(pluginSettings)
-            plugins[pluginName] = sourcemaps
-            break
-        }
-      })
-    settings.plugins = plugins
-    settings.sourcemap = settings.sourcemap || false
-    let rollupSettings = {
-      input: settings.input,
-      sourceMap: settings.sourceMap,
-      plugins: settings.plugins,
-      format: settings.format,
+    let optionsInput = $.lib.lodash.cloneDeep(
+      settings.options.input
+    )
+    let optionsOutput = $.lib.lodash.cloneDeep(
+      settings.options.output
+    )
+    if(optionsInput.plugins) {
+      optionsInput.plugins = settings.options.input.plugins
+        .reduce((_plugins, pluginSettings) => {
+          let pluginName = pluginSettings[0]
+          let pluginOptions = pluginSettings[1]
+          _plugins.push(
+            $.lib[pluginName](pluginOptions)
+          )
+          return _plugins
+        }, [])
     }
-    let sourceSettings = settings.fileName
-    let sourcemapSettings = settings.sourcemaps || {}
-    let task = $.lib.rollup(rollupSettings)
-      .pipe($.lib.source(sourceSettings))
-      .pipe($.lib.buffer())
-      .pipe($.lib.dest(...settings.dest))
-    return task
+    let bundle = await $.lib.rollup.rollup(optionsInput)
+    return await bundle.write(optionsOutput)
   } else {
     return $.lib.through2.obj()
   }

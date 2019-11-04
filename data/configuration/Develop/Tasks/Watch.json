@@ -24,17 +24,5 @@
         "Scripts"
       ]
     }
-  },
-  "scripts-distribute": {
-    "globs": [
-      "distribute/**/*.{map,js}"
-    ],
-    "options": {},
-    "task": {
-      "type": "series",
-      "tasks": [
-        "Copy"
-      ]
-    }
   }
 }

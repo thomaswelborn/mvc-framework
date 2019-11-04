@@ -15,7 +15,6 @@ module.exports = {
   'Rename': require('./Rename'),
   'Rollup': require('./Rollup'),
   'SASS': require('./SASS'),
-  'SourceMaps': require('./SourceMaps'),
   'String': require('./String'),
   'Wrap': require('./Wrap'),
 }

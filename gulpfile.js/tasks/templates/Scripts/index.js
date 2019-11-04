@@ -2,24 +2,22 @@ module.exports = function(rootProcess, data) {
   let ScriptTemplates = function(callback) {
     let templateScriptStream = $.lib.mergeStream()
     for(let templateScriptSettings of data) {
-      // templateScriptSettings.sourcemaps = templateScriptSettings.sourcemaps || {}
-      console.log(templateScriptSettings.src.options)
-      let layouts = $.lib.gulp.src(templateScriptSettings.src.globs, templateScriptSettings.src.options)
-        .pipe($.lib.handlebars({
-          handlebars: require('handlebars')
-        }))
-        .pipe(Tasks.Subtasks.Wrap(templateScriptSettings.wrap.layouts))
-        .pipe(Tasks.Subtasks.Declare(templateScriptSettings.declare.layouts))
+      let layouts = $.lib.gulp
+        .src(templateScriptSettings.src.globs, templateScriptSettings.src.options)
+          .pipe($.lib.handlebars({
+            handlebars: require('handlebars')
+          }))
+          .pipe(Tasks.Subtasks.Wrap(templateScriptSettings.wrap.layouts))
+          .pipe(Tasks.Subtasks.Declare(templateScriptSettings.declare.layouts))
       let partials = $.lib.gulp
         .src(templateScriptSettings.src.globs, templateScriptSettings.src.options)
           .pipe($.lib.handlebars({
             handlebars: require('handlebars')
           }))
           .pipe(Tasks.Subtasks.Wrap(templateScriptSettings.wrap.partials))
-      let templateScript = $.lib.mergeStream([layouts, partials])
+      let templateScript = templateScriptStream.add(layouts, partials)
         .pipe(Tasks.Subtasks.Concat(templateScriptSettings.concat))
         .pipe($.lib.dest(...templateScriptSettings.dest))
-      templateScriptStream.add(templateScript)
     }
     templateScriptStream.on('finish', () => {
       if($.lib.browserSync.has('boilerplate')) {
