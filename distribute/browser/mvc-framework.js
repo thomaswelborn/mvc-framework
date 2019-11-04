@@ -3,32 +3,6 @@
 var MVC = MVC || {};
 "use strict";
 
-MVC.Constants = {};
-MVC.CONST = MVC.Constants;
-"use strict";
-
-MVC.Constants.Events = {};
-MVC.CONST.EV = MVC.Constants.Events;
-"use strict";
-
-MVC.Constants.Operators = {};
-MVC.CONST.Operators = {};
-MVC.CONST.Operators.Comparison = {
-  EQ: 'EQ',
-  STEQ: 'STEQ',
-  NOEQ: 'NOEQ',
-  STNOEQ: 'STNOEQ',
-  GT: 'GT',
-  LT: 'LT',
-  GTE: 'GTE',
-  LTE: 'LTE'
-};
-MVC.CONST.Operators.Statement = {
-  AND: 'AND',
-  OR: 'OR'
-};
-"use strict";
-
 MVC.Utils = {};
 "use strict";
 
@@ -255,7 +229,7 @@ MVC.Events = class {
   constructor() {}
 
   get _events() {
-    this.events = this.events ? this.events : {};
+    this.events = this.events || {};
     return this.events;
   }
 
@@ -330,7 +304,7 @@ MVC.Channels = class {
   constructor() {}
 
   get _channels() {
-    this.channels = this.channels ? this.channels : {};
+    this.channels = this.channels || {};
     return this.channels;
   }
 
@@ -350,7 +324,7 @@ MVC.Channels.Channel = class {
   constructor() {}
 
   get _responses() {
-    this.responses = this.responses ? this.responses : {};
+    this.responses = this.responses || this.responses;
     return this.responses;
   }
 
@@ -625,7 +599,7 @@ MVC.Model = class extends MVC.Base {
   }
 
   get _changing() {
-    this.changing = this.changing ? this.changing : {};
+    this.changing = this.changing || {};
     return this.changing;
   }
 
@@ -656,7 +630,7 @@ MVC.Model = class extends MVC.Base {
   }
 
   get _history() {
-    this.history = this.history ? this.history : [];
+    this.history = this.history || [];
     return this.history;
   }
 
@@ -672,7 +646,7 @@ MVC.Model = class extends MVC.Base {
 
   get _db() {
     var db = localStorage.getItem(this.localStorage.endpoint);
-    this.db = db ? db : '{}';
+    this.db = db || '{}';
     return JSON.parse(this.db);
   }
 
@@ -682,12 +656,12 @@ MVC.Model = class extends MVC.Base {
   }
 
   get _data() {
-    this.data = this.data ? this.data : {};
+    this.data = this.data || {};
     return this.data;
   }
 
   get _dataEvents() {
-    this.dataEvents = this.dataEvents ? this.dataEvents : {};
+    this.dataEvents = this.dataEvents || {};
     return this.dataEvents;
   }
 
@@ -696,7 +670,7 @@ MVC.Model = class extends MVC.Base {
   }
 
   get _dataCallbacks() {
-    this.dataCallbacks = this.dataCallbacks ? this.dataCallbacks : {};
+    this.dataCallbacks = this.dataCallbacks || {};
     return this.dataCallbacks;
   }
 
@@ -705,7 +679,7 @@ MVC.Model = class extends MVC.Base {
   }
 
   get _services() {
-    this.services = this.services ? this.services : {};
+    this.services = this.services || {};
     return this.services;
   }
 
@@ -714,7 +688,7 @@ MVC.Model = class extends MVC.Base {
   }
 
   get _serviceEvents() {
-    this.serviceEvents = this.serviceEvents ? this.serviceEvents : {};
+    this.serviceEvents = this.serviceEvents || {};
     return this.serviceEvents;
   }
 
@@ -723,7 +697,7 @@ MVC.Model = class extends MVC.Base {
   }
 
   get _serviceCallbacks() {
-    this.serviceCallbacks = this.serviceCallbacks ? this.serviceCallbacks : {};
+    this.serviceCallbacks = this.serviceCallbacks || {};
     return this.serviceCallbacks;
   }
 
@@ -1087,7 +1061,7 @@ MVC.View = class extends MVC.Base {
   }
 
   get _uiCallbacks() {
-    this.uiCallbacks = this.uiCallbacks ? this.uiCallbacks : {};
+    this.uiCallbacks = this.uiCallbacks || {};
     return this.uiCallbacks;
   }
 
@@ -1096,7 +1070,7 @@ MVC.View = class extends MVC.Base {
   }
 
   get _observerCallbacks() {
-    this.observerCallbacks = this.observerCallbacks ? this.observerCallbacks : {};
+    this.observerCallbacks = this.observerCallbacks || {};
     return this.observerCallbacks;
   }
 
@@ -1105,7 +1079,7 @@ MVC.View = class extends MVC.Base {
   }
 
   get elementObserver() {
-    this._elementObserver = this._elementObserver ? this._elementObserver : new MutationObserver(this.elementObserve.bind(this));
+    this._elementObserver = this._elementObserver || new MutationObserver(this.elementObserve.bind(this));
     return this._elementObserver;
   }
 
@@ -1126,7 +1100,7 @@ MVC.View = class extends MVC.Base {
   }
 
   get _templates() {
-    this.templates = this.templates ? this.templates : {};
+    this.templates = this.templates || {};
     return this.templates;
   }
 
@@ -1262,7 +1236,7 @@ MVC.Controller = class extends MVC.Base {
   }
 
   get _modelCallbacks() {
-    this.modelCallbacks = this.modelCallbacks ? this.modelCallbacks : {};
+    this.modelCallbacks = this.modelCallbacks || {};
     return this.modelCallbacks;
   }
 
@@ -1271,7 +1245,7 @@ MVC.Controller = class extends MVC.Base {
   }
 
   get _viewCallbacks() {
-    this.viewCallbacks = this.viewCallbacks ? this.viewCallbacks : {};
+    this.viewCallbacks = this.viewCallbacks || {};
     return this.viewCallbacks;
   }
 
@@ -1280,7 +1254,7 @@ MVC.Controller = class extends MVC.Base {
   }
 
   get _controllerCallbacks() {
-    this.controllerCallbacks = this.controllerCallbacks ? this.controllerCallbacks : {};
+    this.controllerCallbacks = this.controllerCallbacks || {};
     return this.controllerCallbacks;
   }
 
@@ -1289,7 +1263,7 @@ MVC.Controller = class extends MVC.Base {
   }
 
   get _models() {
-    this.models = this.models ? this.models : {};
+    this.models = this.models || {};
     return this.models;
   }
 
@@ -1298,7 +1272,7 @@ MVC.Controller = class extends MVC.Base {
   }
 
   get _views() {
-    this.views = this.views ? this.views : {};
+    this.views = this.views || {};
     return this.views;
   }
 
@@ -1307,7 +1281,7 @@ MVC.Controller = class extends MVC.Base {
   }
 
   get _controllers() {
-    this.controllers = this.controllers ? this.controllers : {};
+    this.controllers = this.controllers || {};
     return this.controllers;
   }
 
@@ -1316,7 +1290,7 @@ MVC.Controller = class extends MVC.Base {
   }
 
   get _routers() {
-    this.routers = this.routers ? this.routers : {};
+    this.routers = this.routers || {};
     return this.routers;
   }
 
@@ -1325,7 +1299,7 @@ MVC.Controller = class extends MVC.Base {
   }
 
   get _routerEvents() {
-    this.routerEvents = this.routerEvents ? this.routerEvents : {};
+    this.routerEvents = this.routerEvents || {};
     return this.routerEvents;
   }
 
@@ -1334,7 +1308,7 @@ MVC.Controller = class extends MVC.Base {
   }
 
   get _routerCallbacks() {
-    this.routerCallbacks = this.routerCallbacks ? this.routerCallbacks : {};
+    this.routerCallbacks = this.routerCallbacks || {};
     return this.routerCallbacks;
   }
 
@@ -1343,7 +1317,7 @@ MVC.Controller = class extends MVC.Base {
   }
 
   get _modelEvents() {
-    this.modelEvents = this.modelEvents ? this.modelEvents : {};
+    this.modelEvents = this.modelEvents || {};
     return this.modelEvents;
   }
 
@@ -1352,7 +1326,7 @@ MVC.Controller = class extends MVC.Base {
   }
 
   get _viewEvents() {
-    this.viewEvents = this.viewEvents ? this.viewEvents : {};
+    this.viewEvents = this.viewEvents || {};
     return this.viewEvents;
   }
 
@@ -1361,7 +1335,7 @@ MVC.Controller = class extends MVC.Base {
   }
 
   get _controllerEvents() {
-    this.controllerEvents = this.controllerEvents ? this.controllerEvents : {};
+    this.controllerEvents = this.controllerEvents || {};
     return this.controllerEvents;
   }
 
@@ -1670,7 +1644,7 @@ MVC.Router = class extends MVC.Base {
   }
 
   get _routes() {
-    this.routes = this.routes ? this.routes : {};
+    this.routes = this.routes || {};
     return this.routes;
   }
 

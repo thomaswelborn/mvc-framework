@@ -7,7 +7,7 @@ MVC.Channels = class {
   constructor() {}
 
   get _channels() {
-    this.channels = this.channels ? this.channels : {};
+    this.channels = this.channels || {};
     return this.channels;
   }
 
@@ -27,7 +27,7 @@ MVC.Channels.Channel = class {
   constructor() {}
 
   get _responses() {
-    this.responses = this.responses ? this.responses : {};
+    this.responses = this.responses || this.responses;
     return this.responses;
   }
 

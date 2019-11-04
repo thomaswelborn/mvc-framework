@@ -97,7 +97,7 @@
     },
     "dest": "distribute"
   },
-  "channels": {
+  "events": {
     "src": {
       "globs": [
         "source/MVC/index.js",
@@ -127,6 +127,161 @@
     "concat": {
       "options": {
         "path": "browser/channels.js"
+      }
+    },
+    "minify": {
+      "options": {}
+    },
+    "dest": [
+      ["distribute"]
+    ]
+  },
+  "events": {
+    "src": {
+      "globs": [
+        "source/MVC/index.js",
+        "source/MVC/Events/index.js"
+      ]
+    },
+    "babel": {
+      "options": {
+        "presets": [
+          [
+            "@babel/preset-env",
+            {
+              "targets": {
+                "esmodules": true
+              }
+            }
+          ]
+        ]
+      }
+    },
+    "concat": {
+      "options": {
+        "path": "node/mvc-framework.js"
+      }
+    },
+    "concat": {
+      "options": {
+        "path": "browser/events.js"
+      }
+    },
+    "minify": {
+      "options": {}
+    },
+    "dest": [
+      ["distribute"]
+    ]
+  },
+  "model": {
+    "src": {
+      "globs": [
+        "source/MVC/index.js",
+        "source/MVC/Events/index.js",
+        "source/MVC/Model/index.js"
+      ]
+    },
+    "babel": {
+      "options": {
+        "presets": [
+          [
+            "@babel/preset-env",
+            {
+              "targets": {
+                "esmodules": true
+              }
+            }
+          ]
+        ]
+      }
+    },
+    "concat": {
+      "options": {
+        "path": "node/mvc-framework.js"
+      }
+    },
+    "concat": {
+      "options": {
+        "path": "browser/model.js"
+      }
+    },
+    "minify": {
+      "options": {}
+    },
+    "dest": [
+      ["distribute"]
+    ]
+  },
+  "view": {
+    "src": {
+      "globs": [
+        "source/MVC/index.js",
+        "source/MVC/Events/index.js",
+        "source/MVC/View/index.js"
+      ]
+    },
+    "babel": {
+      "options": {
+        "presets": [
+          [
+            "@babel/preset-env",
+            {
+              "targets": {
+                "esmodules": true
+              }
+            }
+          ]
+        ]
+      }
+    },
+    "concat": {
+      "options": {
+        "path": "node/mvc-framework.js"
+      }
+    },
+    "concat": {
+      "options": {
+        "path": "browser/view.js"
+      }
+    },
+    "minify": {
+      "options": {}
+    },
+    "dest": [
+      ["distribute"]
+    ]
+  },
+  "router": {
+    "src": {
+      "globs": [
+        "source/MVC/index.js",
+        "source/MVC/Events/index.js",
+        "source/MVC/Router/index.js"
+      ]
+    },
+    "babel": {
+      "options": {
+        "presets": [
+          [
+            "@babel/preset-env",
+            {
+              "targets": {
+                "esmodules": true
+              }
+            }
+          ]
+        ]
+      }
+    },
+    "concat": {
+      "options": {
+        "path": "node/mvc-framework.js"
+      }
+    },
+    "concat": {
+      "options": {
+        "path": "browser/router.js"
       }
     },
     "minify": {
