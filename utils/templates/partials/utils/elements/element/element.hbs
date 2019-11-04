@@ -1,0 +1,14 @@
+<{{this.elementName}}
+  {{#_ 'forIn' (_ 'toPairs' this.attributes)}}
+    {{this.[0]}}="{{this.[1]}}"
+  {{/_}}
+>
+{{#if this.innerHTML}}
+  {{this.innerHTML}}
+{{/if}}
+{{#if this.children}}
+  {{> utils/elements/elements this.children}}
+{{/if}}
+{{#if this.closure}}
+  </{{this.elementName}}>
+{{/if}}
