@@ -59,7 +59,8 @@
   "author": "Thomas Welborn",
   "license": "MIT",
   "dependencies": {
-    "@babel/polyfill": "^7.4.4"
+    "@babel/polyfill": "^7.4.4",
+    "ejs": "^2.7.1"
   },
   "description": "Allows data object configuration of Gulp Libraries to become Gulp Tasks, Series, and Parallels.  \r Instead of authoring new Gulpfiles for each project, use Gulp Boilerplate to automatically configure Gulp Processes based on JSON objects."
 }
