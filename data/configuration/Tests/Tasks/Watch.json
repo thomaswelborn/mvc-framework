@@ -27,25 +27,13 @@
   },
   "test-scripts": {
     "globs": [
-      "tests/source/**/*.js"
+      "tests/source/**/*.{ejs,js}"
     ],
     "options": {},
     "task": {
       "type": "series",
       "tasks": [
         "Scripts"
-      ]
-    }
-  },
-  "test-script-templates": {
-    "globs": [
-      "tests/source/**/*.ejs"
-    ],
-    "options": {},
-    "task": {
-      "type": "series",
-      "tasks": [
-        "Copy"
       ]
     }
   },

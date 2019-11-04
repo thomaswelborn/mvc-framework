@@ -37,6 +37,7 @@ global.$ = {
     rollupPluginCommonJS: require('rollup-plugin-commonjs'),
     rollupPluginNodeResolve: require('rollup-plugin-node-resolve'),
     rollupPluginReplace: require('rollup-plugin-replace'),
+    rollupPluginEJS: require('rollup-plugin-ejs'),
     sass: require('gulp-sass'),
     source: require('vinyl-source-stream'),
     spawn: require('child_process').spawnSync,
