@@ -1,9 +1,7 @@
 MVC.Channels.Channel = class {
   constructor() {}
   get _responses() {
-    this.responses = (this.responses)
-      ? this.responses
-      : {}
+    this.responses = this.responses || this.responses
     return this.responses
   }
   response(responseName, responseCallback) {

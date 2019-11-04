@@ -1,9 +1,7 @@
 MVC.Channels = class {
   constructor() {}
   get _channels() {
-    this.channels = (this.channels)
-      ? this.channels
-      : {}
+    this.channels = this.channels || {}
     return this.channels
   }
   channel(channelName) {

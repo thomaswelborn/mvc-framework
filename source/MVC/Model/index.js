@@ -21,9 +21,7 @@ MVC.Model = class extends MVC.Base {
   get _isSetting() { return this.isSetting }
   set _isSetting(isSetting) { this.isSetting = isSetting }
   get _changing() {
-    this.changing = (this.changing)
-      ? this.changing
-      : {}
+    this.changing = this.changing || {}
     return this.changing
   }
   get _localStorage() { return this.localStorage }
@@ -40,9 +38,7 @@ MVC.Model = class extends MVC.Base {
     )
   }
   get _history() {
-    this.history = (this.history)
-      ? this.history
-      : []
+    this.history = this.history || []
     return this.history
   }
   set _history(data) {
@@ -57,9 +53,7 @@ MVC.Model = class extends MVC.Base {
   }
   get _db() {
     let db = localStorage.getItem(this.localStorage.endpoint)
-    this.db = (db)
-      ? db
-      : '{}'
+    this.db = db || '{}'
     return JSON.parse(this.db)
   }
   set _db(db) {
@@ -67,15 +61,11 @@ MVC.Model = class extends MVC.Base {
     localStorage.setItem(this.localStorage.endpoint, db)
   }
   get _data() {
-    this.data =  (this.data)
-      ? this.data
-      : {}
+    this.data =  this.data || {}
     return this.data
   }
   get _dataEvents() {
-    this.dataEvents = (this.dataEvents)
-      ? this.dataEvents
-      : {}
+    this.dataEvents = this.dataEvents || {}
     return this.dataEvents
   }
   set _dataEvents(dataEvents) {
@@ -84,9 +74,7 @@ MVC.Model = class extends MVC.Base {
     )
   }
   get _dataCallbacks() {
-    this.dataCallbacks = (this.dataCallbacks)
-      ? this.dataCallbacks
-      : {}
+    this.dataCallbacks = this.dataCallbacks || {}
     return this.dataCallbacks
   }
   set _dataCallbacks(dataCallbacks) {
@@ -95,9 +83,7 @@ MVC.Model = class extends MVC.Base {
     )
   }
   get _services() {
-    this.services =  (this.services)
-      ? this.services
-      : {}
+    this.services =  this.services || {}
     return this.services
   }
   set _services(services) {
@@ -106,9 +92,7 @@ MVC.Model = class extends MVC.Base {
     )
   }
   get _serviceEvents() {
-    this.serviceEvents = (this.serviceEvents)
-      ? this.serviceEvents
-      : {}
+    this.serviceEvents = this.serviceEvents || {}
     return this.serviceEvents
   }
   set _serviceEvents(serviceEvents) {
@@ -117,9 +101,7 @@ MVC.Model = class extends MVC.Base {
     )
   }
   get _serviceCallbacks() {
-    this.serviceCallbacks = (this.serviceCallbacks)
-      ? this.serviceCallbacks
-      : {}
+    this.serviceCallbacks = this.serviceCallbacks || {}
     return this.serviceCallbacks
   }
   set _serviceCallbacks(serviceCallbacks) {

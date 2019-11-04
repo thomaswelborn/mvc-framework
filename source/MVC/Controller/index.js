@@ -17,9 +17,7 @@ MVC.Controller = class extends MVC.Base {
     'routerEvents'
   ] }
   get _modelCallbacks() {
-    this.modelCallbacks = (this.modelCallbacks)
-      ? this.modelCallbacks
-      : {}
+    this.modelCallbacks = this.modelCallbacks || {}
     return this.modelCallbacks
   }
   set _modelCallbacks(modelCallbacks) {
@@ -28,9 +26,7 @@ MVC.Controller = class extends MVC.Base {
     )
   }
   get _viewCallbacks() {
-    this.viewCallbacks = (this.viewCallbacks)
-      ? this.viewCallbacks
-      : {}
+    this.viewCallbacks = this.viewCallbacks || {}
     return this.viewCallbacks
   }
   set _viewCallbacks(viewCallbacks) {
@@ -39,9 +35,7 @@ MVC.Controller = class extends MVC.Base {
     )
   }
   get _controllerCallbacks() {
-    this.controllerCallbacks = (this.controllerCallbacks)
-      ? this.controllerCallbacks
-      : {}
+    this.controllerCallbacks = this.controllerCallbacks || {}
     return this.controllerCallbacks
   }
   set _controllerCallbacks(controllerCallbacks) {
@@ -50,9 +44,7 @@ MVC.Controller = class extends MVC.Base {
     )
   }
   get _models() {
-    this.models = (this.models)
-      ? this.models
-      : {}
+    this.models = this.models || {}
     return this.models
   }
   set _models(models) {
@@ -61,9 +53,7 @@ MVC.Controller = class extends MVC.Base {
     )
   }
   get _views() {
-    this.views = (this.views)
-      ? this.views
-      : {}
+    this.views = this.views || {}
     return this.views
   }
   set _views(views) {
@@ -72,9 +62,7 @@ MVC.Controller = class extends MVC.Base {
     )
   }
   get _controllers() {
-    this.controllers = (this.controllers)
-      ? this.controllers
-      : {}
+    this.controllers = this.controllers || {}
     return this.controllers
   }
   set _controllers(controllers) {
@@ -83,9 +71,7 @@ MVC.Controller = class extends MVC.Base {
     )
   }
   get _routers() {
-    this.routers = (this.routers)
-      ? this.routers
-      : {}
+    this.routers = this.routers || {}
     return this.routers
   }
   set _routers(routers) {
@@ -94,9 +80,7 @@ MVC.Controller = class extends MVC.Base {
     )
   }
   get _routerEvents() {
-    this.routerEvents = (this.routerEvents)
-      ? this.routerEvents
-      : {}
+    this.routerEvents = this.routerEvents || {}
     return this.routerEvents
   }
   set _routerEvents(routerEvents) {
@@ -105,9 +89,7 @@ MVC.Controller = class extends MVC.Base {
     )
   }
   get _routerCallbacks() {
-    this.routerCallbacks = (this.routerCallbacks)
-      ? this.routerCallbacks
-      : {}
+    this.routerCallbacks = this.routerCallbacks || {}
     return this.routerCallbacks
   }
   set _routerCallbacks(routerCallbacks) {
@@ -116,9 +98,7 @@ MVC.Controller = class extends MVC.Base {
     )
   }
   get _modelEvents() {
-    this.modelEvents = (this.modelEvents)
-      ? this.modelEvents
-      : {}
+    this.modelEvents = this.modelEvents || {}
     return this.modelEvents
   }
   set _modelEvents(modelEvents) {
@@ -127,9 +107,7 @@ MVC.Controller = class extends MVC.Base {
     )
   }
   get _viewEvents() {
-    this.viewEvents = (this.viewEvents)
-      ? this.viewEvents
-      : {}
+    this.viewEvents = this.viewEvents || {}
     return this.viewEvents
   }
   set _viewEvents(viewEvents) {
@@ -138,9 +116,7 @@ MVC.Controller = class extends MVC.Base {
     )
   }
   get _controllerEvents() {
-    this.controllerEvents = (this.controllerEvents)
-      ? this.controllerEvents
-      : {}
+    this.controllerEvents = this.controllerEvents || {}
     return this.controllerEvents
   }
   set _controllerEvents(controllerEvents) {

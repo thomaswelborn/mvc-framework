@@ -67,9 +67,7 @@ MVC.View = class extends MVC.Base {
   get _uiEvents() { return this.uiEvents }
   set _uiEvents(uiEvents) { this.uiEvents = uiEvents }
   get _uiCallbacks() {
-    this.uiCallbacks = (this.uiCallbacks)
-      ? this.uiCallbacks
-      : {}
+    this.uiCallbacks = this.uiCallbacks || {}
     return this.uiCallbacks
   }
   set _uiCallbacks(uiCallbacks) {
@@ -78,9 +76,7 @@ MVC.View = class extends MVC.Base {
     )
   }
   get _observerCallbacks() {
-    this.observerCallbacks = (this.observerCallbacks)
-      ? this.observerCallbacks
-      : {}
+    this.observerCallbacks = this.observerCallbacks || {}
     return this.observerCallbacks
   }
   set _observerCallbacks(observerCallbacks) {
@@ -89,9 +85,7 @@ MVC.View = class extends MVC.Base {
     )
   }
   get elementObserver() {
-    this._elementObserver = (this._elementObserver)
-      ? this._elementObserver
-      : new MutationObserver(this.elementObserve.bind(this))
+    this._elementObserver = this._elementObserver || new MutationObserver(this.elementObserve.bind(this))
     return this._elementObserver
   }
   get _insert() { return this.insert }
@@ -99,9 +93,7 @@ MVC.View = class extends MVC.Base {
   get _enabled() { return this.enabled || false }
   set _enabled(enabled) { this.enabled = enabled }
   get _templates() {
-    this.templates = (this.templates)
-      ? this.templates
-      : {}
+    this.templates = this.templates || {}
     return this.templates
   }
   set _templates(templates) {

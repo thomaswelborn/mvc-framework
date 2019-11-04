@@ -81,8 +81,8 @@ MVC.Router = class extends MVC.Base {
       hashFragments
     ) {
       hashFragments = (hashFragments.length)
-      ? hashFragments
-      : ['/']
+        ? hashFragments
+        : ['/']
       routeData.location.hash = {
         path: hash,
         fragments: hashFragments,
@@ -169,9 +169,7 @@ MVC.Router = class extends MVC.Base {
   get _enabled() { return this.enabled || false }
   set _enabled(enabled) { this.enabled = enabled }
   get _routes() {
-    this.routes = (this.routes)
-      ? this.routes
-      : {}
+    this.routes = this.routes || {}
     return this.routes
   }
   set _routes(routes) {
