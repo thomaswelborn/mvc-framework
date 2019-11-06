@@ -1,12 +1,13 @@
-MVC.Utils.typeOf =  function typeOf(data) {
+import { isArray, isObject } from './is'
+const typeOf = function typeOf(data) {
   switch(typeof data) {
     case 'object':
       let _object
-      if(MVC.Utils.isArray(data)) {
+      if(isArray(data)) {
         // Array
         return 'array'
       } else if(
-        MVC.Utils.isObject(data)
+        isObject(data)
       ) {
         // Object
         return 'object'
@@ -17,7 +18,6 @@ MVC.Utils.typeOf =  function typeOf(data) {
         return 'null'
       }
       return _object
-      break
     case 'string':
     case 'number':
     case 'boolean':
@@ -27,3 +27,4 @@ MVC.Utils.typeOf =  function typeOf(data) {
       break
   }
 }
+export default typeOf

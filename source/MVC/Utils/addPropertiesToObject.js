@@ -1,4 +1,4 @@
-MVC.Utils.addPropertiesToObject = function addPropertiesToObject() {
+const addPropertiesToObject = function addPropertiesToObject() {
   let targetObject
   switch(arguments.length) {
     case 2:
@@ -18,3 +18,4 @@ MVC.Utils.addPropertiesToObject = function addPropertiesToObject() {
   }
   return targetObject
 }
+export default addPropertiesToObject

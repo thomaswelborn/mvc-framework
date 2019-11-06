@@ -1,4 +1,5 @@
-MVC.Channels = class {
+import Channel from './Channel/index'
+const Channels = class {
   constructor() {}
   get _channels() {
     this.channels = this.channels || {}
@@ -7,10 +8,11 @@ MVC.Channels = class {
   channel(channelName) {
     this._channels[channelName] = (this._channels[channelName])
       ? this._channels[channelName]
-      : new MVC.Channels.Channel()
+      : new Channel()
     return this._channels[channelName]
   }
   off(channelName) {
     delete this._channels[channelName]
   }
 }
+export default Channels

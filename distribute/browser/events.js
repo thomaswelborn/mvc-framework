@@ -1,9 +1,47 @@
 "use strict";
 
-var MVC = MVC || {};
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _index = _interopRequireDefault(require("./Events/index"));
+
+var _index2 = _interopRequireDefault(require("./Channels/index"));
+
+var _index3 = _interopRequireDefault(require("./Utils/index"));
+
+var _index4 = _interopRequireDefault(require("./Service/index"));
+
+var _index5 = _interopRequireDefault(require("./Model/index"));
+
+var _index6 = _interopRequireDefault(require("./View/index"));
+
+var _index7 = _interopRequireDefault(require("./Controller/index"));
+
+var _index8 = _interopRequireDefault(require("./Router/index"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var MVC = {
+  Events: _index.default,
+  Channels: _index2.default,
+  Utils: _index3.default,
+  Service: _index4.default,
+  Model: _index5.default,
+  View: _index6.default,
+  Controller: _index7.default,
+  Router: _index8.default
+};
+var _default = MVC;
+exports.default = _default;
 "use strict";
 
-MVC.Events = class {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var Events = class {
   constructor() {}
 
   get _events() {
@@ -76,3 +114,5 @@ MVC.Events = class {
   }
 
 };
+var _default = Events;
+exports.default = _default;

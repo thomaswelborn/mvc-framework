@@ -1,12 +1,21 @@
-MVC.Utils.bindEventsToTargetViewObjects = function bindEventsToTargetViewObjects() {
-  this.toggleEventsForTargetViewObjects('on', ...arguments)
+import toggleEventsForTargetObjects from './toggleEventsForTargetObjects'
+import toggleEventsForTargetViewObjects from './toggleEventsForTargetViewObjects'
+
+const bindEventsToTargetViewObjects = function bindEventsToTargetViewObjects() {
+  toggleEventsForTargetViewObjects('on', ...arguments)
 }
-MVC.Utils.unbindEventsFromTargetViewObjects = function unbindEventsFromTargetViewObjects() {
-  this.toggleEventsForTargetViewObjects('off', ...arguments)
+const unbindEventsFromTargetViewObjects = function unbindEventsFromTargetViewObjects() {
+  toggleEventsForTargetViewObjects('off', ...arguments)
 }
-MVC.Utils.bindEventsToTargetObjects = function bindEventsToTargetObjects() {
-  this.toggleEventsForTargetObjects('on', ...arguments)
+const bindEventsToTargetObjects = function bindEventsToTargetObjects() {
+  toggleEventsForTargetObjects('on', ...arguments)
 }
-MVC.Utils.unbindEventsFromTargetObjects = function unbindEventsFromTargetObjects() {
-  this.toggleEventsForTargetObjects('off', ...arguments)
+const unbindEventsFromTargetObjects = function unbindEventsFromTargetObjects() {
+  toggleEventsForTargetObjects('off', ...arguments)
+}
+export {
+  bindEventsToTargetViewObjects,
+  unbindEventsFromTargetViewObjects,
+  bindEventsToTargetObjects,
+  unbindEventsFromTargetObjects
 }

@@ -1,4 +1,4 @@
-MVC.Events = class {
+const Events = class {
   constructor() {}
   get _events() {
     this.events = this.events || {}
@@ -61,3 +61,4 @@ MVC.Events = class {
     return this
   }
 }
+export default Events

@@ -1,4 +1,7 @@
-MVC.Model = class extends MVC.Base {
+import Utils from '../Utils/index'
+import Base from '../Base/index'
+
+const Model = class extends Base {
   constructor() {
     super(...arguments)
     return this
@@ -69,7 +72,7 @@ MVC.Model = class extends MVC.Base {
     return this.dataEvents
   }
   set _dataEvents(dataEvents) {
-    this.dataEvents = MVC.Utils.addPropertiesToObject(
+    this.dataEvents = Utils.addPropertiesToObject(
       dataEvents, this._dataEvents
     )
   }
@@ -78,7 +81,7 @@ MVC.Model = class extends MVC.Base {
     return this.dataCallbacks
   }
   set _dataCallbacks(dataCallbacks) {
-    this.dataCallbacks = MVC.Utils.addPropertiesToObject(
+    this.dataCallbacks = Utils.addPropertiesToObject(
       dataCallbacks, this._dataCallbacks
     )
   }
@@ -87,7 +90,7 @@ MVC.Model = class extends MVC.Base {
     return this.services
   }
   set _services(services) {
-    this.services = MVC.Utils.addPropertiesToObject(
+    this.services = Utils.addPropertiesToObject(
       services, this._services
     )
   }
@@ -96,7 +99,7 @@ MVC.Model = class extends MVC.Base {
     return this.serviceEvents
   }
   set _serviceEvents(serviceEvents) {
-    this.serviceEvents = MVC.Utils.addPropertiesToObject(
+    this.serviceEvents = Utils.addPropertiesToObject(
       serviceEvents, this._serviceEvents
     )
   }
@@ -105,7 +108,7 @@ MVC.Model = class extends MVC.Base {
     return this.serviceCallbacks
   }
   set _serviceCallbacks(serviceCallbacks) {
-    this.serviceCallbacks = MVC.Utils.addPropertiesToObject(
+    this.serviceCallbacks = Utils.addPropertiesToObject(
       serviceCallbacks, this._serviceCallbacks
     )
   }
@@ -305,7 +308,7 @@ MVC.Model = class extends MVC.Base {
       this.serviceEvents &&
       this.serviceCallbacks
     ) {
-      MVC.Utils.bindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+      Utils.bindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
     }
   }
   disableServiceEvents() {
@@ -314,7 +317,7 @@ MVC.Model = class extends MVC.Base {
       this.serviceEvents &&
       this.serviceCallbacks
     ) {
-      MVC.Utils.unbindEventsFromTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
+      Utils.unbindEventsFromTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
     }
   }
   resetDataEvents() {
@@ -327,7 +330,7 @@ MVC.Model = class extends MVC.Base {
       this.dataEvents &&
       this.dataCallbacks
     ) {
-      MVC.Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
+      Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
     }
   }
   disableDataEvents() {
@@ -336,7 +339,7 @@ MVC.Model = class extends MVC.Base {
       this.dataCallbacks
     ) {
     }
-    MVC.Utils.unbindEventsFromTargetObjects(this.dataEvents, this, this.dataCallbacks)
+    Utils.unbindEventsFromTargetObjects(this.dataEvents, this, this.dataCallbacks)
   }
   enable() {
     let settings = this.settings
@@ -371,3 +374,5 @@ MVC.Model = class extends MVC.Base {
     return JSON.parse(JSON.stringify(data))
   }
 }
+
+export default Model

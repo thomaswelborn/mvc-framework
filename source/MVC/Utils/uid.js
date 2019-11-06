@@ -1,4 +1,4 @@
-MVC.Utils.UID = function () {
+const UID = function () {
   var uuid = '', ii
   for (ii = 0; ii < 32; ii += 1) {
     switch (ii) {
@@ -21,3 +21,4 @@ MVC.Utils.UID = function () {
   }
   return uuid
 }
+export default UID

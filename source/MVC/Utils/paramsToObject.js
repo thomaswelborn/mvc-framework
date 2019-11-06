@@ -1,4 +1,4 @@
-MVC.Utils.paramsToObject = function paramsToObject(params) {
+const paramsToObject = function paramsToObject(params) {
     var params = params.split('&')
     var object = {}
     params.forEach((paramData) => {
@@ -7,3 +7,4 @@ MVC.Utils.paramsToObject = function paramsToObject(params) {
     })
     return JSON.parse(JSON.stringify(object))
 }
+export default paramsToObject

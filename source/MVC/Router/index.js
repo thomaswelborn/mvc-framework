@@ -1,4 +1,7 @@
-MVC.Router = class extends MVC.Base {
+import Utils from '../Utils/index'
+import Base from '../Base/index'
+
+const Router = class extends Base {
   constructor() {
     super(...arguments)
     return this
@@ -70,7 +73,7 @@ MVC.Router = class extends MVC.Base {
       : null
     let params = this.params
     let paramData = (params)
-      ? MVC.Utils.paramsToObject(params)
+      ? Utils.paramsToObject(params)
       : null
     if(this.protocol) routeData.location.protocol = this.protocol
     if(this.hostname) routeData.location.hostname = this.hostname
@@ -173,7 +176,7 @@ MVC.Router = class extends MVC.Base {
     return this.routes
   }
   set _routes(routes) {
-    this.routes = MVC.Utils.addPropertiesToObject(
+    this.routes = Utils.addPropertiesToObject(
       routes, this._routes
     )
   }
@@ -261,3 +264,4 @@ MVC.Router = class extends MVC.Base {
     window.location.href = path
   }
 }
+export default Router

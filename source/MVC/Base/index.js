@@ -1,32 +1,31 @@
-MVC.Base = class extends MVC.Events {
+import Utils from '../Utils/index'
+import Events from '../Events/index'
+
+const Base = class extends Events {
   constructor(settings, configuration) {
     super()
-    if(configuration) this._configuration = configuration
     if(settings) this._settings = settings
+    if(configuration) this._configuration = configuration
   }
   get uid() {
     this._uid = (this._uid)
     ? this._uid
-    : MVC.Utils.UID()
+    : Utils.UID()
     return this._uid
   }
   get _name() { return this.name }
   set _name(name) { this.name = name }
   get _configuration() {
-    this.configuration = (this.configuration)
-      ? this.configuration
-      : {}
+    this.configuration = this.configuration || {}
     return this.configuration
   }
   set _configuration(configuration) { this.configuration = configuration }
   get _settings() {
-    this.settings = (this.settings)
-      ? this.settings
-      : {}
+    this.settings = this.settings || {}
     return this.settings
   }
   set _settings(settings) {
-    this.settings = MVC.Utils.addPropertiesToObject(
+    this.settings = Utils.addPropertiesToObject(
       settings, this._settings
     )
   }
@@ -71,3 +70,4 @@ MVC.Base = class extends MVC.Events {
     return this
   }
 }
+export default Base

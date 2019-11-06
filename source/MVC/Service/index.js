@@ -1,4 +1,7 @@
-MVC.Service = class extends MVC.Base {
+import Utils from '../Utils/index'
+import Base from '../Base/index'
+
+const Service = class extends Base {
   constructor() {
     super(...arguments)
     return this
@@ -87,3 +90,4 @@ MVC.Service = class extends MVC.Base {
     return this
   }
 }
+export default Service

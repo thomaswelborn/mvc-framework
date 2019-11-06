@@ -1,9 +1,47 @@
 "use strict";
 
-var MVC = MVC || {};
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _index = _interopRequireDefault(require("./Events/index"));
+
+var _index2 = _interopRequireDefault(require("./Channels/index"));
+
+var _index3 = _interopRequireDefault(require("./Utils/index"));
+
+var _index4 = _interopRequireDefault(require("./Service/index"));
+
+var _index5 = _interopRequireDefault(require("./Model/index"));
+
+var _index6 = _interopRequireDefault(require("./View/index"));
+
+var _index7 = _interopRequireDefault(require("./Controller/index"));
+
+var _index8 = _interopRequireDefault(require("./Router/index"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var MVC = {
+  Events: _index.default,
+  Channels: _index2.default,
+  Utils: _index3.default,
+  Service: _index4.default,
+  Model: _index5.default,
+  View: _index6.default,
+  Controller: _index7.default,
+  Router: _index8.default
+};
+var _default = MVC;
+exports.default = _default;
 "use strict";
 
-MVC.Events = class {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var Events = class {
   constructor() {}
 
   get _events() {
@@ -76,11 +114,25 @@ MVC.Events = class {
   }
 
 };
+var _default = Events;
+exports.default = _default;
 "use strict";
 
-MVC.View = class extends MVC.Base {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _index = _interopRequireDefault(require("../Utils/index"));
+
+var _index2 = _interopRequireDefault(require("../Base/index"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var View = class extends _index2.default {
   constructor() {
     super(...arguments);
+    this.enable();
     return this;
   }
 
@@ -170,7 +222,7 @@ MVC.View = class extends MVC.Base {
   }
 
   set _uiCallbacks(uiCallbacks) {
-    this.uiCallbacks = MVC.Utils.addPropertiesToObject(uiCallbacks, this._uiCallbacks);
+    this.uiCallbacks = _index.default.addPropertiesToObject(uiCallbacks, this._uiCallbacks);
   }
 
   get _observerCallbacks() {
@@ -179,7 +231,7 @@ MVC.View = class extends MVC.Base {
   }
 
   set _observerCallbacks(observerCallbacks) {
-    this.observerCallbacks = MVC.Utils.addPropertiesToObject(observerCallbacks, this._observerCallbacks);
+    this.observerCallbacks = _index.default.addPropertiesToObject(observerCallbacks, this._observerCallbacks);
   }
 
   get elementObserver() {
@@ -209,7 +261,7 @@ MVC.View = class extends MVC.Base {
   }
 
   set _templates(templates) {
-    this.templates = MVC.Utils.addPropertiesToObject(templates, this._templates);
+    this.templates = _index.default.addPropertiesToObject(templates, this._templates);
   }
 
   elementObserve(mutationRecordList, observer) {
@@ -233,7 +285,7 @@ MVC.View = class extends MVC.Base {
     if (this.insert) {
       var parentElement;
 
-      if (MVC.Utils.typeOf(this.insert.element) === 'string') {
+      if (_index.default.typeOf(this.insert.element) === 'string') {
         parentElement = document.querySelectorAll(this.insert.element);
       } else {
         parentElement = this.insert.element;
@@ -278,7 +330,7 @@ MVC.View = class extends MVC.Base {
 
   enableUIEvents() {
     if (this.uiEvents && this.ui && this.uiCallbacks) {
-      MVC.Utils.bindEventsToTargetViewObjects(this.uiEvents, this.ui, this.uiCallbacks);
+      _index.default.bindEventsToTargetViewObjects(this.uiEvents, this.ui, this.uiCallbacks);
     }
 
     return this;
@@ -286,24 +338,28 @@ MVC.View = class extends MVC.Base {
 
   enableRenderers() {
     var settings = this.settings || {};
-    MVC.Utils.objectQuery('[/^render.*?/]', settings).forEach((_ref2) => {
+
+    _index.default.objectQuery('[/^render.*?/]', settings).forEach((_ref2) => {
       var [rendererName, rendererFunction] = _ref2;
       this[rendererName] = rendererFunction;
     });
+
     return this;
   }
 
   disableRenderers() {
     var settings = this.settings || {};
-    MVC.Utils.objectQuery('[/^render.*?/]', settings).forEach((rendererName, rendererFunction) => {
+
+    _index.default.objectQuery('[/^render.*?/]', settings).forEach((rendererName, rendererFunction) => {
       delete this[rendererName];
     });
+
     return this;
   }
 
   disableUIEvents() {
     if (this.uiEvents && this.ui && this.uiCallbacks) {
-      MVC.Utils.unbindEventsFromTargetViewObjects(this.uiEvents, this.ui, this.uiCallbacks);
+      _index.default.unbindEventsFromTargetViewObjects(this.uiEvents, this.ui, this.uiCallbacks);
     }
 
     return this;
@@ -328,3 +384,5 @@ MVC.View = class extends MVC.Base {
   }
 
 };
+var _default = View;
+exports.default = _default;

@@ -1,4 +1,7 @@
-MVC.Controller = class extends MVC.Base {
+import Utils from '../Utils/index'
+import Base from '../Base/index'
+
+const Controller = class extends Base {
   constructor() {
     super(...arguments)
   }
@@ -21,7 +24,7 @@ MVC.Controller = class extends MVC.Base {
     return this.modelCallbacks
   }
   set _modelCallbacks(modelCallbacks) {
-    this.modelCallbacks = MVC.Utils.addPropertiesToObject(
+    this.modelCallbacks = Utils.addPropertiesToObject(
       modelCallbacks, this._modelCallbacks
     )
   }
@@ -30,7 +33,7 @@ MVC.Controller = class extends MVC.Base {
     return this.viewCallbacks
   }
   set _viewCallbacks(viewCallbacks) {
-    this.viewCallbacks = MVC.Utils.addPropertiesToObject(
+    this.viewCallbacks = Utils.addPropertiesToObject(
       viewCallbacks, this._viewCallbacks
     )
   }
@@ -39,7 +42,7 @@ MVC.Controller = class extends MVC.Base {
     return this.controllerCallbacks
   }
   set _controllerCallbacks(controllerCallbacks) {
-    this.controllerCallbacks = MVC.Utils.addPropertiesToObject(
+    this.controllerCallbacks = Utils.addPropertiesToObject(
       controllerCallbacks, this._controllerCallbacks
     )
   }
@@ -48,7 +51,7 @@ MVC.Controller = class extends MVC.Base {
     return this.models
   }
   set _models(models) {
-    this.models = MVC.Utils.addPropertiesToObject(
+    this.models = Utils.addPropertiesToObject(
       models, this._models
     )
   }
@@ -57,7 +60,7 @@ MVC.Controller = class extends MVC.Base {
     return this.views
   }
   set _views(views) {
-    this.views = MVC.Utils.addPropertiesToObject(
+    this.views = Utils.addPropertiesToObject(
       views, this._views
     )
   }
@@ -66,7 +69,7 @@ MVC.Controller = class extends MVC.Base {
     return this.controllers
   }
   set _controllers(controllers) {
-    this.controllers = MVC.Utils.addPropertiesToObject(
+    this.controllers = Utils.addPropertiesToObject(
       controllers, this._controllers
     )
   }
@@ -75,7 +78,7 @@ MVC.Controller = class extends MVC.Base {
     return this.routers
   }
   set _routers(routers) {
-    this.routers = MVC.Utils.addPropertiesToObject(
+    this.routers = Utils.addPropertiesToObject(
       routers, this._routers
     )
   }
@@ -84,7 +87,7 @@ MVC.Controller = class extends MVC.Base {
     return this.routerEvents
   }
   set _routerEvents(routerEvents) {
-    this.routerEvents = MVC.Utils.addPropertiesToObject(
+    this.routerEvents = Utils.addPropertiesToObject(
       routerEvents, this._routerEvents
     )
   }
@@ -93,7 +96,7 @@ MVC.Controller = class extends MVC.Base {
     return this.routerCallbacks
   }
   set _routerCallbacks(routerCallbacks) {
-    this.routerCallbacks = MVC.Utils.addPropertiesToObject(
+    this.routerCallbacks = Utils.addPropertiesToObject(
       routerCallbacks, this._routerCallbacks
     )
   }
@@ -102,7 +105,7 @@ MVC.Controller = class extends MVC.Base {
     return this.modelEvents
   }
   set _modelEvents(modelEvents) {
-    this.modelEvents = MVC.Utils.addPropertiesToObject(
+    this.modelEvents = Utils.addPropertiesToObject(
       modelEvents, this._modelEvents
     )
   }
@@ -111,7 +114,7 @@ MVC.Controller = class extends MVC.Base {
     return this.viewEvents
   }
   set _viewEvents(viewEvents) {
-    this.viewEvents = MVC.Utils.addPropertiesToObject(
+    this.viewEvents = Utils.addPropertiesToObject(
       viewEvents, this._viewEvents
     )
   }
@@ -120,7 +123,7 @@ MVC.Controller = class extends MVC.Base {
     return this.controllerEvents
   }
   set _controllerEvents(controllerEvents) {
-    this.controllerEvents = MVC.Utils.addPropertiesToObject(
+    this.controllerEvents = Utils.addPropertiesToObject(
       controllerEvents, this._controllerEvents
     )
   }
@@ -137,7 +140,7 @@ MVC.Controller = class extends MVC.Base {
       this.models &&
       this.modelCallbacks
     ) {
-      MVC.Utils.bindEventsToTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
+      Utils.bindEventsToTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
     }
     return this
   }
@@ -147,7 +150,7 @@ MVC.Controller = class extends MVC.Base {
       this.models &&
       this.modelCallbacks
     ) {
-      MVC.Utils.unbindEventsFromTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
+      Utils.unbindEventsFromTargetObjects(this.modelEvents, this.models, this.modelCallbacks)
     }
     return this
   }
@@ -162,7 +165,7 @@ MVC.Controller = class extends MVC.Base {
       this.views &&
       this.viewCallbacks
     ) {
-      MVC.Utils.bindEventsToTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
+      Utils.bindEventsToTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
     }
     return this
   }
@@ -172,7 +175,7 @@ MVC.Controller = class extends MVC.Base {
       this.views &&
       this.viewCallbacks
     ) {
-      MVC.Utils.unbindEventsFromTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
+      Utils.unbindEventsFromTargetObjects(this.viewEvents, this.views, this.viewCallbacks)
     }
     return this
   }
@@ -187,7 +190,7 @@ MVC.Controller = class extends MVC.Base {
       this.controllers &&
       this.controllerCallbacks
     ) {
-      MVC.Utils.bindEventsToTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
+      Utils.bindEventsToTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
     }
     return this
   }
@@ -197,7 +200,7 @@ MVC.Controller = class extends MVC.Base {
       this.controllers &&
       this.controllerCallbacks
     ) {
-      MVC.Utils.unbindEventsFromTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
+      Utils.unbindEventsFromTargetObjects(this.controllerEvents, this.controllers, this.controllerCallbacks)
     }
     return this
   }
@@ -212,7 +215,7 @@ MVC.Controller = class extends MVC.Base {
       this.routers &&
       this.routerCallbacks
     ) {
-      MVC.Utils.bindEventsToTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
+      Utils.bindEventsToTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
     }
     return this
   }
@@ -222,7 +225,7 @@ MVC.Controller = class extends MVC.Base {
       this.routers &&
       this.routerCallbacks
     ) {
-      MVC.Utils.unbindEventsFromTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
+      Utils.unbindEventsFromTargetObjects(this.routerEvents, this.routers, this.routerCallbacks)
     }
     return this
   }
@@ -260,3 +263,4 @@ MVC.Controller = class extends MVC.Base {
     return this
   }
 }
+export default Controller

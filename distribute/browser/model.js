@@ -1,9 +1,47 @@
 "use strict";
 
-var MVC = MVC || {};
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _index = _interopRequireDefault(require("./Events/index"));
+
+var _index2 = _interopRequireDefault(require("./Channels/index"));
+
+var _index3 = _interopRequireDefault(require("./Utils/index"));
+
+var _index4 = _interopRequireDefault(require("./Service/index"));
+
+var _index5 = _interopRequireDefault(require("./Model/index"));
+
+var _index6 = _interopRequireDefault(require("./View/index"));
+
+var _index7 = _interopRequireDefault(require("./Controller/index"));
+
+var _index8 = _interopRequireDefault(require("./Router/index"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var MVC = {
+  Events: _index.default,
+  Channels: _index2.default,
+  Utils: _index3.default,
+  Service: _index4.default,
+  Model: _index5.default,
+  View: _index6.default,
+  Controller: _index7.default,
+  Router: _index8.default
+};
+var _default = MVC;
+exports.default = _default;
 "use strict";
 
-MVC.Events = class {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var Events = class {
   constructor() {}
 
   get _events() {
@@ -76,9 +114,22 @@ MVC.Events = class {
   }
 
 };
+var _default = Events;
+exports.default = _default;
 "use strict";
 
-MVC.Model = class extends MVC.Base {
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _index = _interopRequireDefault(require("../Utils/index"));
+
+var _index2 = _interopRequireDefault(require("../Base/index"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Model = class extends _index2.default {
   constructor() {
     super(...arguments);
     return this;
@@ -172,7 +223,7 @@ MVC.Model = class extends MVC.Base {
   }
 
   set _dataEvents(dataEvents) {
-    this.dataEvents = MVC.Utils.addPropertiesToObject(dataEvents, this._dataEvents);
+    this.dataEvents = _index.default.addPropertiesToObject(dataEvents, this._dataEvents);
   }
 
   get _dataCallbacks() {
@@ -181,7 +232,7 @@ MVC.Model = class extends MVC.Base {
   }
 
   set _dataCallbacks(dataCallbacks) {
-    this.dataCallbacks = MVC.Utils.addPropertiesToObject(dataCallbacks, this._dataCallbacks);
+    this.dataCallbacks = _index.default.addPropertiesToObject(dataCallbacks, this._dataCallbacks);
   }
 
   get _services() {
@@ -190,7 +241,7 @@ MVC.Model = class extends MVC.Base {
   }
 
   set _services(services) {
-    this.services = MVC.Utils.addPropertiesToObject(services, this._services);
+    this.services = _index.default.addPropertiesToObject(services, this._services);
   }
 
   get _serviceEvents() {
@@ -199,7 +250,7 @@ MVC.Model = class extends MVC.Base {
   }
 
   set _serviceEvents(serviceEvents) {
-    this.serviceEvents = MVC.Utils.addPropertiesToObject(serviceEvents, this._serviceEvents);
+    this.serviceEvents = _index.default.addPropertiesToObject(serviceEvents, this._serviceEvents);
   }
 
   get _serviceCallbacks() {
@@ -208,7 +259,7 @@ MVC.Model = class extends MVC.Base {
   }
 
   set _serviceCallbacks(serviceCallbacks) {
-    this.serviceCallbacks = MVC.Utils.addPropertiesToObject(serviceCallbacks, this._serviceCallbacks);
+    this.serviceCallbacks = _index.default.addPropertiesToObject(serviceCallbacks, this._serviceCallbacks);
   }
 
   get _enabled() {
@@ -416,13 +467,13 @@ MVC.Model = class extends MVC.Base {
 
   enableServiceEvents() {
     if (this.services && this.serviceEvents && this.serviceCallbacks) {
-      MVC.Utils.bindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks);
+      _index.default.bindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks);
     }
   }
 
   disableServiceEvents() {
     if (this.services && this.serviceEvents && this.serviceCallbacks) {
-      MVC.Utils.unbindEventsFromTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks);
+      _index.default.unbindEventsFromTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks);
     }
   }
 
@@ -432,14 +483,14 @@ MVC.Model = class extends MVC.Base {
 
   enableDataEvents() {
     if (this.dataEvents && this.dataCallbacks) {
-      MVC.Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks);
+      _index.default.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks);
     }
   }
 
   disableDataEvents() {
     if (this.dataEvents && this.dataCallbacks) {}
 
-    MVC.Utils.unbindEventsFromTargetObjects(this.dataEvents, this, this.dataCallbacks);
+    _index.default.unbindEventsFromTargetObjects(this.dataEvents, this, this.dataCallbacks);
   }
 
   enable() {
@@ -478,3 +529,5 @@ MVC.Model = class extends MVC.Base {
   }
 
 };
+var _default = Model;
+exports.default = _default;

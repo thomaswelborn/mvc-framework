@@ -1,6 +1,10 @@
-MVC.View = class extends MVC.Base {
+import Utils from '../Utils/index'
+import Base from '../Base/index'
+
+const View = class extends Base {
   constructor() {
     super(...arguments)
+    this.enable()
     return this
   }
   get elementKeyMap() { return [
@@ -71,7 +75,7 @@ MVC.View = class extends MVC.Base {
     return this.uiCallbacks
   }
   set _uiCallbacks(uiCallbacks) {
-    this.uiCallbacks = MVC.Utils.addPropertiesToObject(
+    this.uiCallbacks = Utils.addPropertiesToObject(
       uiCallbacks, this._uiCallbacks
     )
   }
@@ -80,7 +84,7 @@ MVC.View = class extends MVC.Base {
     return this.observerCallbacks
   }
   set _observerCallbacks(observerCallbacks) {
-    this.observerCallbacks = MVC.Utils.addPropertiesToObject(
+    this.observerCallbacks = Utils.addPropertiesToObject(
       observerCallbacks, this._observerCallbacks
     )
   }
@@ -97,7 +101,7 @@ MVC.View = class extends MVC.Base {
     return this.templates
   }
   set _templates(templates) {
-    this.templates = MVC.Utils.addPropertiesToObject(
+    this.templates = Utils.addPropertiesToObject(
       templates, this._templates
     )
   }
@@ -118,7 +122,7 @@ MVC.View = class extends MVC.Base {
   autoInsert() {
     if(this.insert) {
       let parentElement
-      if(MVC.Utils.typeOf(this.insert.element) === 'string') {
+      if(Utils.typeOf(this.insert.element) === 'string') {
         parentElement = document.querySelectorAll(this.insert.element)
       } else {
         parentElement = this.insert.element
@@ -171,7 +175,7 @@ MVC.View = class extends MVC.Base {
       this.ui &&
       this.uiCallbacks
     ) {
-      MVC.Utils.bindEventsToTargetViewObjects(
+      Utils.bindEventsToTargetViewObjects(
         this.uiEvents,
         this.ui,
         this.uiCallbacks
@@ -181,7 +185,7 @@ MVC.View = class extends MVC.Base {
   }
   enableRenderers() {
     let settings = this.settings || {}
-    MVC.Utils.objectQuery(
+    Utils.objectQuery(
       '[/^render.*?/]',
       settings
     ).forEach(([rendererName, rendererFunction]) => {
@@ -191,7 +195,7 @@ MVC.View = class extends MVC.Base {
   }
   disableRenderers() {
     let settings = this.settings || {}
-    MVC.Utils.objectQuery(
+    Utils.objectQuery(
       '[/^render.*?/]',
       settings
     ).forEach((rendererName, rendererFunction) => {
@@ -205,7 +209,7 @@ MVC.View = class extends MVC.Base {
       this.ui &&
       this.uiCallbacks
     ) {
-      MVC.Utils.unbindEventsFromTargetViewObjects(
+      Utils.unbindEventsFromTargetViewObjects(
         this.uiEvents,
         this.ui,
         this.uiCallbacks
@@ -239,3 +243,4 @@ MVC.View = class extends MVC.Base {
     return this
   }
 }
+export default View

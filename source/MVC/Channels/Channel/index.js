@@ -1,4 +1,4 @@
-MVC.Channels.Channel = class {
+const Channel = class {
   constructor() {}
   get _responses() {
     this.responses = this.responses || this.responses
@@ -27,3 +27,4 @@ MVC.Channels.Channel = class {
     }
   }
 }
+export default Channel
