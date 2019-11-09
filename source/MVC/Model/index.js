@@ -4,9 +4,14 @@ import Base from '../Base/index'
 const Model = class extends Base {
   constructor() {
     super(...arguments)
+    this.addProperties()
     return this
   }
-  get keyMap() { return [
+  get bindableClassProperties() { return [
+    'data',
+    'services'
+  ] }
+  get classSettingsProperties() { return [
     'name',
     'schema',
     'localStorage',
@@ -63,57 +68,6 @@ const Model = class extends Base {
     db = JSON.stringify(db)
     localStorage.setItem(this.localStorage.endpoint, db)
   }
-  get _data() {
-    this.data =  this.data || {}
-    return this.data
-  }
-  get _dataEvents() {
-    this.dataEvents = this.dataEvents || {}
-    return this.dataEvents
-  }
-  set _dataEvents(dataEvents) {
-    this.dataEvents = Utils.addPropertiesToObject(
-      dataEvents, this._dataEvents
-    )
-  }
-  get _dataCallbacks() {
-    this.dataCallbacks = this.dataCallbacks || {}
-    return this.dataCallbacks
-  }
-  set _dataCallbacks(dataCallbacks) {
-    this.dataCallbacks = Utils.addPropertiesToObject(
-      dataCallbacks, this._dataCallbacks
-    )
-  }
-  get _services() {
-    this.services =  this.services || {}
-    return this.services
-  }
-  set _services(services) {
-    this.services = Utils.addPropertiesToObject(
-      services, this._services
-    )
-  }
-  get _serviceEvents() {
-    this.serviceEvents = this.serviceEvents || {}
-    return this.serviceEvents
-  }
-  set _serviceEvents(serviceEvents) {
-    this.serviceEvents = Utils.addPropertiesToObject(
-      serviceEvents, this._serviceEvents
-    )
-  }
-  get _serviceCallbacks() {
-    this.serviceCallbacks = this.serviceCallbacks || {}
-    return this.serviceCallbacks
-  }
-  set _serviceCallbacks(serviceCallbacks) {
-    this.serviceCallbacks = Utils.addPropertiesToObject(
-      serviceCallbacks, this._serviceCallbacks
-    )
-  }
-  get _enabled() { return this.enabled || false }
-  set _enabled(enabled) { this.enabled = enabled }
   get() {
     switch(arguments.length) {
       case 0:
@@ -296,78 +250,6 @@ const Model = class extends Base {
     if(this.defaults) Object.assign(_defaults, this.defaults)
     if(this.localStorage) Object.assign(_defaults, this._db)
     if(Object.keys(_defaults)) this.set(_defaults)
-  }
-  resetServiceEvents() {
-    return this
-      .disableServiceEvents()
-      .enableServiceEvents()
-  }
-  enableServiceEvents() {
-    if(
-      this.services &&
-      this.serviceEvents &&
-      this.serviceCallbacks
-    ) {
-      Utils.bindEventsToTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
-    }
-  }
-  disableServiceEvents() {
-    if(
-      this.services &&
-      this.serviceEvents &&
-      this.serviceCallbacks
-    ) {
-      Utils.unbindEventsFromTargetObjects(this.serviceEvents, this.services, this.serviceCallbacks)
-    }
-  }
-  resetDataEvents() {
-    return this
-      .disableDataEvents()
-      .enableDataEvents()
-  }
-  enableDataEvents() {
-    if(
-      this.dataEvents &&
-      this.dataCallbacks
-    ) {
-      Utils.bindEventsToTargetObjects(this.dataEvents, this, this.dataCallbacks)
-    }
-  }
-  disableDataEvents() {
-    if(
-      this.dataEvents &&
-      this.dataCallbacks
-    ) {
-    }
-    Utils.unbindEventsFromTargetObjects(this.dataEvents, this, this.dataCallbacks)
-  }
-  enable() {
-    let settings = this.settings
-    if(
-      !this.enabled
-    ) {
-      this.setProperties(settings || {}, this.keyMap, {
-        'data': function(value) {
-          this.set(value)
-        }.bind(this)
-      })
-      this.enableServiceEvents()
-      this.enableDataEvents()
-      this._enabled = true
-    }
-    return this
-  }
-  disable() {
-    let settings = this.settings
-    if(
-      this.enabled
-    ) {
-      this.disableServiceEvents()
-      this.disableDataEvents()
-      this.deleteProperties(settings || {}, this.keyMap)
-      this._enabled = false
-    }
-    return this
   }
   parse(data) {
     data = data || this._data || {}

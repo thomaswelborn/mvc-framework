@@ -169,8 +169,6 @@ const Router = class extends Base {
       })
     return routeData
   }
-  get _enabled() { return this.enabled || false }
-  set _enabled(enabled) { this.enabled = enabled }
   get _routes() {
     this.routes = this.routes || {}
     return this.routes
@@ -193,26 +191,6 @@ const Router = class extends Base {
   routeFragmentNameRegExp(fragment) {
     return new RegExp('^'.concat(fragment, '$'))
   }
-  enable() {
-    if(
-      !this.enabled
-    ) {
-      this.enableEvents()
-      this.enableRoutes()
-      this._enabled = true
-    }
-    return this
-  }
-  disable() {
-    if(
-      this.enabled
-    ) {
-      this.disableEvents()
-      this.disableRoutes()
-      this._enabled = false
-    }
-    return this
-  }
   enableRoutes() {
     if(this.settings.controller) this._controller = this.settings.controller
     this._routes = Object.entries(this.settings.routes).reduce(
@@ -234,16 +212,11 @@ const Router = class extends Base {
     )
     return this
   }
-  disableRoutes() {
-    delete this._routes
-    delete this._controller
-    return this
-  }
-  enableEvents() {
+  enableRouteEvents() {
     window.addEventListener('hashchange', this.routeChange.bind(this))
     return this
   }
-  disableEvents() {
+  disableRouteEvents() {
     window.removeEventListener('hashchange', this.routeChange.bind(this))
     return this
   }

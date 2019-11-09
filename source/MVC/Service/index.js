@@ -4,6 +4,7 @@ import Base from '../Base/index'
 const Service = class extends Base {
   constructor() {
     super(...arguments)
+    this.addProperties()
     return this
   }
   get _defaults() { return this.defaults || {
@@ -38,9 +39,7 @@ const Service = class extends Base {
       : new XMLHttpRequest()
     return this.xhr
   }
-  get _enabled() { return this.enabled || false }
-  set _enabled(enabled) { this.enabled = enabled }
-  request(data) {
+  request() {
     data = data || this.data || null
     return new Promise((resolve, reject) => {
       if(this._xhr.status === 200) this._xhr.abort()
@@ -63,21 +62,18 @@ const Service = class extends Base {
   enable() {
     let settings = this.settings
     if(
-      !this.enabled &&
       Object.keys(settings).length
     ) {
       if(settings.type) this._type = settings.type
       if(settings.url) this._url = settings.url
       if(settings.data) this._data = settings.data || null
       if(this.settings.responseType) this._responseType = this._settings.responseType
-      this._enabled = true
     }
     return this
   }
   disable() {
     let settings = this.settings
     if(
-      this.enabled &&
       Object.keys(settings).length
     ) {
       delete this._type
@@ -85,7 +81,6 @@ const Service = class extends Base {
       delete this._data
       delete this._headers
       delete this._responseType
-      this._enabled = false
     }
     return this
   }

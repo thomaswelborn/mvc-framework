@@ -1,23 +1,22 @@
 import Utils from '../Utils/index'
 import Base from '../Base/index'
 
-const View = class extends Base {
+class View extends Base {
   constructor() {
     super(...arguments)
-    this.enable()
-    return this
   }
-  get elementKeyMap() { return [
+  get bindableClassProperties() { return [
+    'uiElement'
+  ] }
+  get classSettingsProperties() { return [
     'elementName',
     'element',
     'attributes',
+    'uiElements',
+    'uiElementEvents',
+    'uiElementCallbacks',
     'templates',
     'insert'
-  ] }
-  get uiKeyMap() { return [
-    'ui',
-    'uiCallbacks',
-    'uiEvents'
   ] }
   get _elementName() { return this._element.tagName }
   set _elementName(elementName) {
@@ -48,37 +47,6 @@ const View = class extends Base {
       }
     }
   }
-  get ui() { return this._ui }
-  get _ui() {
-    let ui = {}
-    ui[':scope'] = this.element
-    Object.entries(this.uiElements)
-      .forEach(([uiKey, uiValue]) => {
-        if(typeof uiValue === 'string') {
-          let scopeRegExp = new RegExp(/^(\:scope(\W){0,}>{0,})/)
-          uiValue = uiValue.replace(scopeRegExp, '')
-          ui[uiKey] = this.element.querySelectorAll(uiValue)
-        } else if(
-          uiValue instanceof HTMLElement ||
-          uiValue instanceof Document
-        ) {
-          ui[uiKey] = uiValue
-        }
-      })
-    return ui
-  }
-  set _ui(ui) { this.uiElements = ui }
-  get _uiEvents() { return this.uiEvents }
-  set _uiEvents(uiEvents) { this.uiEvents = uiEvents }
-  get _uiCallbacks() {
-    this.uiCallbacks = this.uiCallbacks || {}
-    return this.uiCallbacks
-  }
-  set _uiCallbacks(uiCallbacks) {
-    this.uiCallbacks = Utils.addPropertiesToObject(
-      uiCallbacks, this._uiCallbacks
-    )
-  }
   get _observerCallbacks() {
     this.observerCallbacks = this.observerCallbacks || {}
     return this.observerCallbacks
@@ -94,8 +62,6 @@ const View = class extends Base {
   }
   get _insert() { return this.insert }
   set _insert(insert) { this.insert = insert }
-  get _enabled() { return this.enabled || false }
-  set _enabled(enabled) { this.enabled = enabled }
   get _templates() {
     this.templates = this.templates || {}
     return this.templates
@@ -146,100 +112,6 @@ const View = class extends Base {
       this.element &&
       this.element.parentElement
     ) this.element.parentElement.removeChild(this.element)
-    return this
-  }
-  enableElement() {
-    return this.setProperties(this.settings || {}, this.elementKeyMap)
-  }
-  disableElement() {
-    return this.deleteProperties(this.settings || {}, this.elementKeyMap)
-  }
-  resetUI() {
-    return this
-      .disableUI()
-      .enableUI()
-  }
-  enableUI() {
-    return this
-      .setProperties(this.settings || {}, this.uiKeyMap)
-      .enableUIEvents()
-  }
-  disableUI() {
-    return this
-      .disableUIEvents()
-      .deleteProperties(this.settings || {}, this.uiKeyMap)
-  }
-  enableUIEvents() {
-    if(
-      this.uiEvents &&
-      this.ui &&
-      this.uiCallbacks
-    ) {
-      Utils.bindEventsToTargetViewObjects(
-        this.uiEvents,
-        this.ui,
-        this.uiCallbacks
-      )
-    }
-    return this
-  }
-  enableRenderers() {
-    let settings = this.settings || {}
-    Utils.objectQuery(
-      '[/^render.*?/]',
-      settings
-    ).forEach(([rendererName, rendererFunction]) => {
-      this[rendererName] = rendererFunction
-    })
-    return this
-  }
-  disableRenderers() {
-    let settings = this.settings || {}
-    Utils.objectQuery(
-      '[/^render.*?/]',
-      settings
-    ).forEach((rendererName, rendererFunction) => {
-      delete this[rendererName]
-    })
-    return this
-  }
-  disableUIEvents() {
-    if(
-      this.uiEvents &&
-      this.ui &&
-      this.uiCallbacks
-    ) {
-      Utils.unbindEventsFromTargetViewObjects(
-        this.uiEvents,
-        this.ui,
-        this.uiCallbacks
-      )
-    }
-    return this
-  }
-  enable() {
-    let settings = this.settings || {}
-    if(
-      !this._enabled
-    ) {
-      this
-        .enableRenderers()
-        .enableElement()
-        .enableUI()
-        ._enabled = true
-    }
-    return this
-  }
-  disable() {
-    if(
-      this._enabled
-    ) {
-      this
-        .disableRenderers()
-        .disableUI()
-        .disableElement()
-        ._enabled = false
-    }
     return this
   }
 }

@@ -1,4 +1,4 @@
-const Events = class {
+class Events {
   constructor() {}
   get _events() {
     this.events = this.events || {}
