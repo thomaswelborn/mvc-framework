@@ -1,30 +1,19 @@
 import Base from '../Base/index'
 
-const Model = class extends Base {
+class Model extends Base {
   constructor() {
     super(...arguments)
-    this.addProperties()
-    return this
   }
   get bindableClassProperties() { return [
     'data',
-    'services'
+    'service'
   ] }
   get classDefaultProperties() { return [
     'name',
-    'schema',
     'localStorage',
     'histiogram',
-    'services',
-    'serviceCallbacks',
-    'serviceEvents',
-    'data',
-    'dataCallbacks',
-    'dataEvents',
     'defaults'
   ] }
-  get _schema() { return this._schema }
-  set _schema(schema) { this.schema = schema }
   get _isSetting() { return this.isSetting }
   set _isSetting(isSetting) { this.isSetting = isSetting }
   get _changing() {
@@ -34,7 +23,10 @@ const Model = class extends Base {
   get _localStorage() { return this.localStorage }
   set _localStorage(localStorage) { this.localStorage = localStorage }
   get _defaults() { return this.defaults }
-  set _defaults(defaults) { this.defaults = defaults }
+  set _defaults(defaults) {
+    this.defaults = defaults
+    this.set(defaults)
+  }
   get _histiogram() { return this.histiogram || {
     length: 1
   } }
@@ -58,10 +50,10 @@ const Model = class extends Base {
       }
     }
   }
+  get db() { return this._db }
   get _db() {
-    let db = localStorage.getItem(this.localStorage.endpoint)
-    this.db = db || '{}'
-    return JSON.parse(this.db)
+    let db = localStorage.getItem(this.localStorage.endpoint) || '{}'
+    return JSON.parse(db)
   }
   set _db(db) {
     db = JSON.stringify(db)
@@ -154,19 +146,9 @@ const Model = class extends Base {
             configurable: true,
             get() { return this[key] },
             set(value) {
-              let schema = context._settings.schema
-              if(
-                schema &&
-                schema[key]
-              ) {
-                this[key] = value
-                context._changing[key] = value
-                if(this.localStorage) context.setDB(key, value)
-              } else if(!schema) {
-                this[key] = value
-                context._changing[key] = value
-                if(this.localStorage) context.setDB(key, value)
-              }
+              this[key] = value
+              context._changing[key] = value
+              if(context.localStorage) context.setDB(key, value)
               let setValueEventName = ['set', ':', key].join('')
               let setEventName = 'set'
               context.emit(
@@ -243,12 +225,6 @@ const Model = class extends Base {
       this
     )
     return this
-  }
-  setDefaults() {
-    let _defaults = {}
-    if(this.defaults) Object.assign(_defaults, this.defaults)
-    if(this.localStorage) Object.assign(_defaults, this._db)
-    if(Object.keys(_defaults)) this.set(_defaults)
   }
   parse(data) {
     data = data || this._data || {}

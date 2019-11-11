@@ -29,7 +29,12 @@ class Base extends Events {
            this['_'.concat(classSetting)] = this.settings[classSetting]
          }
        })
-     return this
+     Object.keys(this.settings)
+       .forEach((settingKey) => {
+         if(this.classDefaultProperties.indexOf(settingKey) === -1) {
+           this[settingKey] = this.settings[settingKey]
+         }
+       })
   }
   get _configuration() {
     this.configuration = this.configuration || {}
@@ -52,7 +57,7 @@ class Base extends Events {
     if(propertyName.slice(0, 2) === 'ui') {
       return propertyName.replace(/^ui/, 'UI')
     } else {
-      let firstCharacter = propertyName.substring(0).toUpperCase()
+      let firstCharacter = propertyName.substring(0, 1).toUpperCase()
       return propertyName.replace(/^./, firstCharacter)
     }
   }
@@ -87,7 +92,15 @@ class Base extends Events {
   }
   addBindableClassProperty(bindableClassPropertyName, propertyNameExtension) {
     let context = this
-    let propertyName = bindableClassPropertyName.concat('s', propertyNameExtension)
+    let propertyName
+    switch(bindableClassPropertyName) {
+      case 'data':
+        propertyName = bindableClassPropertyName.concat(propertyNameExtension)
+        break
+      default:
+        propertyName = bindableClassPropertyName.concat('s', propertyNameExtension)
+        break
+    }
     let capitalizePropertyName = this.capitalizePropertyName(propertyName)
     let addBindableClassPropertyName = 'add'.concat(capitalizePropertyName)
     let removeBindableClassPropertyName = 'remove'.concat(capitalizePropertyName)
