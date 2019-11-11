@@ -1,4 +1,4 @@
-import Utils from '../Utils/index'
+import { paramsToObject } from '../Utils/index'
 import Base from '../Base/index'
 
 const Router = class extends Base {
@@ -73,7 +73,7 @@ const Router = class extends Base {
       : null
     let params = this.params
     let paramData = (params)
-      ? Utils.paramsToObject(params)
+      ? paramsToObject(params)
       : null
     if(this.protocol) routeData.location.protocol = this.protocol
     if(this.hostname) routeData.location.hostname = this.hostname
@@ -174,9 +174,7 @@ const Router = class extends Base {
     return this.routes
   }
   set _routes(routes) {
-    this.routes = Utils.addPropertiesToObject(
-      routes, this._routes
-    )
+    this.routes = routes
   }
   get _controller() { return this.controller }
   set _controller(controller) { this.controller = controller }

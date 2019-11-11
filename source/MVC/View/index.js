@@ -1,4 +1,4 @@
-import Utils from '../Utils/index'
+import { typeOf } from '../Utils/index'
 import Base from '../Base/index'
 
 class View extends Base {
@@ -8,13 +8,10 @@ class View extends Base {
   get bindableClassProperties() { return [
     'uiElement'
   ] }
-  get classSettingsProperties() { return [
+  get classDefaultProperties() { return [
     'elementName',
     'element',
     'attributes',
-    'uiElements',
-    'uiElementEvents',
-    'uiElementCallbacks',
     'templates',
     'insert'
   ] }
@@ -24,20 +21,16 @@ class View extends Base {
   }
   get _element() { return this.element }
   set _element(element) {
-    if(
-      element instanceof HTMLElement ||
-      element instanceof Document
-    ) {
-      this.element = element
-    } else if(typeof element === 'string') {
-      this.element = document.querySelector(element)
-    }
+    this.element = element
     this.elementObserver.observe(this.element, {
       subtree: true,
       childList: true,
     })
   }
-  get _attributes() { return this._element.attributes }
+  get _attributes() {
+    this.attributes = this.element.attributes
+    return this.attributes
+  }
   set _attributes(attributes) {
     for(let [attributeKey, attributeValue] of Object.entries(attributes)) {
       if(typeof attributeValue === 'undefined') {
@@ -47,40 +40,39 @@ class View extends Base {
       }
     }
   }
-  get _observerCallbacks() {
-    this.observerCallbacks = this.observerCallbacks || {}
-    return this.observerCallbacks
-  }
-  set _observerCallbacks(observerCallbacks) {
-    this.observerCallbacks = Utils.addPropertiesToObject(
-      observerCallbacks, this._observerCallbacks
-    )
-  }
   get elementObserver() {
-    this._elementObserver = this._elementObserver || new MutationObserver(this.elementObserve.bind(this))
+    this._elementObserver = this._elementObserver || new MutationObserver(
+      this.elementObserve.bind(this)
+    )
     return this._elementObserver
   }
-  get _insert() { return this.insert }
+  get _insert() {
+    this.insert = this.insert || null
+    return this.insert
+  }
   set _insert(insert) { this.insert = insert }
   get _templates() {
     this.templates = this.templates || {}
     return this.templates
   }
-  set _templates(templates) {
-    this.templates = Utils.addPropertiesToObject(
-      templates, this._templates
+  set _templates(templates) { this.templates = templates }
+  resetUIElements() {
+    let uiElementSettings = Object.assign(
+      {},
+      this._uiElementSettings
     )
+    this.toggleTargetBindableClassEvents('uiElement', 'off')
+    this.removeUIElements()
+    this.addUIElements(uiElementSettings)
+    this.toggleTargetBindableClassEvents('uiElement', 'on')
+    return this
   }
   elementObserve(mutationRecordList, observer) {
     for(let [mutationRecordIndex, mutationRecord] of Object.entries(mutationRecordList)) {
       switch(mutationRecord.type) {
         case 'childList':
           let mutationRecordCategories = ['addedNodes', 'removedNodes']
-          for(let mutationRecordCategory of mutationRecordCategories) {
-            if(mutationRecord[mutationRecordCategory].length) {
-              this.resetUI()
-            }
-          }
+          this.resetUIElements()
           break
       }
     }
@@ -88,7 +80,7 @@ class View extends Base {
   autoInsert() {
     if(this.insert) {
       let parentElement
-      if(Utils.typeOf(this.insert.element) === 'string') {
+      if(typeOf(this.insert.element) === 'string') {
         parentElement = document.querySelectorAll(this.insert.element)
       } else {
         parentElement = this.insert.element
@@ -102,6 +94,11 @@ class View extends Base {
         parentElement
           .forEach((_parentElement) => {
             _parentElement.insertAdjacentElement(this.insert.method, this.element)
+          })
+      } else if(parentElement instanceof jQuery) {
+        parentElement
+          .each((index, element) => {
+            element.insertAdjacentElement(this.insert.method, this.element)
           })
       }
     }

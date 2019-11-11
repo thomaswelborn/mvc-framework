@@ -1,4 +1,3 @@
-import Utils from '../Utils/index'
 import Base from '../Base/index'
 
 const Model = class extends Base {
@@ -11,7 +10,7 @@ const Model = class extends Base {
     'data',
     'services'
   ] }
-  get classSettingsProperties() { return [
+  get classDefaultProperties() { return [
     'name',
     'schema',
     'localStorage',

@@ -11,35 +11,44 @@
     },
     "rollup": {
       "options": {
-        "input": {
-          "input": "source/MVC/index.js",
-          "plugins": [
-            [
-              "rollupPluginBabel",
-              {
-                "babelrc": false,
-                "presets": [
-                  [
-                    "@babel/preset-env",
-                    {
-                      "targets": {
-                        "esmodules": true
-                      }
-                    }
-                  ]
+        "input": "source/MVC/index.js",
+        "plugins": [
+          [
+            "rollupPluginBabel",
+            {
+              "babelrc": false,
+              "plugins": [
+                [
+                  "@babel/plugin-proposal-class-properties",
+                  {
+                    "loose": false
+                  }
+                ],
+                [
+                  "@babel/plugin-proposal-export-default-from"
                 ]
+              ],
+              "presets": [
+                [
+                  "@babel/preset-env",
+                  {
+                    "targets": {
+                      "esmodules": true
+                    }
+                  }
+                ]
+              ]
+            }
+          ],
+          [
+            "rollupPluginEJS",
+            {
+              "compilerOptions": {
+                "client": true
               }
-            ],
-            [
-              "rollupPluginEJS",
-              {
-                "compilerOptions": {
-                  "client": true
-                }
-              }
-            ]
+            }
           ]
-        },
+        ],
         "output": {
           "file": "distribute/browser/mvc-framework.js",
           "name": "MVC",

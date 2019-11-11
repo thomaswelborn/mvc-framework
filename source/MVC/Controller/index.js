@@ -1,4 +1,3 @@
-import Utils from '../Utils/index'
 import Base from '../Base/index'
 
 const Controller = class extends Base {
@@ -13,7 +12,7 @@ const Controller = class extends Base {
     'controller',
     'router'
   ] }
-  get classSettingsProperties() { return [
+  get classDefaultProperties() { return [
     'models',
     'modelEvents',
     'modelCallbacks',

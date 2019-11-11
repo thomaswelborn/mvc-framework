@@ -1,18 +1,8 @@
-import typeOf from './typeOf'
-import {
-  isArray,
-  isObject,
-  isHTMLElement
-} from './is'
 import paramsToObject from './paramsToObject'
+import typeOf from './typeOf'
 import UID from './uid'
-const Utils = {
-  isArray,
-  isObject,
-  typeOf,
-  isHTMLElement,
+export {
   paramsToObject,
   typeOf,
   UID,
 }
-export default Utils

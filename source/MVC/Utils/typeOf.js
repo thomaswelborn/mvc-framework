@@ -1,20 +1,18 @@
-import { isArray, isObject } from './is'
 const typeOf = function typeOf(data) {
   switch(typeof data) {
     case 'object':
       let _object
-      if(isArray(data)) {
-        // Array
+      if(
+        Array.isArray(data)
+      ) {
         return 'array'
       } else if(
-        isObject(data)
+        data !== null
       ) {
-        // Object
         return 'object'
       } else if(
         data === null
       ) {
-        // Null
         return 'null'
       }
       return _object
