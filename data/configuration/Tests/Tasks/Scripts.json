@@ -1,5 +1,5 @@
 {
-  "demo-project": {
+  "mvc-fremework": {
     "src": {
       "globs": [
         "tests/source/test-1/index.js"
@@ -11,36 +11,47 @@
     },
     "rollup": {
       "options": {
-        "input": {
-          "input": "tests/source/test-1/index.js",
-          "plugins": [
-            [
-              "rollupPluginBabel",
-              {
-                "babelrc": false,
-                "presets": [
-                  [
-                    "@babel/preset-env"
-                  ]
+        "input": "tests/source/test-1/index.js",
+        "plugins": [
+          [
+            "rollupPluginBabel",
+            {
+              "babelrc": false,
+              "plugins": [
+                [
+                  "@babel/plugin-proposal-class-properties",
+                  {
+                    "loose": false
+                  }
+                ],
+                [
+                  "@babel/plugin-proposal-export-default-from"
                 ]
+              ],
+              "presets": [
+                [
+                  "@babel/preset-env",
+                  {
+                    "targets": {
+                      "esmodules": true
+                    }
+                  }
+                ]
+              ]
+            }
+          ],
+          [
+            "rollupPluginEJS",
+            {
+              "compilerOptions": {
+                "client": true
               }
-            ],
-            [
-              "rollupPluginEJS",
-              {
-                "compilerOptions": {
-                  "client": true
-                }
-              }
-            ]
+            }
           ]
-        },
-        "external": [
-          "ejs"
         ],
         "output": {
           "file": "tests/distribute/test-1/scripts/test-1.js",
-          "format": "umd",
+          "format": "es",
           "sourcemap": "inline"
         }
       }

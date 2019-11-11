@@ -1,9 +1,8 @@
 {
   "reload": {
     "globs": [
-      "utils/scripts/**/*.js",
-      "gulpfile.js/**/*.js",
-      "data/**/*.{js,json}"
+      "data/configuration/Tests/**/*.{js,json}",
+      "data/documents/tests/**/*.json"
     ],
     "options": {},
     "task": {

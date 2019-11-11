@@ -2,8 +2,8 @@
   "dependencies": {
     "src": {
       "globs": [
-        "node_modules/@babel/polyfill/dist/polyfill.js",
-        "node_modules/ejs/ejs.js",
+        "tests/node_modules/@babel/polyfill/dist/polyfill.js",
+        "tests/node_modules/ejs/ejs.js",
         "distribute/browser/mvc-framework.js"
       ],
       "options": {
