@@ -8,7 +8,6 @@ import View from './View/index'
 import Controller from './Controller/index'
 import Router from './Router/index'
 const MVC = {
-  $,
   Events,
   Channels,
   Utils,
