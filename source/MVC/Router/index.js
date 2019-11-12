@@ -4,232 +4,182 @@ import Base from '../Base/index'
 const Router = class extends Base {
   constructor() {
     super(...arguments)
-    return this
+    this.addWindowEvents()
   }
+  get classDefaultProperties() { return [
+    'root',
+    'hashRouting',
+    'controller',
+    'routes'
+  ] }
   get protocol() { return window.location.protocol }
   get hostname() { return window.location.hostname }
   get port() { return window.location.port }
-  get path() { return window.location.pathname }
+  get pathname() { return window.location.pathname }
+  get path() {
+    let string = window.location.pathname
+      .replace(new RegExp(['^', this.root].join('')), '')
+      .split('?')
+      .slice(0, 1)
+      [0]
+    let fragments = (
+      string.length === 0
+    ) ? []
+      : (
+          string.length === 1 &&
+          string.match(/^\//) &&
+          string.match(/\/?/)
+        ) ? ['/']
+          : string
+              .replace(/^\//, '')
+              .replace(/\/$/, '')
+              .split('/')
+    return {
+      fragments: fragments,
+      string: string,
+    }
+  }
   get hash() {
-    let href = window.location.href
-    let hashIndex = href.indexOf('#')
-    if(hashIndex > -1) {
-      let paramIndex = href.indexOf('?')
-      let sliceStart = hashIndex + 1
-      let sliceStop
-      if(paramIndex > -1) {
-        sliceStop = (hashIndex > paramIndex)
-          ? href.length
-          : paramIndex
-      } else {
-        sliceStop = href.length
-      }
-      href = href.slice(sliceStart, sliceStop)
-      if(href.length) {
-        return href
-      } else {
-        return null
-      }
+    let string = window.location.hash
+      .slice(1)
+      .split('?')
+      .slice(0, 1)
+      [0]
+    let fragments = (
+      string.length === 0
+    ) ? []
+      : (
+          string.length === 1 &&
+          string.match(/^\//) &&
+          string.match(/\/?/)
+        ) ? ['/']
+          : string
+              .replace(/^\//, '')
+              .replace(/\/$/, '')
+              .split('/')
+    return {
+      fragments: fragments,
+      string: string,
+    }
+  }
+  get parameters() {
+    let string
+    let data
+    if(window.location.href.match(/\?/)) {
+      let parameters = window.location.href
+        .split('?')
+        .slice(-1)
+        .join('')
+      string = parameters
+      data = parameters
+        .split('&')
+        .reduce((
+          _parameters,
+          parameter
+        ) => {
+          let parameterData = parameter.split('=')
+          _parameters[parameterData[0]] = parameterData[1]
+          return _parameters
+        }, {})
     } else {
-      return null
+      string = ''
+      data = {}
+    }
+    return {
+      string: string,
+      data: data
     }
   }
-  get params() {
-    let href = window.location.href
-    let paramIndex = href.indexOf('?')
-    if(paramIndex > -1) {
-      let hashIndex = href.indexOf('#')
-      let sliceStart = paramIndex + 1
-      let sliceStop
-      if(hashIndex > -1) {
-        sliceStop = (paramIndex > hashIndex)
-          ? href.length
-          : hashIndex
-      } else {
-        sliceStop = href.length
-      }
-      href = href.slice(sliceStart, sliceStop)
-      if(href.length) {
-        return href
-      } else {
-        return null
-      }
-    } else {
-      return null
-    }
-  }
-  get _routeData() {
-    let routeData = {
-      location: {},
-      controller: {},
-    }
-    let path = this.path.split('/').filter((fragment) => fragment.length)
-    path = (path.length)
-      ? path
-      : ['/']
-    let hash = this.hash
-    let hashFragments = (hash)
-      ? hash.split('/').filter((fragment) => fragment.length)
-      : null
-    let params = this.params
-    let paramData = (params)
-      ? paramsToObject(params)
-      : null
-    if(this.protocol) routeData.location.protocol = this.protocol
-    if(this.hostname) routeData.location.hostname = this.hostname
-    if(this.port) routeData.location.port = this.port
-    if(this.path) routeData.location.path = this.path
-    if(
-      hash &&
-      hashFragments
-    ) {
-      hashFragments = (hashFragments.length)
-        ? hashFragments
-        : ['/']
-      routeData.location.hash = {
-        path: hash,
-        fragments: hashFragments,
-      }
-    }
-    if(
-      params &&
-      paramData
-    ) {
-      routeData.location.params = {
-        path: params,
-        data: paramData,
-      }
-    }
-    routeData.location.path = {
-      name: this.path,
-      fragments: path,
-    }
-    routeData.location.currentURL = this.currentURL
-    let routeControllerData = this._routeControllerData
-    routeData.location = Object.assign(
-      routeData.location,
-      routeControllerData.location
-    )
-    routeData.controller = routeControllerData.controller
-    this.routeData = routeData
-    return this.routeData
-  }
-  get _routeControllerData() {
-    let routeData = {
-      location: {},
-    }
-    Object.entries(this.routes)
-      .forEach(([routePath, routeSettings]) => {
-        let pathFragments = this.path.split('/').filter((fragment) => fragment.length)
-        pathFragments = (pathFragments.length)
-          ? pathFragments
-          : ['/']
-        let routeFragments = routePath.split('/').filter((fragment, fragmentIndex) => fragment.length)
-        routeFragments = (routeFragments.length)
-          ? routeFragments
-          : ['/']
-        if(
-          pathFragments.length &&
-          pathFragments.length === routeFragments.length
-        ) {
-          let match
-          return routeFragments.filter((routeFragment, routeFragmentIndex) => {
-            if(
-              match === undefined ||
-              match === true
-            ) {
-              if(routeFragment[0] === ':') {
-                let currentIDKey = routeFragment.replace(':', '')
-                if(
-                  routeFragmentIndex === pathFragments.length - 1
-                ) {
-                  routeData.location.currentIDKey = currentIDKey
-                }
-                routeData.location[currentIDKey] = pathFragments[routeFragmentIndex]
-                routeFragment = this.fragmentIDRegExp
-              } else {
-                routeFragment = routeFragment.replace(new RegExp('/', 'gi'), '\\\/')
-                routeFragment = this.routeFragmentNameRegExp(routeFragment)
-              }
-              match = routeFragment.test(pathFragments[routeFragmentIndex])
-              if(
-                match === true &&
-                routeFragmentIndex === pathFragments.length - 1
-              ) {
-                routeData.location.route = {
-                  name: routePath,
-                  fragments: routeFragments,
-                }
-                routeData.controller = routeSettings
-                return routeSettings
-              }
-            }
-          })[0]
-        }
-      })
-    return routeData
-  }
-  get _routes() {
-    this.routes = this.routes || {}
-    return this.routes
-  }
-  set _routes(routes) {
-    this.routes = routes
-  }
+  get _root() { return this.root || '/' }
+  set _root(root) { this.root = root }
+  get _hashRouting() { return this.hashRouting || false }
+  set _hashRouting(hashRouting) { this.hashRouting = hashRouting }
+  get _routeData() {}
+  get _routeControllerData() {}
+  get _routes() { return this.routes }
+  set _routes(routes) { this.routes = routes }
   get _controller() { return this.controller }
   set _controller(controller) { this.controller = controller }
-  get _previousURL() { return this.previousURL }
-  set _previousURL(previousURL) { this.previousURL = previousURL }
-  get _currentURL() { return this.currentURL }
-  set _currentURL(currentURL) {
-    if(this.currentURL) this._previousURL = this.currentURL
-    this.currentURL = currentURL
-  }
-  get fragmentIDRegExp() { return new RegExp(/^([0-9A-Z\?\=\,\.\*\-\_\'\"\^\%\$\#\@\!\~\(\)\{\}\&\<\>\\\/])*$/, 'gi') }
-  routeFragmentNameRegExp(fragment) {
-    return new RegExp('^'.concat(fragment, '$'))
-  }
-  enableRoutes() {
-    if(this.settings.controller) this._controller = this.settings.controller
-    this._routes = Object.entries(this.settings.routes).reduce(
-      (
-        _routes,
-        [routePath, routeSettings],
-        routeIndex,
-        originalRoutes,
-      ) => {
-        _routes[routePath] = Object.assign(
-          routeSettings,
-          {
-            callback: this.controller[routeSettings.callback].bind(this.controller),
-          }
-        )
-        return _routes
-      },
-      {}
-    )
-    return this
-  }
-  enableRouteEvents() {
-    window.addEventListener('hashchange', this.routeChange.bind(this))
-    return this
-  }
-  disableRouteEvents() {
-    window.removeEventListener('hashchange', this.routeChange.bind(this))
-    return this
-  }
-  routeChange() {
-    this._currentURL = window.location.href
-    let routeData = this._routeData
-    if(routeData.controller) {
-      if(this.previousURL) routeData.previousURL = this.previousURL
-      this.emit(
-        'navigate',
-        routeData
-      )
-      routeData.controller.callback(routeData)
+  get routeData() {
+    return {
+      root: this.root,
+      protocol: this.protocol,
+      hostname: this.hostname,
+      port: this.port,
+      pathname: this.pathname,
+      path: this.path,
+      hash: this.hash,
+      parameters: this.parameters,
     }
-    return this
+  }
+  matchRoute(routeFragments, currentRouteFragments) {
+    let routeMatches = new Array()
+    if(routeFragments.length === currentRouteFragments.length) {
+      routeMatches = routeFragments
+        .reduce((_routeMatches, routeFragment, routeFragmentIndex) => {
+          let currentRouteFragment = currentRouteFragments[routeFragmentIndex]
+          if(routeFragment.match(/^\:/)) {
+            _routeMatches.push(true)
+          } else if(routeFragment === currentRouteFragment) {
+            _routeMatches.push(true)
+          } else {
+            _routeMatches.push(false)
+          }
+          return _routeMatches
+        }, [])
+    } else {
+      routeMatches.push(false)
+    }
+    return (routeMatches.indexOf(false) === -1)
+      ? true
+      : false
+  }
+  getRoute(routeData) {
+    let routes = Object.entries(this.routes)
+      .reduce((
+        _routes,
+        [routeName, routeSettings]) => {
+          let routeFragments = (
+            routeName.length === 1 &&
+            routeName.match(/^\//)
+          ) ? [routeName]
+            : (routeName.length === 0)
+              ? ['']
+              : routeName
+                  .replace(/^\//, '')
+                  .replace(/\/$/, '')
+                  .split('/')
+          routeSettings.fragments = routeFragments
+          _routes[routeFragments.join('/')] = routeSettings
+          return _routes
+        },
+        {}
+      )
+    return Object.values(routes)
+      .find((route) => {
+        let routeFragments = route.fragments
+        let routeDataFragments = (this.hashRouting)
+          ? routeData.hash.fragments
+          : routeData.path.fragments
+        let matchRoute = this.matchRoute(
+          routeFragments,
+          routeDataFragments,
+        )
+        return matchRoute === true
+      })
+  }
+  popState(event) {
+    let routeData = this.routeData
+    let route = this.getRoute(routeData)
+    if(route) {
+      this.controller[route.callback](routeData)
+    }
+  }
+  addWindowEvents() {
+    window.on('popstate', this.popState.bind(this))
+  }
+  removeWindowEvents() {
+    window.off('popstate', this.popState.bind(this))
   }
   navigate(path) {
     window.location.href = path
