@@ -32,9 +32,10 @@ class View extends MVC.View {
     } catch(error) {}
     this.element.innerHTML = templateString
     this.autoInsert()
-    setTimeout(() => {
-      this.render(data)
-    }, 5000)
+    this.emit('render', {
+      name: 'render',
+      data: {},
+    }, this)
     return this
   }
 }

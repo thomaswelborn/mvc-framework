@@ -41,11 +41,6 @@ class Base extends Events {
     return this.configuration
   }
   set _configuration(configuration) { this.configuration = configuration }
-  get bindableClassPropertyExtensions() { return [
-    '',
-    'Events',
-    'Callbacks'
-  ] }
   get _uiElementSettings() {
     this.uiElementSettings = this.uiElementSettings || {}
     return this.uiElementSettings
@@ -53,17 +48,33 @@ class Base extends Events {
   set _uiElementSettings(uiElementSettings) {
     this.uiElementSettings = uiElementSettings
   }
-  capitalizePropertyName(propertyName) {
-    if(propertyName.slice(0, 2) === 'ui') {
-      return propertyName.replace(/^ui/, 'UI')
+  getBindableClassPropertyMethods(bindableClassPropertyName) {
+    switch(bindableClassPropertyName) {
+      case 'data':
+        return [
+          bindableClassPropertyName.concat(''),
+          bindableClassPropertyName.concat('Events'),
+          bindableClassPropertyName.concat('Callbacks')
+        ]
+      default:
+        return [
+          bindableClassPropertyName.concat('s'),
+          bindableClassPropertyName.concat('Events'),
+          bindableClassPropertyName.concat('Callbacks')
+        ]
+    }
+  }
+  capitalizePropertyName(bindableClassPropertyName) {
+    if(bindableClassPropertyName.slice(0, 2) === 'ui') {
+      return bindableClassPropertyName.replace(/^ui/, 'UI')
     } else {
-      let firstCharacter = propertyName.substring(0, 1).toUpperCase()
-      return propertyName.replace(/^./, firstCharacter)
+      let firstCharacter = bindableClassPropertyName.substring(0, 1).toUpperCase()
+      return bindableClassPropertyName.replace(/^./, firstCharacter)
     }
   }
   addClassDefaultProperties() {
     this.classDefaultProperties
-      .forEach((classDefaultProperty) => {
+      .forEach((classDefaultProperty, classDefaultPropertyIndex) => {
         if(this[classDefaultProperty]) {
           let property = this[classDefaultProperty]
           Object.defineProperty(this, classDefaultProperty, {
@@ -79,57 +90,51 @@ class Base extends Events {
     if(this.bindableClassProperties) {
       this.bindableClassProperties
         .forEach((bindableClassPropertyName) => {
-          this.bindableClassPropertyExtensions
-            .forEach((propertyNameExtension) => {
-              this.addBindableClassProperty(
-                bindableClassPropertyName,
-                propertyNameExtension
-              )
+          let bindableClassPropertyMethods = this.getBindableClassPropertyMethods(
+            bindableClassPropertyName
+          )
+          bindableClassPropertyMethods
+            .forEach((bindableClassPropertyMethod, bindableClassPropertyMethodIndex) => {
+              this.addBindableClassProperty(bindableClassPropertyMethod)
+              if(bindableClassPropertyMethodIndex === bindableClassPropertyMethods.length - 1) {
+                this.toggleTargetBindableClassEvents(bindableClassPropertyName, 'on')
+              }
             })
         })
     }
     return this
   }
-  addBindableClassProperty(bindableClassPropertyName, propertyNameExtension) {
+  addBindableClassProperty(bindableClassPropertyName) {
     let context = this
-    let propertyName
-    switch(bindableClassPropertyName) {
-      case 'data':
-        propertyName = bindableClassPropertyName.concat(propertyNameExtension)
-        break
-      default:
-        propertyName = bindableClassPropertyName.concat('s', propertyNameExtension)
-        break
-    }
-    let capitalizePropertyName = this.capitalizePropertyName(propertyName)
+    let capitalizePropertyName = this.capitalizePropertyName(bindableClassPropertyName)
     let addBindableClassPropertyName = 'add'.concat(capitalizePropertyName)
     let removeBindableClassPropertyName = 'remove'.concat(capitalizePropertyName)
-    if(propertyName === 'uiElements') {
-      context._uiElementSettings = this[propertyName]
+    if(bindableClassPropertyName === 'uiElements') {
+      context._uiElementSettings = this[bindableClassPropertyName]
     }
-    let currentPropertyValues = this[propertyName]
+    let currentPropertyValues = this[bindableClassPropertyName]
     Object.defineProperties(
       this,
       {
-        [propertyName]: {
+        [bindableClassPropertyName]: {
           writable: true,
           value: currentPropertyValues,
         },
-        ['_'.concat(propertyName)]: {
+        ['_'.concat(bindableClassPropertyName)]: {
           get() {
-            context[propertyName] = context[propertyName] || {}
-            return context[propertyName]
+            context[bindableClassPropertyName] = context[bindableClassPropertyName] || {}
+            return context[bindableClassPropertyName]
           },
           set(values) {
             Object.entries(values)
               .forEach(([key, value]) => {
-                switch(propertyName) {
+                switch(bindableClassPropertyName) {
                   case 'uiElements':
                     context._uiElementSettings[key] = value
-                    context['_'.concat(propertyName)][key] = context.element.querySelectorAll(value)
+                    context['_'.concat(bindableClassPropertyName)][key] = context.element.querySelectorAll(value)
                     break
                   default:
-                    context['_'.concat(propertyName)][key] = value
+                    context['_'.concat(bindableClassPropertyName)][key] = value
                     break
                 }
               })
@@ -140,13 +145,14 @@ class Base extends Events {
             if(arguments.length === 2) {
               let key = arguments[0]
               let value = arguments[1]
-              context['_'.concat(propertyName)] = {
+              context['_'.concat(bindableClassPropertyName)] = {
                 [key]: value
               }
             } else if(arguments.length === 1) {
               let values = arguments[0]
-              context['_'.concat(propertyName)] = values
+              context['_'.concat(bindableClassPropertyName)] = values
             }
+            this.resetTargetBindableClassEvents(bindableClassPropertyName)
             return context
           }
         },
@@ -154,29 +160,30 @@ class Base extends Events {
           value: function() {
             if(arguments.length === 1) {
               let key = arguments[0]
-              switch(propertyName) {
+              switch(bindableClassPropertyName) {
                 case 'uiElements':
-                  delete context['_'.concat(propertyName)][key]
+                  delete context['_'.concat(bindableClassPropertyName)][key]
                   delete context['_'.concat('uiElementSettings')][key]
                   break
                 default:
-                  delete context['_'.concat(propertyName)][key]
+                  delete context['_'.concat(bindableClassPropertyName)][key]
                   break
               }
             } else if(arguments.length === 0){
-              Object.keys(context['_'.concat(propertyName)])
+              Object.keys(context['_'.concat(bindableClassPropertyName)])
                 .forEach((key) => {
-                  switch(propertyName) {
+                  switch(bindableClassPropertyName) {
                     case 'uiElements':
-                      delete context['_'.concat(propertyName)][key]
+                      delete context['_'.concat(bindableClassPropertyName)][key]
                       delete context['_'.concat('uiElementSettings')][key]
                       break
                     default:
-                      delete context['_'.concat(propertyName)][key]
+                      delete context['_'.concat(bindableClassPropertyName)][key]
                       break
                   }
                 })
             }
+            this.resetTargetBindableClassEvents(bindableClassPropertyName)
             return context
           }
         },
@@ -205,53 +212,64 @@ class Base extends Events {
             let classTypeTargetName = classTypeEventData[0]
             let classTypeEventName = classTypeEventData[1]
             let classTypeTarget = this[classType.concat('s')][classTypeTargetName]
-            let classTypeEventCallback
-            switch(method) {
-              case 'on':
-                switch(classType) {
-                  case 'uiElement':
-                    classTypeEventCallback = this[classType.concat('Callbacks')][classTypeCallbackName].bind(this)
-                    if(classTypeTarget instanceof NodeList) {
-                      Array.from(classTypeTarget)
-                        .forEach((_classTypeTarget) => {
-                          _classTypeTarget[method](classTypeEventName, classTypeEventCallback)
-                        })
-                    } else if(classTypeTarget instanceof HTMLElement) {
-                      classTypeTarget[method](classTypeEventName, classTypeEventCallback)
-                    }
-                    break
-                  default:
-                    classTypeEventCallback = this[classType.concat('Callbacks')][classTypeCallbackName]
-                    classTypeTarget[method](classTypeEventName, classTypeEventCallback, this)
-                    break
-                }
-                break
-              case 'off':
-                classTypeEventCallback = this[classType.concat('Callbacks')][classTypeCallbackName]
-                switch(classType) {
-                  case 'uiElement':
-                    let classTypeEventCallbackNamespace = classTypeEventCallback.name.split(' ')[1]
-                    if(classTypeTarget instanceof NodeList) {
-                      Array.from(classTypeTarget)
-                        .forEach((_classTypeTarget) => {
-                          _classTypeTarget[method](classTypeEventName, classTypeEventCallbackNamespace)
-                        })
-                    } else if(classTypeTarget instanceof HTMLElement) {
-                      classTypeTarget[method](classTypeEventName, classTypeEventCallbackNamespace)
-                    }
-                    break
-                  default:
-                    classTypeTarget[method](classTypeEventName, classTypeEventCallback, this)
-                    break
-                }
-                break
-            }
+            let classTypeEventCallback = this[classType.concat('Callbacks')][classTypeCallbackName].bind(this)
+            this.toggleTargetBindableClassEvent(
+              classType,
+              classTypeTarget,
+              classTypeEventName,
+              classTypeEventCallback,
+              method
+            )
           } catch(error) { throw new ReferenceError(
             error
           ) }
         })
     }
     return this
+  }
+  toggleTargetBindableClassEvent(
+    classType,
+    classTypeTarget,
+    classTypeEventName,
+    classTypeEventCallback,
+    method
+  ) {
+    switch(method) {
+      case 'on':
+        switch(classType) {
+          case 'uiElement':
+            if(classTypeTarget instanceof NodeList) {
+              Array.from(classTypeTarget)
+                .forEach((_classTypeTarget) => {
+                  _classTypeTarget[method](classTypeEventName, classTypeEventCallback)
+                })
+            } else if(classTypeTarget instanceof HTMLElement) {
+              classTypeTarget[method](classTypeEventName, classTypeEventCallback)
+            }
+            break
+          default:
+            classTypeTarget[method](classTypeEventName, classTypeEventCallback)
+            break
+        }
+        break
+      case 'off':
+        switch(classType) {
+          case 'uiElement':
+            if(classTypeTarget instanceof NodeList) {
+              Array.from(classTypeTarget)
+                .forEach((_classTypeTarget) => {
+                  _classTypeTarget[method](classTypeEventName, classTypeEventCallback)
+                })
+            } else if(classTypeTarget instanceof HTMLElement) {
+              classTypeTarget[method](classTypeEventName, classTypeEventCallback)
+            }
+            break
+          default:
+            classTypeTarget[method](classTypeEventName, classTypeEventCallback)
+            break
+        }
+        break
+    }
   }
 }
 export default Base

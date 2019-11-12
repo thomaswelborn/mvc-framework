@@ -1,4 +1,3 @@
-import { paramsToObject } from '../Utils/index'
 import Base from '../Base/index'
 
 const Router = class extends Base {
@@ -94,33 +93,27 @@ const Router = class extends Base {
   set _root(root) { this.root = root }
   get _hashRouting() { return this.hashRouting || false }
   set _hashRouting(hashRouting) { this.hashRouting = hashRouting }
-  get _routeData() {}
-  get _routeControllerData() {}
   get _routes() { return this.routes }
   set _routes(routes) { this.routes = routes }
   get _controller() { return this.controller }
   set _controller(controller) { this.controller = controller }
-  get routeData() {
+  get location() {
     return {
       root: this.root,
-      protocol: this.protocol,
-      hostname: this.hostname,
-      port: this.port,
-      pathname: this.pathname,
       path: this.path,
       hash: this.hash,
       parameters: this.parameters,
     }
   }
-  matchRoute(routeFragments, currentRouteFragments) {
+  matchRoute(routeFragments, locationFragments) {
     let routeMatches = new Array()
-    if(routeFragments.length === currentRouteFragments.length) {
+    if(routeFragments.length === locationFragments.length) {
       routeMatches = routeFragments
         .reduce((_routeMatches, routeFragment, routeFragmentIndex) => {
-          let currentRouteFragment = currentRouteFragments[routeFragmentIndex]
+          let locationFragment = locationFragments[routeFragmentIndex]
           if(routeFragment.match(/^\:/)) {
             _routeMatches.push(true)
-          } else if(routeFragment === currentRouteFragment) {
+          } else if(routeFragment === locationFragment) {
             _routeMatches.push(true)
           } else {
             _routeMatches.push(false)
@@ -134,7 +127,7 @@ const Router = class extends Base {
       ? true
       : false
   }
-  getRoute(routeData) {
+  getRoute(location) {
     let routes = Object.entries(this.routes)
       .reduce((
         _routes,
@@ -158,21 +151,30 @@ const Router = class extends Base {
     return Object.values(routes)
       .find((route) => {
         let routeFragments = route.fragments
-        let routeDataFragments = (this.hashRouting)
-          ? routeData.hash.fragments
-          : routeData.path.fragments
+        let locationFragments = (this.hashRouting)
+          ? location.hash.fragments
+          : location.path.fragments
         let matchRoute = this.matchRoute(
           routeFragments,
-          routeDataFragments,
+          locationFragments,
         )
         return matchRoute === true
       })
   }
   popState(event) {
-    let routeData = this.routeData
-    let route = this.getRoute(routeData)
+    let location = this.location
+    let route = this.getRoute(location)
+    let routeData = {
+      route: route,
+      location: location,
+    }
     if(route) {
       this.controller[route.callback](routeData)
+      this.emit('change', {
+        name: 'change',
+        data: routeData,
+      },
+      this)
     }
   }
   addWindowEvents() {
