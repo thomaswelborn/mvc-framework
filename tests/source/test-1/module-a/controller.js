@@ -1,18 +1,24 @@
-import Model from './model'
+import Collection from './collection'
 import View from './view'
 import Router from './router'
 class Controller extends MVC.Controller {
   constructor() {
     super(...arguments)
   }
-  get models() { return {
-    model: new Model({
-      defaults: {
-        a: 1,
-        b: 2,
-        c: 3,
-      },
-    })
+  get collections() { return {
+    collection: new Collection()
+  } }
+  get collectionEvents() { return {
+    'collection change': 'collectionChange',
+    'collection addModel': 'collectionAddModel',
+  } }
+  get collectionCallbacks() { return {
+    collectionChange: function collectionChange(event) {
+      // console.log(event)
+    },
+    collectionAddModel: function collectionAddModel(event) {
+      // console.log(event)
+    },
   } }
   get views() { return {
     view: new View(),
@@ -22,7 +28,7 @@ class Controller extends MVC.Controller {
   } }
   get viewCallbacks() { return {
     viewRender: function viewRender(event, view) {
-      console.log(event, view)
+      // console.log(event, view)
     },
   } }
   get routers() { return {
@@ -33,11 +39,13 @@ class Controller extends MVC.Controller {
   } }
   get routerCallbacks() { return {
     'routerNavigate': function routerNavigate(event, router) {
-      console.log(event, router)
+      // console.log(event, router)
     },
   } }
   start() {
-    this.views.view.render(this.models.model.get())
+    this.collections.collection.start()
+    // this.models.model.start()
+    // this.views.view.render(this.models.model.get())
     // console.log(this)
   }
 }

@@ -6,6 +6,7 @@ const Controller = class extends Base {
   }
   get bindableClassProperties() { return [
     'model',
+    'collection',
     'view',
     'controller',
     'router'

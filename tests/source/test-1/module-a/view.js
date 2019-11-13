@@ -15,7 +15,7 @@ class View extends MVC.View {
   } }
   get uiElementCallbacks() { return {
     'someClassClick': function someClassClick(event) {
-      console.log(event)
+      // console.log(event)
     },
   } }
   get insert() { return {

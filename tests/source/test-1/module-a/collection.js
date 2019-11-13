@@ -1,8 +1,9 @@
-class Model extends MVC.Model {
+import Model from './model'
+class Collection extends MVC.Collection {
   constructor() {
     super(...arguments)
   }
-  get idAttribute() { return 'id' }
+  get model() { return Model }
   get services() { return {
     get: new MVC.Service({
       type: 'GET',
@@ -14,11 +15,12 @@ class Model extends MVC.Model {
   } }
   get serviceCallbacks() { return {
     getXHRResolve: function getXHRResolve(event) {
-      // 
+      let responseData = JSON.parse(event.data.response)
+      this.add(responseData)
     },
   } }
   start() {
     this.services.get.request()
   }
 }
-export default Model
+export default Collection

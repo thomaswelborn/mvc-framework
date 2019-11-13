@@ -4,16 +4,26 @@ class Model extends Base {
   constructor() {
     super(...arguments)
   }
+  get storageContainer() { return {} }
+  get defaultIDAttribute() { return '_id' }
   get bindableClassProperties() { return [
-    'data',
     'service'
   ] }
   get classDefaultProperties() { return [
-    'name',
     'localStorage',
     'histiogram',
     'defaults'
   ] }
+  get _idAttribute() {
+    this.idAttribute = this.idAttribute || this.defaultIDAttribute
+    return this.idAttribute
+  }
+  set _idAttribute(idAttribute) { this.idAttribute = idAttribute }
+  get _defaults() { return this.defaults }
+  set _defaults(defaults) {
+    this.defaults = defaults
+    this.set(defaults)
+  }
   get _isSetting() { return this.isSetting }
   set _isSetting(isSetting) { this.isSetting = isSetting }
   get _changing() {
@@ -22,11 +32,6 @@ class Model extends Base {
   }
   get _localStorage() { return this.localStorage }
   set _localStorage(localStorage) { this.localStorage = localStorage }
-  get _defaults() { return this.defaults }
-  set _defaults(defaults) {
-    this.defaults = defaults
-    this.set(defaults)
-  }
   get _histiogram() { return this.histiogram || {
     length: 1
   } }
@@ -50,9 +55,14 @@ class Model extends Base {
       }
     }
   }
+  get _data() {
+    this.data = this.data || this.storageContainer
+    return this.data
+  }
+  set _data(data) { this.data = data }
   get db() { return this._db }
   get _db() {
-    let db = localStorage.getItem(this.localStorage.endpoint) || '{}'
+    let db = localStorage.getItem(this.localStorage.endpoint) || JSON.stringify(this.storageContainer)
     return JSON.parse(db)
   }
   set _db(db) {
@@ -227,7 +237,7 @@ class Model extends Base {
     return this
   }
   parse(data) {
-    data = data || this._data || {}
+    data = data || this._data || this.storageContainer
     return JSON.parse(JSON.stringify(data))
   }
 }

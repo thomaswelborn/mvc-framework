@@ -1,11 +1,16 @@
 import Base from '../Base/index'
 
-const Service = class extends Base {
+class Service extends Base {
   constructor() {
     super(...arguments)
-    this.addProperties()
-    return this
   }
+  get classDefaultProperties() { return [
+    'responseType',
+    'type',
+    'url',
+    'headers',
+    'data'
+  ] }
   get _defaults() { return this.defaults || {
     contentType: {'Content-Type': 'application/json'},
     responseType: 'json',
@@ -39,49 +44,23 @@ const Service = class extends Base {
     return this.xhr
   }
   request() {
-    data = data || this.data || null
     return new Promise((resolve, reject) => {
       if(this._xhr.status === 200) this._xhr.abort()
       this._xhr.open(this.type, this.url)
       this._headers = this.settings.headers || [this._defaults.contentType]
       this._xhr.onload = resolve
       this._xhr.onerror = reject
-      this._xhr.send(data)
+      this._xhr.send(this.data)
     }).then((response) => {
       this.emit(
-        'xhr:resolve', {
-          name: 'xhr:resolve',
+        'xhrResolve', {
+          name: 'xhrResolve',
           data: response.currentTarget,
         },
         this
       )
       return response
     }).catch((error) => { throw error })
-  }
-  enable() {
-    let settings = this.settings
-    if(
-      Object.keys(settings).length
-    ) {
-      if(settings.type) this._type = settings.type
-      if(settings.url) this._url = settings.url
-      if(settings.data) this._data = settings.data || null
-      if(this.settings.responseType) this._responseType = this._settings.responseType
-    }
-    return this
-  }
-  disable() {
-    let settings = this.settings
-    if(
-      Object.keys(settings).length
-    ) {
-      delete this._type
-      delete this._url
-      delete this._data
-      delete this._headers
-      delete this._responseType
-    }
-    return this
   }
 }
 export default Service
