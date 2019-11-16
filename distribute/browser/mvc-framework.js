@@ -294,7 +294,14 @@
               switch (bindableClassPropertyName) {
                 case 'uiElements':
                   context._uiElementSettings[key] = value;
-                  context['_'.concat(bindableClassPropertyName)][key] = context.element.querySelectorAll(value);
+                  Object.defineProperty(context['_'.concat(bindableClassPropertyName)], [key], {
+                    configurable: true,
+
+                    get() {
+                      return context.element.querySelectorAll(value);
+                    }
+
+                  });
                   break;
 
                 default:
@@ -1131,8 +1138,6 @@
     resetUIElements() {
       var uiElementSettings = Object.assign({}, this._uiElementSettings);
       this.toggleTargetBindableClassEvents('uiElement', 'off');
-      this.removeUIElements();
-      this.addUIElements(uiElementSettings);
       this.toggleTargetBindableClassEvents('uiElement', 'on');
       return this;
     }

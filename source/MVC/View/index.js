@@ -61,8 +61,6 @@ class View extends Base {
       this._uiElementSettings
     )
     this.toggleTargetBindableClassEvents('uiElement', 'off')
-    this.removeUIElements()
-    this.addUIElements(uiElementSettings)
     this.toggleTargetBindableClassEvents('uiElement', 'on')
     return this
   }
