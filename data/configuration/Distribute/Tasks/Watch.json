@@ -21,7 +21,8 @@
     "task": {
       "type": "series",
       "tasks": [
-        "Scripts"
+        "Scripts",
+        "Copy"
       ]
     }
   }

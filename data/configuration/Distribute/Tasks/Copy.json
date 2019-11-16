@@ -1,0 +1,16 @@
+{
+  "stopwatch": {
+    "src": {
+      "globs": [
+        "distribute/**/*"
+      ],
+      "options": {
+        "allowEmpty": false
+      }
+    },
+    "dest": [
+      ["../google/stopwatch/node_modules/mvc-framework/distribute"],
+      {}
+    ]
+  }
+}
