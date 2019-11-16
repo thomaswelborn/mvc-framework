@@ -136,66 +136,29 @@
 
   };
 
-  var typeOf = function typeOf(data) {
-    switch (typeof data) {
-      case 'object':
-        var _object;
+  function UUID() {
+    var uuid = "",
+        i,
+        random;
 
-        if (Array.isArray(data)) {
-          return 'array';
-        } else if (data !== null) {
-          return 'object';
-        } else if (data === null) {
-          return 'null';
-        }
+    for (i = 0; i < 32; i++) {
+      random = Math.random() * 16 | 0;
 
-        return _object;
-
-      case 'string':
-      case 'number':
-      case 'boolean':
-      case 'undefined':
-      case 'function':
-        return typeof data;
-    }
-  };
-
-  var UID = function UID() {
-    var uuid = '',
-        ii;
-
-    for (ii = 0; ii < 32; ii += 1) {
-      switch (ii) {
-        case 8:
-        case 20:
-          uuid += '-';
-          uuid += (Math.random() * 16 | 0).toString(16);
-          break;
-
-        case 12:
-          uuid += '-';
-          uuid += '4';
-          break;
-
-        case 16:
-          uuid += '-';
-          uuid += (Math.random() * 4 | 8).toString(16);
-          break;
-
-        default:
-          uuid += (Math.random() * 16 | 0).toString(16);
+      if (i == 8 || i == 12 || i == 16 || i == 20) {
+        uuid += "-";
       }
+
+      uuid += (i == 12 ? 4 : i == 16 ? random & 3 | 8 : random).toString(16);
     }
 
     return uuid;
-  };
+  }
 
 
 
   var Utils = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    typeOf: typeOf,
-    UID: UID
+    UUID: UUID
   });
 
   class Base extends Events {
@@ -1406,4 +1369,3 @@
   return MVC;
 
 })));
-//# sourceMappingURL=mvc-framework.js.map

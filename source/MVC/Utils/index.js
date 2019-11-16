@@ -1,6 +1,4 @@
-import typeOf from './typeOf'
-import UID from './uid'
+import UUID from './uuid'
 export {
-  typeOf,
-  UID,
+  UUID,
 }
