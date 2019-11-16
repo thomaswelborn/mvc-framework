@@ -1,5 +1,5 @@
-import Base from '../Base/index'
-import Model from '../Model/index'
+import Base from '../Base/index.js'
+import Model from '../Model/index.js'
 
 class Collection extends Base {
   constructor() {
@@ -11,9 +11,15 @@ class Collection extends Base {
     'service'
   ] }
   get classDefaultProperties() { return [
+    'idAttribute',
     'model',
     'defaults'
   ] }
+  get _idAttribute() {
+    this.idAttribute = this.idAttribute || this.defaultIDAttribute
+    return this.idAttribute
+  }
+  set _idAttribute(idAttribute) { this.idAttribute = idAttribute }
   get _defaults() { return this.defaults }
   set _defaults(defaults) {
     this.defaults = defaults
@@ -55,20 +61,36 @@ class Collection extends Base {
     let modelIndex
     this._models
       .find((_model, _modelIndex) => {
-        if(_model.get(_model.idAttribute) === modelID) {
-          modelIndex = _modelIndex
-          return _model
+        if(_model !== null) {
+          if(
+            _model instanceof Model &&
+            _model.get(this._idAttribute) === modelID
+          ) {
+            modelIndex = _modelIndex
+            return _model
+          } else if(
+            _model[this._idAttribute] === modelID
+          ) {
+            modelIndex = _modelIndex
+            return _model
+          }
         }
       })
     return modelIndex
   }
+  getModelID(model) {
+    return (model instanceof Model)
+      ? model.get(this._idAttribute)
+      : model[this._idAttribute]
+
+  }
   removeModelByIndex(modelIndex) {
-    let model = this._models.splice(modelIndex, 1)
+    let model = this._models.splice(modelIndex, 1, null)
     this.emit(
-      'removeModel', {
-        name: 'removeModel',
+      'remove', {
+        name: 'remove',
       },
-      model,
+      model[0],
       this
     )
     return this
@@ -77,20 +99,43 @@ class Collection extends Base {
     let model
     if(modelData instanceof Model) {
       model = modelData
+      model.on(
+        'set',
+        (event, _model) => {
+          this.emit(
+            'change',
+            {
+              name: 'change',
+            },
+            this,
+          )
+        }
+      )
       this._models.push(model)
     } else if(
-      !Array.isArray(modelData) &&
       typeof modelData !== null &&
       typeof modelData === 'object'
     ) {
       model = new this.model()
       model.set(modelData)
+      model.on(
+        'set',
+        (event, _model) => {
+          this.emit(
+            'change',
+            {
+              name: 'change',
+            },
+            this
+          )
+        }
+      )
       this._models.push(model)
     }
     this.emit(
-      'addModel',
+      'add',
       {
-        name: 'addModel',
+        name: 'add',
       },
       model,
       this
@@ -120,40 +165,30 @@ class Collection extends Base {
   }
   remove(modelData) {
     this._isSetting = true
-    let modelIndex
     if(
-      typeof modelData === 'string' ||
-      typeof modelData === 'number'
+      !Array.isArray(modelData)
     ) {
       this.removeModelByIndex(
-        this.getModelIndex(modelData)
-      )
-    } else if(modelData instanceof Model) {
-      this.removeModelByIndex(
         this.getModelIndex(
-          model[model.defaultIDAttribute]
+          this.getModelID(modelData)
         )
       )
     } else if(Array.isArray(modelData)) {
       modelData
-        .forEach((model) => {
-          if(
-            typeof modelData === 'string' ||
-            typeof modelData === 'number'
-          ) {
-            this.removeModelByIndex(
-              this.getModelIndex(modelData)
+        .map((model) => {
+          this.removeModelByIndex(
+            this.getModelIndex(
+              this.getModelID(model)
             )
-          } else if(modelData instanceof Model) {
-            this.removeModelByIndex(
-              this.getModelIndex(
-                model[model.defaultIDAttribute]
-              )
-            )
-          }
+          )
         })
+
     }
+    this._models = this._models
+      .filter((model) => model !== null)
+    if(this._localStorage) this._db = this._data
     this._isSetting = false
+
     this.emit(
       'change', {
         name: 'change',
@@ -161,6 +196,11 @@ class Collection extends Base {
       },
       this
     )
+    return this
+  }
+  reset() {
+    this.remove(this._models)
+    console.log(this._models)
     return this
   }
   parse(data) {

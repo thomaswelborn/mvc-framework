@@ -7,6 +7,7 @@ class Service extends Base {
   get classDefaultProperties() { return [
     'responseType',
     'type',
+    'parameters',
     'url',
     'headers',
     'data'
@@ -24,6 +25,11 @@ class Service extends Base {
   }
   get _type() { return this.type }
   set _type(type) { this.type = type }
+  get _parameters() {
+    this.parameters = this.parameters || {}
+    return this.parameters
+  }
+  set _parameters(parameters) { this.parameters = parameters }
   get _url() { return this.url }
   set _url(url) { this.url = url }
   get _headers() { return this.headers || [] }
@@ -43,10 +49,38 @@ class Service extends Base {
       : new XMLHttpRequest()
     return this.xhr
   }
+  stringParameters() {
+    let parameters = Object.entries(this._parameters)
+    return parameters
+      .reduce(
+        (
+          parameterString,
+          [parameterKey, parameterValue],
+          parameterIndex
+        ) => {
+          let concatenator = (
+            parameterIndex !== parameters.length - 1
+          ) ? '&'
+            : ''
+          let assignmentOperator = '='
+          parameterString = parameterString.concat(
+            parameterKey,
+            assignmentOperator,
+            parameterValue,
+            concatenator
+          )
+          return parameterString
+        },
+        '?'
+      )
+  }
   request() {
+    let url = this._url.concat(
+      this.stringParameters()
+    )
     return new Promise((resolve, reject) => {
       if(this._xhr.status === 200) this._xhr.abort()
-      this._xhr.open(this.type, this.url)
+      this._xhr.open(this.type, url)
       this._headers = this.settings.headers || [this._defaults.contentType]
       this._xhr.onload = resolve
       this._xhr.onerror = reject

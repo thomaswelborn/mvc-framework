@@ -1,4 +1,4 @@
-import Base from '../Base/index'
+import Base from '../Base/index.js'
 
 class Model extends Base {
   constructor() {
@@ -10,6 +10,7 @@ class Model extends Base {
     'service'
   ] }
   get classDefaultProperties() { return [
+    'idAttribute',
     'localStorage',
     'histiogram',
     'defaults'
@@ -72,7 +73,10 @@ class Model extends Base {
   get() {
     switch(arguments.length) {
       case 0:
-        return this._data
+        return Object.assign(
+          {},
+          this._data
+        )
         break
       case 1:
         let key = arguments[0]
@@ -178,7 +182,10 @@ class Model extends Base {
                     setEventName,
                     {
                       name: setEventName,
-                      data: context._data,
+                      data: Object.assign(
+                        {},
+                        context._data
+                      ),
                     },
                     context
                   )
@@ -190,7 +197,7 @@ class Model extends Base {
                       data: Object.assign(
                         {},
                         context._changing,
-                        context._data
+                        context._data,
                       ),
                     },
                     context

@@ -1,5 +1,4 @@
-import { typeOf } from '../Utils/index'
-import Base from '../Base/index'
+import Base from '../Base/index.js'
 
 class View extends Base {
   constructor() {
@@ -78,30 +77,11 @@ class View extends Base {
     }
   }
   autoInsert() {
-    if(this.insert) {
-      let parentElement
-      if(typeOf(this.insert.element) === 'string') {
-        parentElement = document.querySelectorAll(this.insert.element)
-      } else {
-        parentElement = this.insert.element
-      }
-      if(
-        parentElement instanceof HTMLElement ||
-        parentElement instanceof Node
-      ) {
-        parentElement.insertAdjacentElement(this.insert.method, this.element)
-      } else if(parentElement instanceof NodeList) {
-        parentElement
-          .forEach((_parentElement) => {
-            _parentElement.insertAdjacentElement(this.insert.method, this.element)
-          })
-      } else if(parentElement instanceof jQuery) {
-        parentElement
-          .each((index, element) => {
-            element.insertAdjacentElement(this.insert.method, this.element)
-          })
-      }
-    }
+    let insert = this.insert
+    insert.parent.insertAdjacentElement(
+      insert.method,
+      this._element
+    )
     return this
   }
   autoRemove() {

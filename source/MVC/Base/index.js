@@ -1,5 +1,5 @@
-import { UID } from '../Utils/index'
-import Events from '../Events/index'
+import '../Shims/events.js'
+import Events from '../Events/index.js'
 
 class Base extends Events {
   constructor(settings, configuration) {
@@ -8,12 +8,6 @@ class Base extends Events {
     this.addBindableClassProperties()
     this._settings = settings
     this._configuration = configuration
-  }
-  get uid() {
-    this._uid = (this._uid)
-    ? this._uid
-    : UID()
-    return this._uid
   }
   get _name() { return this.name }
   set _name(name) { this.name = name }

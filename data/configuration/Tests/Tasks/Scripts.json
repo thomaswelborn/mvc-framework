@@ -44,7 +44,8 @@
             "rollupPluginEJS",
             {
               "compilerOptions": {
-                "client": true
+                "client": true,
+                "_with": false
               }
             }
           ]

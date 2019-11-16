@@ -53,7 +53,7 @@
           "file": "distribute/browser/mvc-framework.js",
           "name": "MVC",
           "format": "umd",
-          "sourcemap": "inline"
+          "sourcemap": true
         }
       }
     },
