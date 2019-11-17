@@ -217,7 +217,9 @@ class Base extends Events {
             let classTypeTargetName = classTypeEventData[0]
             let classTypeEventName = classTypeEventData[1]
             let classTypeTarget = this[classType.concat('s')][classTypeTargetName]
-            let classTypeEventCallback = this[classType.concat('Callbacks')][classTypeCallbackName].bind(this)
+            let classTypeEventCallback = (classType === 'uiElement')
+              ? this[classType.concat('Callbacks')][classTypeCallbackName]
+              : this[classType.concat('Callbacks')][classTypeCallbackName].bind(this)
             this.toggleTargetBindableClassEvent(
               classType,
               classTypeTarget,

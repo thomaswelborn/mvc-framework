@@ -55,21 +55,12 @@ class View extends Base {
     return this.templates
   }
   set _templates(templates) { this.templates = templates }
-  resetUIElements() {
-    let uiElementSettings = Object.assign(
-      {},
-      this._uiElementSettings
-    )
-    this.toggleTargetBindableClassEvents('uiElement', 'off')
-    this.toggleTargetBindableClassEvents('uiElement', 'on')
-    return this
-  }
   elementObserve(mutationRecordList, observer) {
     for(let [mutationRecordIndex, mutationRecord] of Object.entries(mutationRecordList)) {
       switch(mutationRecord.type) {
         case 'childList':
           let mutationRecordCategories = ['addedNodes', 'removedNodes']
-          this.resetUIElements()
+          this.resetTargetBindableClassEvents('uiElement')
           break
       }
     }

@@ -386,7 +386,7 @@
             var classTypeTargetName = classTypeEventData[0];
             var classTypeEventName = classTypeEventData[1];
             var classTypeTarget = this[classType.concat('s')][classTypeTargetName];
-            var classTypeEventCallback = this[classType.concat('Callbacks')][classTypeCallbackName].bind(this);
+            var classTypeEventCallback = classType === 'uiElement' ? this[classType.concat('Callbacks')][classTypeCallbackName] : this[classType.concat('Callbacks')][classTypeCallbackName].bind(this);
             this.toggleTargetBindableClassEvent(classType, classTypeTarget, classTypeEventName, classTypeEventCallback, method);
           } catch (error) {
             throw new ReferenceError(error);
@@ -610,6 +610,15 @@
       this.isSetting = isSetting;
     }
 
+    get _silent() {
+      this.silent = typeof this.silent === 'boolean' ? this.silent : false;
+      return this.silent;
+    }
+
+    set _silent(silent) {
+      this.silent = silent;
+    }
+
     get _changing() {
       this.changing = this.changing || {};
       return this.changing;
@@ -700,9 +709,33 @@
           break;
 
         case 2:
+          if (typeof arguments[0] === 'string') {
+            var key = arguments[0];
+            var value = arguments[1];
+            this.setDataProperty(key, value);
+          } else {
+            var _arguments = Object.entries(arguments[0]);
+
+            var silent = arguments[1];
+
+            _arguments.forEach((_ref2, index) => {
+              var [key, value] = _ref2;
+              if (index === _arguments.length - 1) this._isSetting = false;
+              this._silent = silent;
+              this.setDataProperty(key, value);
+              this._silent = false;
+            });
+          }
+
+          break;
+
+        case 3:
           var key = arguments[0];
           var value = arguments[1];
+          var silent = arguments[2];
+          this._silent = silent;
           this.setDataProperty(key, value);
+          this._silent = false;
           break;
       }
 
@@ -736,8 +769,8 @@
         case 1:
           var _arguments = Object.entries(arguments[0]);
 
-          _arguments.forEach((_ref2) => {
-            var [key, value] = _ref2;
+          _arguments.forEach((_ref3) => {
+            var [key, value] = _ref3;
             db[key] = value;
           });
 
@@ -788,25 +821,35 @@
               if (context.localStorage) context.setDB(key, value);
               var setValueEventName = ['set', ':', key].join('');
               var setEventName = 'set';
-              context.emit(setValueEventName, {
-                name: setValueEventName,
-                data: {
-                  key: key,
-                  value: value
-                }
-              }, context);
+
+              if (context.silent !== true) {
+                console.log('silent', context.silent);
+                context.emit(setValueEventName, {
+                  name: setValueEventName,
+                  data: {
+                    key: key,
+                    value: value
+                  }
+                }, context);
+              }
 
               if (!context._isSetting) {
                 if (!Object.values(context._changing).length) {
-                  context.emit(setEventName, {
-                    name: setEventName,
-                    data: Object.assign({}, context._data)
-                  }, context);
+                  if (context.silent !== true) {
+                    console.log('silent', context.silent);
+                    context.emit(setEventName, {
+                      name: setEventName,
+                      data: Object.assign({}, context._data)
+                    }, context);
+                  }
                 } else {
-                  context.emit(setEventName, {
-                    name: setEventName,
-                    data: Object.assign({}, context._changing, context._data)
-                  }, context);
+                  if (context.silent !== true) {
+                    console.log('silent', context.silent);
+                    context.emit(setEventName, {
+                      name: setEventName,
+                      data: Object.assign({}, context._changing, context._data)
+                    }, context);
+                  }
                 }
 
                 delete context.changing;
@@ -827,6 +870,7 @@
       var unsetValue = this._data[key];
       delete this._data['_'.concat(key)];
       delete this._data[key];
+      console.log('unset');
       this.emit(unsetValueEventName, {
         name: unsetValueEventName,
         data: {
@@ -1134,18 +1178,11 @@
       this.templates = templates;
     }
 
-    resetUIElements() {
-      var uiElementSettings = Object.assign({}, this._uiElementSettings);
-      this.toggleTargetBindableClassEvents('uiElement', 'off');
-      this.toggleTargetBindableClassEvents('uiElement', 'on');
-      return this;
-    }
-
     elementObserve(mutationRecordList, observer) {
       for (var [mutationRecordIndex, mutationRecord] of Object.entries(mutationRecordList)) {
         switch (mutationRecord.type) {
           case 'childList':
-            this.resetUIElements();
+            this.resetTargetBindableClassEvents('uiElement');
             break;
         }
       }

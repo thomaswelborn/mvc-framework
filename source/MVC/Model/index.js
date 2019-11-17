@@ -27,6 +27,13 @@ class Model extends Base {
   }
   get _isSetting() { return this.isSetting }
   set _isSetting(isSetting) { this.isSetting = isSetting }
+  get _silent() {
+    this.silent = (typeof this.silent === 'boolean')
+      ? this.silent
+      : false
+    return this.silent
+  }
+  set _silent(silent) { this.silent = silent }
   get _changing() {
     this.changing = this.changing || {}
     return this.changing
@@ -89,16 +96,35 @@ class Model extends Base {
     switch(arguments.length) {
       case 1:
         this._isSetting = true
-        let _arguments = Object.entries(arguments[0])
+        var _arguments = Object.entries(arguments[0])
         _arguments.forEach(([key, value], index) => {
           if(index === (_arguments.length - 1)) this._isSetting = false
           this.setDataProperty(key, value)
         })
         break
       case 2:
+        if(typeof arguments[0] === 'string') {
+          var key = arguments[0]
+          var value = arguments[1]
+          this.setDataProperty(key, value)
+        } else {
+          var _arguments = Object.entries(arguments[0])
+          var silent = arguments[1]
+          _arguments.forEach(([key, value], index) => {
+            if(index === (_arguments.length - 1)) this._isSetting = false
+            this._silent = silent
+            this.setDataProperty(key, value)
+            this._silent = false
+          })
+        }
+        break
+      case 3:
         var key = arguments[0]
         var value = arguments[1]
+        var silent = arguments[2]
+        this._silent = silent
         this.setDataProperty(key, value)
+        this._silent = false
         break
     }
     return this
@@ -165,43 +191,52 @@ class Model extends Base {
               if(context.localStorage) context.setDB(key, value)
               let setValueEventName = ['set', ':', key].join('')
               let setEventName = 'set'
-              context.emit(
-                setValueEventName,
-                {
-                  name: setValueEventName,
-                  data: {
-                    key: key,
-                    value: value,
+              if(context.silent !== true) {
+                console.log('silent', context.silent)
+                context.emit(
+                  setValueEventName,
+                  {
+                    name: setValueEventName,
+                    data: {
+                      key: key,
+                      value: value,
+                    },
                   },
-                },
-                context
-              )
+                  context
+                )
+              }
               if(!context._isSetting) {
                 if(!Object.values(context._changing).length) {
-                  context.emit(
-                    setEventName,
-                    {
-                      name: setEventName,
-                      data: Object.assign(
-                        {},
-                        context._data
-                      ),
-                    },
-                    context
-                  )
-                } else {
-                  context.emit(
-                    setEventName,
-                    {
-                      name: setEventName,
-                      data: Object.assign(
-                        {},
-                        context._changing,
-                        context._data,
-                      ),
-                    },
-                    context
-                  )
+                  if(context.silent !== true) {
+                    console.log('silent', context.silent)
+                    context.emit(
+                      setEventName,
+                      {
+                        name: setEventName,
+                        data: Object.assign(
+                          {},
+                          context._data
+                        ),
+                      },
+                      context
+                    )
+                  }
+                  } else {
+                  if(context.silent !== true) {
+                    console.log('silent', context.silent)
+                    context.emit(
+                      setEventName,
+                      {
+                        name: setEventName,
+                        data: Object.assign(
+                          {},
+                          context._changing,
+                          context._data,
+                        ),
+                      },
+                      context
+                    )
+                  }
                 }
                 delete context.changing
               }
@@ -219,6 +254,7 @@ class Model extends Base {
     let unsetValue = this._data[key]
     delete this._data['_'.concat(key)]
     delete this._data[key]
+    console.log('unset')
     this.emit(
       unsetValueEventName,
       {
