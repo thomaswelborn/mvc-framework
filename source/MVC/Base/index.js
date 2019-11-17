@@ -3,11 +3,11 @@ import Events from '../Events/index.js'
 
 class Base extends Events {
   constructor(settings, configuration) {
-    super(...arguments)
+    super()
+    this._configuration = configuration
     this.addClassDefaultProperties()
     this.addBindableClassProperties()
     this._settings = settings
-    this._configuration = configuration
   }
   get _name() { return this.name }
   set _name(name) { this.name = name }
@@ -34,7 +34,9 @@ class Base extends Events {
     this.configuration = this.configuration || {}
     return this.configuration
   }
-  set _configuration(configuration) { this.configuration = configuration }
+  set _configuration(configuration) {
+    this.configuration = configuration
+  }
   get _uiElementSettings() {
     this.uiElementSettings = this.uiElementSettings || {}
     return this.uiElementSettings

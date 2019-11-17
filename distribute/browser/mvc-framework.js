@@ -163,11 +163,11 @@
 
   class Base extends Events {
     constructor(settings, configuration) {
-      super(...arguments);
+      super();
+      this._configuration = configuration;
       this.addClassDefaultProperties();
       this.addBindableClassProperties();
       this._settings = settings;
-      this._configuration = configuration;
     }
 
     get _name() {
@@ -1053,7 +1053,6 @@
 
     reset() {
       this.remove(this._models);
-      console.log(this._models);
       return this;
     }
 

@@ -200,7 +200,6 @@ class Collection extends Base {
   }
   reset() {
     this.remove(this._models)
-    console.log(this._models)
     return this
   }
   parse(data) {
