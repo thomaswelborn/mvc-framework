@@ -461,6 +461,15 @@
       };
     }
 
+    get _async() {
+      this.async = this.async || true;
+      return this.async;
+    }
+
+    set _async(async) {
+      this.async = async;
+    }
+
     get _responseTypes() {
       return ['', 'arraybuffer', 'blob', 'document', 'json', 'text'];
     }
@@ -474,6 +483,7 @@
     }
 
     get _type() {
+      this.type = this.type || true;
       return this.type;
     }
 
@@ -499,21 +509,16 @@
     }
 
     get _headers() {
-      return this.headers || [];
+      this.headers = this.headers || [this._defaults.contentType];
+      return this.headers;
     }
 
     set _headers(headers) {
-      this._headers.length = 0;
-      headers.forEach(header => {
-        this._headers.push(header);
-
-        header = Object.entries(header)[0];
-
-        this._xhr.setRequestHeader(header[0], header[1]);
-      });
+      this.headers = headers;
     }
 
     get _data() {
+      this.data = this.data || {};
       return this.data;
     }
 
@@ -528,28 +533,35 @@
 
     stringParameters() {
       var parameters = Object.entries(this._parameters);
-      return parameters.reduce((parameterString, _ref, parameterIndex) => {
+      return parameters.length ? parameters.reduce((parameterString, _ref, parameterIndex) => {
         var [parameterKey, parameterValue] = _ref;
         var concatenator = parameterIndex !== parameters.length - 1 ? '&' : '';
         var assignmentOperator = '=';
         parameterString = parameterString.concat(parameterKey, assignmentOperator, parameterValue, concatenator);
         return parameterString;
-      }, '?');
+      }, '?') : '';
     }
 
     request() {
-      var url = this._url.concat(this.stringParameters());
-
+      var type = this._type;
+      var url = Object.keys(this._parameters).length ? this._url.concat(this.stringParameters()) : this._url;
+      var async = this._async;
+      var xhr = this._xhr;
       return new Promise((resolve, reject) => {
-        if (this._xhr.status === 200) this._xhr.abort();
+        xhr.onload = resolve;
+        xhr.onerror = reject;
+        xhr.open(type, url, async);
 
-        this._xhr.open(this.type, url);
+        this._headers.forEach(header => {
+          header = Object.entries(header)[0];
+          xhr.setRequestHeader(header[0], header[1]);
+        });
 
-        this._headers = this.settings.headers || [this._defaults.contentType];
-        this._xhr.onload = resolve;
-        this._xhr.onerror = reject;
-
-        this._xhr.send(this.data);
+        if (Object.keys(this._data).length) {
+          xhr.send(this._data);
+        } else {
+          xhr.send();
+        }
       }).then(response => {
         this.emit('xhrResolve', {
           name: 'xhrResolve',
