@@ -4,10 +4,10 @@ import Events from '../Events/index.js'
 class Base extends Events {
   constructor(settings, configuration) {
     super()
-    this._configuration = configuration
-    this.addClassDefaultProperties()
+    this._configuration = configuration || {}
+    this._settings = settings || {}
     this.addBindableClassProperties()
-    this._settings = settings
+    this.addClassDefaultProperties()
   }
   get _name() { return this.name }
   set _name(name) { this.name = name }
@@ -16,19 +16,23 @@ class Base extends Events {
     return this.settings
   }
   set _settings(settings) {
-     this.settings = settings || {}
-     this.classDefaultProperties
-       .forEach((classSetting) => {
-         if(this.settings[classSetting]) {
-           this['_'.concat(classSetting)] = this.settings[classSetting]
-         }
-       })
-     Object.keys(this.settings)
-       .forEach((settingKey) => {
-         if(this.classDefaultProperties.indexOf(settingKey) === -1) {
-           this[settingKey] = this.settings[settingKey]
-         }
-       })
+    this.settings = settings
+    let classDefaultProperties = this.classDefaultProperties || []
+    classDefaultProperties = classDefaultProperties.concat(this.getBindableClassPropertiesNames())
+    Object.entries(this.settings)
+      .forEach(([settingKey, settingValue]) => {
+        if(classDefaultProperties.indexOf(settingKey) === -1) {
+          Object.defineProperty(
+            this,
+            ['_'.concat(settingKey)],
+            {
+              get() { return this[settingKey] },
+              set(value) { this[settingKey] = value },
+            }
+          )
+          this['_'.concat(settingKey)] = settingValue
+        }
+      })
   }
   get _configuration() {
     this.configuration = this.configuration || {}
@@ -44,7 +48,20 @@ class Base extends Events {
   set _uiElementSettings(uiElementSettings) {
     this.uiElementSettings = uiElementSettings
   }
-  getBindableClassPropertyMethods(bindableClassPropertyName) {
+  getBindableClassPropertiesNames() {
+    return (this.bindableClassProperties)
+      ? this.bindableClassProperties
+        .reduce((_bindableClassPropertiesNames, bindableClassPropertyName) => {
+          _bindableClassPropertiesNames = _bindableClassPropertiesNames.concat(
+            this.getBindableClassPropertyNames(
+              bindableClassPropertyName
+            )
+          )
+          return _bindableClassPropertiesNames
+        }, [])
+      : []
+  }
+  getBindableClassPropertyNames(bindableClassPropertyName) {
     switch(bindableClassPropertyName) {
       case 'data':
         return [
@@ -71,13 +88,15 @@ class Base extends Events {
   addClassDefaultProperties() {
     this.classDefaultProperties
       .forEach((classDefaultProperty, classDefaultPropertyIndex) => {
-        if(this[classDefaultProperty]) {
-          let property = this[classDefaultProperty]
+        let currentPropertyValue = this.settings[classDefaultProperty] ||
+        this[classDefaultProperty]
+        if(
+          currentPropertyValue
+        ) {
           Object.defineProperty(this, classDefaultProperty, {
             writable: true,
-            value: property
           })
-          this['_'.concat(classDefaultProperty)] = property
+          this['_'.concat(classDefaultProperty)] = currentPropertyValue
         }
       })
     return this
@@ -86,7 +105,7 @@ class Base extends Events {
     if(this.bindableClassProperties) {
       this.bindableClassProperties
         .forEach((bindableClassPropertyName) => {
-          let bindableClassPropertyMethods = this.getBindableClassPropertyMethods(
+          let bindableClassPropertyMethods = this.getBindableClassPropertyNames(
             bindableClassPropertyName
           )
           bindableClassPropertyMethods
@@ -108,7 +127,9 @@ class Base extends Events {
     if(bindableClassPropertyName === 'uiElements') {
       context._uiElementSettings = this[bindableClassPropertyName]
     }
-    let currentPropertyValues = this[bindableClassPropertyName]
+    let currentPropertyValues =
+      this.settings[bindableClassPropertyName] ||
+      this[bindableClassPropertyName]
     Object.defineProperties(
       this,
       {
@@ -133,7 +154,9 @@ class Base extends Events {
                       {
                         configurable: true,
                         get() {
-                          return context.element.querySelectorAll(value)
+                          if(context.element) {
+                            return context.element.querySelectorAll(value)
+                          }
                         }
                       }
                     )

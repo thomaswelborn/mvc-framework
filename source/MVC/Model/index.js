@@ -23,7 +23,7 @@ class Model extends Base {
   get _defaults() { return this.defaults }
   set _defaults(defaults) {
     this.defaults = defaults
-    this.set(defaults)
+    this.set(this.defaults)
   }
   get _isSetting() { return this.isSetting }
   set _isSetting(isSetting) { this.isSetting = isSetting }
@@ -192,7 +192,6 @@ class Model extends Base {
               let setValueEventName = ['set', ':', key].join('')
               let setEventName = 'set'
               if(context.silent !== true) {
-                console.log('silent', context.silent)
                 context.emit(
                   setValueEventName,
                   {
@@ -208,7 +207,6 @@ class Model extends Base {
               if(!context._isSetting) {
                 if(!Object.values(context._changing).length) {
                   if(context.silent !== true) {
-                    console.log('silent', context.silent)
                     context.emit(
                       setEventName,
                       {
@@ -223,7 +221,6 @@ class Model extends Base {
                   }
                   } else {
                   if(context.silent !== true) {
-                    console.log('silent', context.silent)
                     context.emit(
                       setEventName,
                       {
@@ -254,7 +251,6 @@ class Model extends Base {
     let unsetValue = this._data[key]
     delete this._data['_'.concat(key)]
     delete this._data[key]
-    console.log('unset')
     this.emit(
       unsetValueEventName,
       {

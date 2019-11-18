@@ -164,10 +164,10 @@
   class Base extends Events {
     constructor(settings, configuration) {
       super();
-      this._configuration = configuration;
-      this.addClassDefaultProperties();
+      this._configuration = configuration || {};
+      this._settings = settings || {};
       this.addBindableClassProperties();
-      this._settings = settings;
+      this.addClassDefaultProperties();
     }
 
     get _name() {
@@ -184,15 +184,24 @@
     }
 
     set _settings(settings) {
-      this.settings = settings || {};
-      this.classDefaultProperties.forEach(classSetting => {
-        if (this.settings[classSetting]) {
-          this['_'.concat(classSetting)] = this.settings[classSetting];
-        }
-      });
-      Object.keys(this.settings).forEach(settingKey => {
-        if (this.classDefaultProperties.indexOf(settingKey) === -1) {
-          this[settingKey] = this.settings[settingKey];
+      this.settings = settings;
+      var classDefaultProperties = this.classDefaultProperties || [];
+      classDefaultProperties = classDefaultProperties.concat(this.getBindableClassPropertiesNames());
+      Object.entries(this.settings).forEach((_ref) => {
+        var [settingKey, settingValue] = _ref;
+
+        if (classDefaultProperties.indexOf(settingKey) === -1) {
+          Object.defineProperty(this, ['_'.concat(settingKey)], {
+            get() {
+              return this[settingKey];
+            },
+
+            set(value) {
+              this[settingKey] = value;
+            }
+
+          });
+          this['_'.concat(settingKey)] = settingValue;
         }
       });
     }
@@ -215,7 +224,14 @@
       this.uiElementSettings = uiElementSettings;
     }
 
-    getBindableClassPropertyMethods(bindableClassPropertyName) {
+    getBindableClassPropertiesNames() {
+      return this.bindableClassProperties ? this.bindableClassProperties.reduce((_bindableClassPropertiesNames, bindableClassPropertyName) => {
+        _bindableClassPropertiesNames = _bindableClassPropertiesNames.concat(this.getBindableClassPropertyNames(bindableClassPropertyName));
+        return _bindableClassPropertiesNames;
+      }, []) : [];
+    }
+
+    getBindableClassPropertyNames(bindableClassPropertyName) {
       switch (bindableClassPropertyName) {
         case 'data':
           return [bindableClassPropertyName.concat(''), bindableClassPropertyName.concat('Events'), bindableClassPropertyName.concat('Callbacks')];
@@ -236,13 +252,13 @@
 
     addClassDefaultProperties() {
       this.classDefaultProperties.forEach((classDefaultProperty, classDefaultPropertyIndex) => {
-        if (this[classDefaultProperty]) {
-          var property = this[classDefaultProperty];
+        var currentPropertyValue = this.settings[classDefaultProperty] || this[classDefaultProperty];
+
+        if (currentPropertyValue) {
           Object.defineProperty(this, classDefaultProperty, {
-            writable: true,
-            value: property
+            writable: true
           });
-          this['_'.concat(classDefaultProperty)] = property;
+          this['_'.concat(classDefaultProperty)] = currentPropertyValue;
         }
       });
       return this;
@@ -251,7 +267,7 @@
     addBindableClassProperties() {
       if (this.bindableClassProperties) {
         this.bindableClassProperties.forEach(bindableClassPropertyName => {
-          var bindableClassPropertyMethods = this.getBindableClassPropertyMethods(bindableClassPropertyName);
+          var bindableClassPropertyMethods = this.getBindableClassPropertyNames(bindableClassPropertyName);
           bindableClassPropertyMethods.forEach((bindableClassPropertyMethod, bindableClassPropertyMethodIndex) => {
             this.addBindableClassProperty(bindableClassPropertyMethod);
 
@@ -275,7 +291,7 @@
         context._uiElementSettings = this[bindableClassPropertyName];
       }
 
-      var currentPropertyValues = this[bindableClassPropertyName];
+      var currentPropertyValues = this.settings[bindableClassPropertyName] || this[bindableClassPropertyName];
       Object.defineProperties(this, {
         [bindableClassPropertyName]: {
           writable: true,
@@ -288,8 +304,8 @@
           },
 
           set(values) {
-            Object.entries(values).forEach((_ref) => {
-              var [key, value] = _ref;
+            Object.entries(values).forEach((_ref2) => {
+              var [key, value] = _ref2;
 
               switch (bindableClassPropertyName) {
                 case 'uiElements':
@@ -298,7 +314,9 @@
                     configurable: true,
 
                     get() {
-                      return context.element.querySelectorAll(value);
+                      if (context.element) {
+                        return context.element.querySelectorAll(value);
+                      }
                     }
 
                   });
@@ -378,8 +396,8 @@
 
     toggleTargetBindableClassEvents(classType, method) {
       if (this[classType.concat('s')] && this[classType.concat('Events')] && this[classType.concat('Callbacks')]) {
-        Object.entries(this[classType.concat('Events')]).forEach((_ref2) => {
-          var [classTypeEventData, classTypeCallbackName] = _ref2;
+        Object.entries(this[classType.concat('Events')]).forEach((_ref3) => {
+          var [classTypeEventData, classTypeCallbackName] = _ref3;
 
           try {
             classTypeEventData = classTypeEventData.split(' ');
@@ -611,7 +629,7 @@
 
     set _defaults(defaults) {
       this.defaults = defaults;
-      this.set(defaults);
+      this.set(this.defaults);
     }
 
     get _isSetting() {
@@ -835,7 +853,6 @@
               var setEventName = 'set';
 
               if (context.silent !== true) {
-                console.log('silent', context.silent);
                 context.emit(setValueEventName, {
                   name: setValueEventName,
                   data: {
@@ -848,7 +865,6 @@
               if (!context._isSetting) {
                 if (!Object.values(context._changing).length) {
                   if (context.silent !== true) {
-                    console.log('silent', context.silent);
                     context.emit(setEventName, {
                       name: setEventName,
                       data: Object.assign({}, context._data)
@@ -856,7 +872,6 @@
                   }
                 } else {
                   if (context.silent !== true) {
-                    console.log('silent', context.silent);
                     context.emit(setEventName, {
                       name: setEventName,
                       data: Object.assign({}, context._changing, context._data)
@@ -882,7 +897,6 @@
       var unsetValue = this._data[key];
       delete this._data['_'.concat(key)];
       delete this._data[key];
-      console.log('unset');
       this.emit(unsetValueEventName, {
         name: unsetValueEventName,
         data: {
