@@ -1,12 +1,14 @@
 import Channel from './Channel/index'
-const Channels = class {
+export default class {
   constructor() {}
   get _channels() {
-    this.channels = this.channels || {}
+    this.channels = this.channels
+      ? this.channels
+      : {}
     return this.channels
   }
   channel(channelName) {
-    this._channels[channelName] = (this._channels[channelName])
+    this._channels[channelName] = this._channels[channelName]
       ? this._channels[channelName]
       : new Channel()
     return this._channels[channelName]
@@ -15,4 +17,3 @@ const Channels = class {
     delete this._channels[channelName]
   }
 }
-export default Channels

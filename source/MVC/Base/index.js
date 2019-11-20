@@ -9,6 +9,10 @@ class Base extends Events {
     this.addBindableClassProperties()
     this.addClassDefaultProperties()
   }
+  get _uuid() {
+    this.uuid = this.uuid || MVC.Utils.UUID()
+    return this.uuid
+  }
   get _name() { return this.name }
   set _name(name) { this.name = name }
   get _settings() {
@@ -143,8 +147,9 @@ class Base extends Events {
             return context[bindableClassPropertyName]
           },
           set(values) {
-            Object.entries(values)
-              .forEach(([key, value]) => {
+            let _values = Object.entries(values)
+            _values
+              .forEach(([key, value], index) => {
                 switch(bindableClassPropertyName) {
                   case 'uiElements':
                     context._uiElementSettings[key] = value
@@ -160,6 +165,20 @@ class Base extends Events {
                         }
                       }
                     )
+                    if(index === _values.length - 1) {
+                      Object.defineProperty(
+                        context['_'.concat(bindableClassPropertyName)],
+                        '$element',
+                        {
+                          configurable: true,
+                          get() {
+                            if(context.element) {
+                              return context.element
+                            }
+                          }
+                        }
+                      )
+                    }
                     break
                   default:
                     context['_'.concat(bindableClassPropertyName)][key] = value

@@ -29,14 +29,7 @@ class Collection extends Base {
     this.models = this.models || this.storageContainer
     return this.models
   }
-  set _models(modelsData) {
-    this.models = modelsData
-      .map((modelData) => {
-        let model = new this.model()
-        model.set(modelData)
-        return model
-      })
-  }
+  set _models(modelsData) { this.models = modelsData }
   get _model() { return this.model }
   set _model(model) { this.model = model }
   get _isSetting() { return this.isSetting }
@@ -57,19 +50,14 @@ class Collection extends Base {
     db = JSON.stringify(db)
     localStorage.setItem(this._localStorage.endpoint, db)
   }
-  getModelIndex(modelID) {
+  getModelIndex(modelUUID) {
     let modelIndex
     this._models
       .find((_model, _modelIndex) => {
         if(_model !== null) {
           if(
             _model instanceof Model &&
-            _model.get(this._idAttribute) === modelID
-          ) {
-            modelIndex = _modelIndex
-            return _model
-          } else if(
-            _model[this._idAttribute] === modelID
+            _model._uuid === modelUUID
           ) {
             modelIndex = _modelIndex
             return _model
@@ -77,12 +65,6 @@ class Collection extends Base {
         }
       })
     return modelIndex
-  }
-  getModelID(model) {
-    return (model instanceof Model)
-      ? model.get(this._idAttribute)
-      : model[this._idAttribute]
-
   }
   removeModelByIndex(modelIndex) {
     let model = this._models.splice(modelIndex, 1, null)
@@ -108,25 +90,6 @@ class Collection extends Base {
               name: 'change',
             },
             this,
-          )
-        }
-      )
-      this._models.push(model)
-    } else if(
-      typeof modelData !== null &&
-      typeof modelData === 'object'
-    ) {
-      model = new this.model()
-      model.set(modelData)
-      model.on(
-        'set',
-        (event, _model) => {
-          this.emit(
-            'change',
-            {
-              name: 'change',
-            },
-            this
           )
         }
       )
@@ -168,25 +131,19 @@ class Collection extends Base {
     if(
       !Array.isArray(modelData)
     ) {
-      this.removeModelByIndex(
-        this.getModelIndex(
-          this.getModelID(modelData)
-        )
-      )
+      var modelIndex = this.getModelIndex(modelData._uuid)
+      this.removeModelByIndex(modelIndex)
     } else if(Array.isArray(modelData)) {
       modelData
-        .map((model) => {
-          this.removeModelByIndex(
-            this.getModelIndex(
-              this.getModelID(model)
-            )
-          )
+        .forEach((model) => {
+          var modelIndex = this.getModelIndex(model._uuid)
+          this.removeModelByIndex(modelIndex)
         })
-
     }
     this._models = this._models
       .filter((model) => model !== null)
     if(this._localStorage) this._db = this._data
+
     this._isSetting = false
 
     this.emit(
