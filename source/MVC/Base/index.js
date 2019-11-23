@@ -30,8 +30,8 @@ class Base extends Events {
             this,
             ['_'.concat(settingKey)],
             {
-              get() { return this[settingKey] },
-              set(value) { this[settingKey] = value },
+              get: function() { return this[settingKey] },
+              set: function(value) { this[settingKey] = value },
             }
           )
           this['_'.concat(settingKey)] = settingValue
@@ -142,11 +142,11 @@ class Base extends Events {
           value: currentPropertyValues,
         },
         ['_'.concat(bindableClassPropertyName)]: {
-          get() {
+          get: function() {
             context[bindableClassPropertyName] = context[bindableClassPropertyName] || {}
             return context[bindableClassPropertyName]
           },
-          set(values) {
+          set: function(values) {
             let _values = Object.entries(values)
             _values
               .forEach(([key, value], index) => {
@@ -157,11 +157,10 @@ class Base extends Events {
                       context['_'.concat(bindableClassPropertyName)],
                       [key],
                       {
-                        configurable: true,
-                        get() {
-                          if(context.element) {
-                            return context.element.querySelectorAll(value)
-                          }
+                        get: function() {
+                          return (context.element)
+                            ? context.element.querySelectorAll(value)
+                            : null
                         }
                       }
                     )
@@ -171,7 +170,7 @@ class Base extends Events {
                         '$element',
                         {
                           configurable: true,
-                          get() {
+                          get: function() {
                             if(context.element) {
                               return context.element
                             }
@@ -254,14 +253,19 @@ class Base extends Events {
     ) {
       Object.entries(this[classType.concat('Events')])
         .forEach(([classTypeEventData, classTypeCallbackName]) => {
-          try {
-            classTypeEventData = classTypeEventData.split(' ')
-            let classTypeTargetName = classTypeEventData[0]
-            let classTypeEventName = classTypeEventData[1]
-            let classTypeTarget = this[classType.concat('s')][classTypeTargetName]
-            let classTypeEventCallback = (classType === 'uiElement')
-              ? this[classType.concat('Callbacks')][classTypeCallbackName]
-              : this[classType.concat('Callbacks')][classTypeCallbackName].bind(this)
+          classTypeEventData = classTypeEventData.split(' ')
+          let classTypeTargetName = classTypeEventData[0]
+          let classTypeEventName = classTypeEventData[1]
+          let classTypeTarget = this[classType.concat('s')][classTypeTargetName]
+          let classTypeEventCallback = (classType === 'uiElement')
+            ? this[classType.concat('Callbacks')][classTypeCallbackName]
+            : this[classType.concat('Callbacks')][classTypeCallbackName].bind(this)
+          if(
+            classTypeTargetName &&
+            classTypeEventName &&
+            classTypeTarget &&
+            classTypeEventCallback
+          ) {
             this.toggleTargetBindableClassEvent(
               classType,
               classTypeTarget,
@@ -269,9 +273,7 @@ class Base extends Events {
               classTypeEventCallback,
               method
             )
-          } catch(error) { throw new ReferenceError(
-            error
-          ) }
+          }
         })
     }
     return this

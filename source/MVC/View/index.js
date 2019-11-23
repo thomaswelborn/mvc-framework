@@ -61,6 +61,12 @@ class View extends Base {
         case 'childList':
           let mutationRecordCategories = ['addedNodes', 'removedNodes']
           this.resetTargetBindableClassEvents('uiElement')
+          if(mutationRecord.addedNodes.length && this.addedNodes) {
+            this.addedNodes()
+          }
+          if(mutationRecord.removedNodes.length && this.removedNodes) {
+            this.removedNodes()
+          }
           break
       }
     }

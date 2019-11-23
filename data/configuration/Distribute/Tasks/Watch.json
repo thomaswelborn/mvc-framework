@@ -3,7 +3,7 @@
     "globs": [
       "utils/scripts/**/*.js",
       "gulpfile.js/**/*.js",
-      "data/configuration/Develop/**/*.{js,json}"
+      "data/configuration/Distribute/**/*.{js,json}"
     ],
     "options": {},
     "task": {

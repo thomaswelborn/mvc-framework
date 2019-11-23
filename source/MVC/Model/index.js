@@ -98,7 +98,10 @@ class Model extends Base {
         this._isSetting = true
         var _arguments = Object.entries(arguments[0])
         _arguments.forEach(([key, value], index) => {
-          if(index === (_arguments.length - 1)) this._isSetting = false
+          this._isSetting = (index === (_arguments.length - 1))
+            ? false
+            : true
+          // console.log('this._isSetting', this._isSetting, '\n', key, value, '\n', '------')
           this.setDataProperty(key, value)
         })
         break
@@ -111,7 +114,10 @@ class Model extends Base {
           var _arguments = Object.entries(arguments[0])
           var silent = arguments[1]
           _arguments.forEach(([key, value], index) => {
-            if(index === (_arguments.length - 1)) this._isSetting = false
+            this._isSetting = (index === (_arguments.length - 1))
+              ? false
+              : true
+            // console.log('this._isSetting', this._isSetting, '\n', key, value, '\n', '------')
             this._silent = silent
             this.setDataProperty(key, value)
             this._silent = false

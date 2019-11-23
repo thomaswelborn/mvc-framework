@@ -26,6 +26,12 @@
                 ],
                 [
                   "@babel/plugin-proposal-export-default-from"
+                ],
+                [
+                  "@babel/plugin-proposal-object-rest-spread"
+                ],
+                [
+                  "@babel/plugin-transform-spread"
                 ]
               ],
               "presets": [
@@ -52,12 +58,10 @@
         "output": {
           "file": "distribute/browser/mvc-framework.js",
           "name": "MVC",
-          "format": "umd"
+          "format": "umd",
+          "sourcemap": "inline"
         }
       }
-    },
-    "minify": {
-      "options": {}
     }
   },
   "minify": {
