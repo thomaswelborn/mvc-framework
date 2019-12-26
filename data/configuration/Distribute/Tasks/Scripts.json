@@ -305,7 +305,7 @@
         ],
         "output": {
           "file": "distribute/browser/channels.min.js",
-          "name": "Events",
+          "name": "Channels",
           "format": "umd"
         }
       }
@@ -366,7 +366,7 @@
         ],
         "output": {
           "file": "distribute/browser/channels.js",
-          "name": "Events",
+          "name": "Channels",
           "format": "umd"
         }
       }

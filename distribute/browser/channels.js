@@ -1,7 +1,7 @@
 (function (global, factory) {
   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
   typeof define === 'function' && define.amd ? define(factory) :
-  (global = global || self, global.Events = factory());
+  (global = global || self, global.Channels = factory());
 }(this, (function () { 'use strict';
 
   class Channel {
