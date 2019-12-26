@@ -47,17 +47,24 @@ class Events {
     }
     return this
   }
-  emit(eventName, eventData) {
-    let _arguments = Object.values(arguments)
-    let eventCallbacks = Object.entries(
-      this.getEventCallbacks(eventName)
-    )
-    for(let [eventCallbackGroupName, eventCallbackGroup] of eventCallbacks) {
-      for(let eventCallback of eventCallbackGroup) {
-        let additionalArguments = _arguments.splice(2) || []
-        eventCallback(eventData, ...additionalArguments)
-      }
-    }
+  emit() {
+    let _arguments = Array.from(arguments)
+    let eventName = _arguments.splice(0, 1)[0]
+    let eventData = _arguments.splice(0, 1)[0]
+    let eventArguments = _arguments.splice(0)
+    Object.entries(this.getEventCallbacks(eventName))
+      .forEach(([eventCallbackGroupName, eventCallbackGroup]) => {
+        eventCallbackGroup
+          .forEach((eventCallback) => {
+            eventCallback(
+              {
+                name: eventName,
+                data: eventData
+              },
+              ...eventArguments
+            )
+          })
+      })
     return this
   }
 }

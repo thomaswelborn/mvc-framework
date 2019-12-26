@@ -9,7 +9,10 @@
       }
     },
     "dest": [
-      ["../google/stopwatch/node_modules/mvc-framework/distribute"],
+      [
+        "../google/stopwatch/node_modules/mvc-framework/distribute",
+        "../google/contiguous-scroll/node_modules/mvc-framework/distribute"
+      ],
       {}
     ]
   }

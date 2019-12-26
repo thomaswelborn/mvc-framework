@@ -127,5 +127,249 @@
     "minify": {
       "options": {}
     }
+  },
+  "events.minify": {
+    "src": {
+      "globs": [
+        "source/MVC/events.js"
+      ],
+      "options": {
+        "allowEmpty": true,
+        "sourcemaps": true
+      }
+    },
+    "rollup": {
+      "options": {
+        "input": "source/MVC/events.js",
+        "plugins": [
+          [
+            "rollupPluginBabel",
+            {
+              "babelrc": false,
+              "plugins": [
+                [
+                  "@babel/plugin-proposal-class-properties",
+                  {
+                    "loose": false
+                  }
+                ],
+                [
+                  "@babel/plugin-proposal-export-default-from"
+                ]
+              ],
+              "presets": [
+                [
+                  "@babel/preset-env",
+                  {
+                    "targets": {
+                      "esmodules": true
+                    }
+                  }
+                ],
+                [
+                  "minify"
+                ]
+              ]
+            }
+          ],
+          [
+            "rollupPluginEJS",
+            {
+              "compilerOptions": {
+                "client": true
+              }
+            }
+          ]
+        ],
+        "output": {
+          "file": "distribute/browser/events.min.js",
+          "name": "Events",
+          "format": "umd"
+        }
+      }
+    },
+    "minify": {
+      "options": {}
+    }
+  },
+  "events": {
+    "src": {
+      "globs": [
+        "source/MVC/events.js"
+      ],
+      "options": {
+        "allowEmpty": true,
+        "sourcemaps": true
+      }
+    },
+    "rollup": {
+      "options": {
+        "input": "source/MVC/events.js",
+        "plugins": [
+          [
+            "rollupPluginBabel",
+            {
+              "babelrc": false,
+              "plugins": [
+                [
+                  "@babel/plugin-proposal-class-properties",
+                  {
+                    "loose": false
+                  }
+                ],
+                [
+                  "@babel/plugin-proposal-export-default-from"
+                ]
+              ],
+              "presets": [
+                [
+                  "@babel/preset-env",
+                  {
+                    "targets": {
+                      "esmodules": true
+                    }
+                  }
+                ]
+              ]
+            }
+          ],
+          [
+            "rollupPluginEJS",
+            {
+              "compilerOptions": {
+                "client": true
+              }
+            }
+          ]
+        ],
+        "output": {
+          "file": "distribute/browser/events.js",
+          "name": "Events",
+          "format": "umd"
+        }
+      }
+    }
+  },
+  "channels.minify": {
+    "src": {
+      "globs": [
+        "source/MVC/channels.js"
+      ],
+      "options": {
+        "allowEmpty": true,
+        "sourcemaps": true
+      }
+    },
+    "rollup": {
+      "options": {
+        "input": "source/MVC/channels.js",
+        "plugins": [
+          [
+            "rollupPluginBabel",
+            {
+              "babelrc": false,
+              "plugins": [
+                [
+                  "@babel/plugin-proposal-class-properties",
+                  {
+                    "loose": false
+                  }
+                ],
+                [
+                  "@babel/plugin-proposal-export-default-from"
+                ]
+              ],
+              "presets": [
+                [
+                  "@babel/preset-env",
+                  {
+                    "targets": {
+                      "esmodules": true
+                    }
+                  }
+                ],
+                [
+                  "minify"
+                ]
+              ]
+            }
+          ],
+          [
+            "rollupPluginEJS",
+            {
+              "compilerOptions": {
+                "client": true
+              }
+            }
+          ]
+        ],
+        "output": {
+          "file": "distribute/browser/channels.min.js",
+          "name": "Events",
+          "format": "umd"
+        }
+      }
+    },
+    "minify": {
+      "options": {}
+    }
+  },
+  "channels": {
+    "src": {
+      "globs": [
+        "source/MVC/channels.js"
+      ],
+      "options": {
+        "allowEmpty": true,
+        "sourcemaps": true
+      }
+    },
+    "rollup": {
+      "options": {
+        "input": "source/MVC/channels.js",
+        "plugins": [
+          [
+            "rollupPluginBabel",
+            {
+              "babelrc": false,
+              "plugins": [
+                [
+                  "@babel/plugin-proposal-class-properties",
+                  {
+                    "loose": false
+                  }
+                ],
+                [
+                  "@babel/plugin-proposal-export-default-from"
+                ]
+              ],
+              "presets": [
+                [
+                  "@babel/preset-env",
+                  {
+                    "targets": {
+                      "esmodules": true
+                    }
+                  }
+                ]
+              ]
+            }
+          ],
+          [
+            "rollupPluginEJS",
+            {
+              "compilerOptions": {
+                "client": true
+              }
+            }
+          ]
+        ],
+        "output": {
+          "file": "distribute/browser/channels.js",
+          "name": "Events",
+          "format": "umd"
+        }
+      }
+    }
   }
 }
