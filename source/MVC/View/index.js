@@ -1,43 +1,48 @@
-import Base from '../Base/index.js'
+import Events from '../Events/index.js'
 
-class View extends Base {
-  constructor() {
-    super(...arguments)
+class View extends Events {
+  constructor(settings = {}, options = {}) {
+    super()
+    this.settings = settings
+    this.options = options
   }
-  get bindableClassProperties() { return [
-    'uiElement'
-  ] }
-  get classDefaultProperties() { return [
+  get validSettings() { return [
+    'attributes',
     'elementName',
     'element',
-    'attributes',
-    'templates',
-    'insert'
+    'insert',
+    'template',
+    'uiElements',
+    'uiElementEvents',
+    'uiElementCallbacks',
+    'render'
   ] }
-  get _elementName() { return this._element.tagName }
-  set _elementName(elementName) {
-    if(!this._element) this._element = document.createElement(elementName)
-  }
-  get _element() { return this.element }
-  set _element(element) {
-    this.element = element
-    this.elementObserver.observe(this.element, {
-      subtree: true,
-      childList: true,
+  get settings() { return this._settings }
+  set settings(settings) {
+    this._settings = settings
+    this.validSettings.forEach((validSetting) => {
+      if(settings[validSetting]) this[validSetting] = settings[validSetting]
     })
   }
-  get _attributes() {
-    this.attributes = this.element.attributes
-    return this.attributes
+  get options() {
+    if(!this._options) this._options = {}
+    return this._options
   }
-  set _attributes(attributes) {
-    for(let [attributeKey, attributeValue] of Object.entries(attributes)) {
-      if(typeof attributeValue === 'undefined') {
-        this._element.removeAttribute(attributeKey)
-      } else {
+  set options(options) { this._options = options }
+  get elementName() { return this._elementName }
+  set elementName(elementName) { this._elementName = elementName }
+  get element() {
+    if(!this._element) {
+      this._element = document.createElement(this.elementName)
+      Object.entries(this.attributes).forEach(([attributeKey, attributeValue]) => {
         this._element.setAttribute(attributeKey, attributeValue)
-      }
+      })
+      this.elementObserver.observe(this.element, {
+        subtree: true,
+        childList: true,
+      })
     }
+    return this._element
   }
   get elementObserver() {
     this._elementObserver = this._elementObserver || new MutationObserver(
@@ -45,45 +50,148 @@ class View extends Base {
     )
     return this._elementObserver
   }
-  get _insert() {
-    this.insert = this.insert || null
-    return this.insert
+  set element(element) {
+    if(element instanceof HTMLElement) this._element = element
   }
-  set _insert(insert) { this.insert = insert }
-  get _templates() {
-    this.templates = this.templates || {}
-    return this.templates
+  get attributes() { return this._attributes || {} }
+  set attributes(attributes) { this._attributes = attributes }
+  get template() { return this._template }
+  set template(template) { this._template = template }
+  get uiElements() { return this._uiElements || {} }
+  set uiElements(uiElements) {
+    this._uiElements = uiElements
+    this.toggleEvents()
   }
-  set _templates(templates) { this.templates = templates }
+  get uiElementEvents() { return this._uiElementEvents || {} }
+  set uiElementEvents(uiElementEvents) {
+    this._uiElementEvents = uiElementEvents
+    this.toggleEvents()
+  }
+  get uiElementCallbacks() { return this._uiElementCallbacks || {} }
+  set uiElementCallbacks(uiElementCallbacks) {
+    this._uiElementCallbacks = uiElementCallbacks
+    this.toggleEvents()
+  }
+  get ui() {
+    const context = this
+    if(!this._ui) {
+      this._ui = Object.entries(this.uiElements).reduce((_ui,[uiElementName, uiElementQuery]) => {
+        Object.defineProperties(_ui, {
+          [uiElementName]: {
+            get() {
+              if(typeof uiElementQuery === 'string') {
+                let queryResults = context.element.querySelectorAll(uiElementQuery)
+                return (queryResults.length > 1) ? queryResults : queryResults.item(0)
+              } else if(
+                uiElementQuery instanceof HTMLElement ||
+                uiElementQuery instanceof Document ||
+                uiElementQuery instanceof Window
+              ) {
+                return uiElementQuery
+              }
+            }
+          },
+        })
+        return _ui
+      }, {})
+      Object.defineProperties(this._ui, {
+        '$element': {
+          get() { return context.element }
+        },
+      })
+    }
+    return this._ui
+  }
   elementObserve(mutationRecordList, observer) {
     for(let [mutationRecordIndex, mutationRecord] of Object.entries(mutationRecordList)) {
       switch(mutationRecord.type) {
         case 'childList':
-          let mutationRecordCategories = ['addedNodes', 'removedNodes']
-          this.resetTargetBindableClassEvents('uiElement')
-          if(mutationRecord.addedNodes.length && this.addedNodes) {
-            this.addedNodes()
-          }
-          if(mutationRecord.removedNodes.length && this.removedNodes) {
-            this.removedNodes()
+          if(mutationRecord.addedNodes.length) {
+            Object.entries(Object.getOwnPropertyDescriptors(this.ui))
+            .forEach(([uiKey, uiValue]) => {
+              const uiValueGet = uiValue.get()
+              const addedUIElement = Array.from(mutationRecord.addedNodes).find((addedNode) => addedNode === uiValueGet)
+              if(addedUIElement) {
+                this.toggleEvents(uiKey)
+              }
+            })
           }
           break
       }
     }
   }
+  bindEventToElement(element, method, eventName, eventCallbackName) {
+    try {
+      switch(method) {
+        case 'addEventListener':
+          this.uiElementCallbacks[eventCallbackName] = this.uiElementCallbacks[eventCallbackName].bind(this)
+          element[method](eventName, this.uiElementCallbacks[eventCallbackName])
+          break
+        case 'removeEventListener':
+          element[method](eventName, this.uiElementCallbacks[eventCallbackName])
+          break
+      }
+    } catch(error) {}
+  }
+  toggleEvents(targetUIElementName = null) {
+    this.isToggling = true
+    const ui = this.ui
+    const eventBindMethods = ['removeEventListener', 'addEventListener']
+    if(!targetUIElementName) {
+      eventBindMethods.forEach((eventBindMethod) => {
+        Object.entries(this.uiElementEvents).forEach(([uiElementEventSettings, uiElementEventCallbackName]) => {
+          let [uiElementName, uiElementEventName] = uiElementEventSettings.split(' ')
+          if(ui[uiElementName] instanceof NodeList) {
+            ui[uiElementName].forEach((uiElement) => {
+              this.bindEventToElement(uiElement, eventBindMethod, uiElementEventName, uiElementEventCallbackName)
+            })
+          } else if(
+            ui[uiElementName] instanceof HTMLElement ||
+            ui[uiElementName] instanceof Document ||
+            ui[uiElementName] instanceof Window
+          ) {
+            this.bindEventToElement(ui[uiElementName], eventBindMethod, uiElementEventName, uiElementEventCallbackName)
+          }
+        })
+      })
+    } else {
+      eventBindMethods.forEach((eventBindMethod) => {
+        const uiElementEvents = Object.entries(this.uiElementEvents).forEach(([uiElementEventSettings, uiElementEventCallbackName]) => {
+          let [uiElementName, uiElementEventName] = uiElementEventSettings.split(' ')
+          if(targetUIElementName === uiElementName) {
+            if(ui[uiElementName] instanceof NodeList) {
+              ui[uiElementName].forEach((uiElement) => {
+                this.bindEventToElement(uiElement, eventBindMethod, uiElementEventName, uiElementEventCallbackName)
+              })
+            } else if(ui[uiElementName] instanceof HTMLElement) {
+              this.bindEventToElement(ui[uiElementName], eventBindMethod, uiElementEventName, uiElementEventCallbackName)
+            }
+          }
+        })
+      })
+    }
+    this.isToggling = false
+    return this
+  }
   autoInsert() {
-    let insert = this.insert
-    insert.parent.insertAdjacentElement(
-      insert.method,
-      this._element
-    )
+    if(this.insert) {
+      const parent = this.insert.parent
+      const method = this.insert.method
+      parent.insertAdjacentElement(method, this.element)
+    }
     return this
   }
   autoRemove() {
-    if(
-      this.element &&
-      this.element.parentElement
-    ) this.element.parentElement.removeChild(this.element)
+    if(this.element.parent) {
+      this.element.parent.removeChild(this.element)
+    }
+    return this
+  }
+  render(data = {}) {
+    if(this.template) {
+      const template = this.template(data)
+      this.element.innerHTML = template
+    }
     return this
   }
 }

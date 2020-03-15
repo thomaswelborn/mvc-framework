@@ -1,54 +1,108 @@
-import Base from '../Base/index.js'
+import Events from '../Events/index.js'
 import Model from '../Model/index.js'
 
-class Collection extends Base {
-  constructor() {
+class Collection extends Events {
+  constructor(settings = {}, options = {}) {
     super(...arguments)
+    this.settings = settings
+    this.options = options
   }
-  get storageContainer() { return [] }
-  get defaultIDAttribute() { return '_id' }
-  get bindableClassProperties() { return [
-    'service'
-  ] }
-  get classDefaultProperties() { return [
+  get validSettings() { return [
     'idAttribute',
     'model',
-    'defaults'
+    'defaults',
+    'services',
+    'serviceEvents',
+    'serviceCallbacks',
   ] }
-  get _idAttribute() {
-    this.idAttribute = this.idAttribute || this.defaultIDAttribute
-    return this.idAttribute
+  get bindableEventClassPropertyTypes() { return [
+    'service'
+  ] }
+  get settings() { return this._settings }
+  set settings(settings) {
+    this._settings = settings
+    this.validSettings.forEach((validSetting) => {
+      if(settings[validSetting]) this[validSetting] = settings[validSetting]
+    })
+    this.bindableEventClassPropertyTypes
+      .forEach((bindableEventClassPropertyType) => {
+        this.toggleEvents(bindableEventClassPropertyType, 'on')
+      })
   }
-  set _idAttribute(idAttribute) { this.idAttribute = idAttribute }
-  get _defaults() { return this.defaults }
-  set _defaults(defaults) {
-    this.defaults = defaults
-    this.set(defaults)
+  get options() {
+    if(!this._options) this._options = {}
+    return this._options
   }
-  get _models() {
-    this.models = this.models || this.storageContainer
-    return this.models
+  set options(options) { this._options = options }
+  get storageContainer() { return [] }
+  get defaultIDAttribute() { return '_id' }
+  get defaults() { return this._defaults }
+  set defaults(defaults) {
+    this._defaults = defaults
+    this.add(defaults)
   }
-  set _models(modelsData) { this.models = modelsData }
-  get _model() { return this.model }
-  set _model(model) { this.model = model }
-  get _isSetting() { return this.isSetting }
-  set _isSetting(isSetting) { this.isSetting = isSetting }
-  get _localStorage() { return this.localStorage }
-  set _localStorage(localStorage) { this.localStorage = localStorage }
+  get models() {
+    this._models = this._models || this.storageContainer
+    return this._models
+  }
+  set models(modelsData) { this._models = modelsData }
+  get model() { return this._model }
+  set model(model) { this._model = model }
+  get localStorage() { return this._localStorage }
+  set localStorage(localStorage) { this._localStorage = localStorage }
   get data() { return this._data }
-  get _data() {
+  get data() {
     return this._models
       .map((model) => model.parse())
   }
   get db() { return this._db }
-  get _db() {
-    let db = localStorage.getItem(this._localStorage.endpoint) || JSON.stringify(this.storageContainer)
+  get db() {
+    let db = localStorage.getItem(this.localStorage.endpoint) || JSON.stringify(this.storageContainer)
     return JSON.parse(db)
   }
-  set _db(db) {
+  set db(db) {
     db = JSON.stringify(db)
-    localStorage.setItem(this._localStorage.endpoint, db)
+    localStorage.setItem(this.localStorage.endpoint, db)
+  }
+  resetEvents(classType) {
+    [
+      'off',
+      'on'
+    ].forEach((method) => {
+      this.toggleEvents(classType, method)
+    })
+    return this
+  }
+  toggleEvents(classType, method) {
+    const baseName = classType.concat('s')
+    const baseEventsName = classType.concat('Events')
+    const baseCallbacksName = classType.concat('Callbacks')
+    const base = this[baseName]
+    const baseEvents = this[baseEventsName]
+    const baseCallbacks = this[baseCallbacksName]
+    if(
+      base &&
+      baseEvents &&
+      baseCallbacks
+    ) {
+      Object.entries(baseEvents)
+        .forEach(([baseEventData, baseCallbackName]) => {
+          const [baseTargetName, baseEventName] = baseEventData.split(' ')
+          const baseTarget = base[baseTargetName]
+          const baseCallback = bseCallbacks[baseCallbackName]
+          if(
+            baseTargetName &&
+            baseEventName &&
+            baseTarget &&
+            baseEventCallback
+          ) {
+            try {
+              classTypeTarget[method](classTypeEventName, classTypeEventCallback)
+            } catch(error) {}
+          }
+        })
+    }
+    return this
   }
   getModelIndex(modelUUID) {
     let modelIndex
@@ -69,9 +123,8 @@ class Collection extends Base {
   removeModelByIndex(modelIndex) {
     let model = this._models.splice(modelIndex, 1, null)
     this.emit(
-      'remove', {
-        name: 'remove',
-      },
+      'remove',
+      {},
       model[0],
       this
     )
@@ -79,55 +132,55 @@ class Collection extends Base {
   }
   addModel(modelData) {
     let model
+    let someModel = new Model()
     if(modelData instanceof Model) {
       model = modelData
-      model.on(
-        'set',
-        (event, _model) => {
-          this.emit(
-            'change',
-            {
-              name: 'change',
-            },
-            this,
-          )
-        }
-      )
-      this._models.push(model)
+    } else if(
+      this.model
+    ) {
+      model = new this.model()
+      model.set(modelData)
+    } else {
+      model = new Model()
+      model.set(modelData)
     }
+    model.on(
+      'set',
+      (event, _model) => {
+        this.emit(
+          'change',
+          this.parse(),
+          this,
+        )
+      }
+    )
+    this.models.push(model)
     this.emit(
       'add',
-      {
-        name: 'add',
-      },
+      model.parse(),
       model,
       this
     )
     return this
   }
   add(modelData) {
-    this._isSetting = true
     if(Array.isArray(modelData)) {
       modelData
-        .forEach((_modelData) => {
-          this.addModel(_modelData)
+        .forEach((model) => {
+          this.addModel(model)
         })
     } else {
       this.addModel(modelData)
     }
-    if(this._localStorage) this._db = this._data
-    this._isSetting = false
+    if(this.localStorage) this.db = this.data
     this.emit(
-      'change', {
-        name: 'change',
-        data: this._data,
-      },
+      'change',
+      this.parse(),
       this
     )
     return this
   }
   remove(modelData) {
-    this._isSetting = true
     if(
       !Array.isArray(modelData)
     ) {
@@ -140,17 +193,13 @@ class Collection extends Base {
           this.removeModelByIndex(modelIndex)
         })
     }
-    this._models = this._models
+    this.models = this.models
       .filter((model) => model !== null)
-    if(this._localStorage) this._db = this._data
-
-    this._isSetting = false
+    if(this._localStorage) this.db = this.data
 
     this.emit(
-      'change', {
-        name: 'change',
-        data: this._data,
-      },
+      'change',
+      this.parse(),
       this
     )
     return this
@@ -160,7 +209,7 @@ class Collection extends Base {
     return this
   }
   parse(data) {
-    data = data || this._data || this.storageContainer
+    data = data || this.data || this.storageContainer
     return JSON.parse(JSON.stringify(data))
   }
 }

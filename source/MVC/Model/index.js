@@ -1,73 +1,56 @@
-import Base from '../Base/index.js'
+import Events from '../Events/index.js'
 
-class Model extends Base {
-  constructor() {
-    super(...arguments)
+const Model = class extends Events {
+  constructor(settings = {}, options = {}) {
+    super()
+    this.settings = settings
+    this.options = options
   }
-  get storageContainer() { return {} }
-  get defaultIDAttribute() { return '_id' }
-  get bindableClassProperties() { return [
-    'service'
-  ] }
-  get classDefaultProperties() { return [
-    'idAttribute',
+  get validSettings() { return [
     'localStorage',
-    'histiogram',
-    'defaults'
+    'defaults',
+    'services',
+    'serviceEvents',
+    'serviceCallbacks',
   ] }
-  get _idAttribute() {
-    this.idAttribute = this.idAttribute || this.defaultIDAttribute
-    return this.idAttribute
+  get bindableEventClassPropertyTypes() { return [
+    'service',
+  ] }
+  get settings() { return this._settings }
+  set settings(settings) {
+    this._settings = settings
+    this.validSettings.forEach((validSetting) => {
+      if(settings[validSetting]) this[validSetting] = settings[validSetting]
+    })
+    this.bindableEventClassPropertyTypes
+      .forEach((bindableEventClassPropertyType) => {
+        this.toggleEvents(bindableEventClassPropertyType, 'on')
+      })
   }
-  set _idAttribute(idAttribute) { this.idAttribute = idAttribute }
-  get _defaults() { return this.defaults }
-  set _defaults(defaults) {
-    this.defaults = defaults
+  get options() {
+    if(!this._options) this._options = {}
+    return this._options
+  }
+  set options(options) { this._options = options }
+  get services() {
+    if(!this._services) this._services = {}
+    return this._services
+  }
+  set services(services) { this._services = services }
+  get data() {
+    if(!this._data) this._data = {}
+    return this._data
+  }
+  get defaults() {
+    if(!this._defaults) this._defaults = {}
+    return this._defaults
+  }
+  set defaults(defaults) {
+    this._defaults = defaults
     this.set(this.defaults)
   }
-  get _isSetting() { return this.isSetting }
-  set _isSetting(isSetting) { this.isSetting = isSetting }
-  get _silent() {
-    this.silent = (typeof this.silent === 'boolean')
-      ? this.silent
-      : false
-    return this.silent
-  }
-  set _silent(silent) { this.silent = silent }
-  get _changing() {
-    this.changing = this.changing || {}
-    return this.changing
-  }
-  get _localStorage() { return this.localStorage }
-  set _localStorage(localStorage) { this.localStorage = localStorage }
-  get _histiogram() { return this.histiogram || {
-    length: 1
-  } }
-  set _histiogram(histiogram) {
-    this.histiogram = Object.assign(
-      this._histiogram,
-      histiogram
-    )
-  }
-  get _history() {
-    this.history = this.history || []
-    return this.history
-  }
-  set _history(data) {
-    if(
-      Object.keys(data).length
-    ) {
-      if(this._histiogram.length) {
-        this._history.unshift(this.parse(data))
-        this._history.splice(this._histiogram.length)
-      }
-    }
-  }
-  get _data() {
-    this.data = this.data || this.storageContainer
-    return this.data
-  }
-  set _data(data) { this.data = data }
+  get localStorage() { return this._localStorage }
+  set localStorage(localStorage) { this._localStorage = localStorage }
   get db() { return this._db }
   get _db() {
     let db = localStorage.getItem(this.localStorage.endpoint) || JSON.stringify(this.storageContainer)
@@ -77,76 +60,43 @@ class Model extends Base {
     db = JSON.stringify(db)
     localStorage.setItem(this.localStorage.endpoint, db)
   }
-  get() {
-    switch(arguments.length) {
-      case 0:
-        return Object.assign(
-          {},
-          this._data
-        )
-        break
-      case 1:
-        let key = arguments[0]
-        return this._data[key]
-        break
-    }
-  }
-  set() {
-    this._history = this.parse()
-    switch(arguments.length) {
-      case 1:
-        this._isSetting = true
-        var _arguments = Object.entries(arguments[0])
-        _arguments.forEach(([key, value], index) => {
-          this._isSetting = (index === (_arguments.length - 1))
-            ? false
-            : true
-          // console.log('this._isSetting', this._isSetting, '\n', key, value, '\n', '------')
-          this.setDataProperty(key, value)
-        })
-        break
-      case 2:
-        if(typeof arguments[0] === 'string') {
-          var key = arguments[0]
-          var value = arguments[1]
-          this.setDataProperty(key, value)
-        } else {
-          var _arguments = Object.entries(arguments[0])
-          var silent = arguments[1]
-          _arguments.forEach(([key, value], index) => {
-            this._isSetting = (index === (_arguments.length - 1))
-              ? false
-              : true
-            // console.log('this._isSetting', this._isSetting, '\n', key, value, '\n', '------')
-            this._silent = silent
-            this.setDataProperty(key, value)
-            this._silent = false
-          })
-        }
-        break
-      case 3:
-        var key = arguments[0]
-        var value = arguments[1]
-        var silent = arguments[2]
-        this._silent = silent
-        this.setDataProperty(key, value)
-        this._silent = false
-        break
-    }
+  resetEvents(classType) {
+    [
+      'off',
+      'on'
+    ].forEach((method) => {
+      this.toggleEvents(classType, method)
+    })
     return this
   }
-  unset() {
-    this._history = this.parse()
-    switch(arguments.length) {
-      case 0:
-        for(let key of Object.keys(this._data)) {
-          this.unsetDataProperty(key)
-        }
-        break
-      case 1:
-        let key = arguments[0]
-        this.unsetDataProperty(key)
-        break
+  toggleEvents(classType, method) {
+    const baseName = classType.concat('s')
+    const baseEventsName = classType.concat('Events')
+    const baseCallbacksName = classType.concat('Callbacks')
+    const base = this[baseName]
+    const baseEvents = this[baseEventsName]
+    const baseCallbacks = this[baseCallbacksName]
+    if(
+      base &&
+      baseEvents &&
+      baseCallbacks
+    ) {
+      Object.entries(baseEvents)
+        .forEach(([baseEventData, baseCallbackName]) => {
+          const [baseTargetName, baseEventName] = baseEventData.split(' ')
+          const baseTarget = base[baseTargetName]
+          const baseCallback = bseCallbacks[baseCallbackName]
+          if(
+            baseTargetName &&
+            baseEventName &&
+            baseTarget &&
+            baseEventCallback
+          ) {
+            try {
+              classTypeTarget[method](classTypeEventName, classTypeEventCallback)
+            } catch(error) {}
+          }
+        })
     }
     return this
   }
@@ -183,107 +133,82 @@ class Model extends Base {
     return this
   }
   setDataProperty(key, value) {
-    if(!this._data['_'.concat(key)]) {
-      let context = this
-      Object.defineProperties(
-        this._data,
-        {
-          ['_'.concat(key)]: {
-            configurable: true,
-            get() { return this[key] },
-            set(value) {
-              this[key] = value
-              context._changing[key] = value
-              if(context.localStorage) context.setDB(key, value)
-              let setValueEventName = ['set', ':', key].join('')
-              let setEventName = 'set'
-              if(context.silent !== true) {
-                context.emit(
-                  setValueEventName,
-                  {
-                    name: setValueEventName,
-                    data: {
-                      key: key,
-                      value: value,
-                    },
-                  },
-                  context
-                )
-              }
-              if(!context._isSetting) {
-                if(!Object.values(context._changing).length) {
-                  if(context.silent !== true) {
-                    context.emit(
-                      setEventName,
-                      {
-                        name: setEventName,
-                        data: Object.assign(
-                          {},
-                          context._data
-                        ),
-                      },
-                      context
-                    )
-                  }
-                  } else {
-                  if(context.silent !== true) {
-                    context.emit(
-                      setEventName,
-                      {
-                        name: setEventName,
-                        data: Object.assign(
-                          {},
-                          context._changing,
-                          context._data,
-                        ),
-                      },
-                      context
-                    )
-                  }
-                }
-                delete context.changing
-              }
-            }
-          }
-        }
-      )
+    if(!this.data[key]) {
+      Object.defineProperties(this.data, {
+        ['_'.concat(key)]: {
+          configurable: true,
+          writable: true,
+          enumerable: false,
+        },
+        [key]: {
+          configurable: true,
+          enumerable: true,
+          get() { return this['_'.concat(key)] },
+          set(value) { this['_'.concat(key)] = value }
+        },
+      })
     }
-    this._data['_'.concat(key)] = value
+    this.data[key] = value
+    this.emit('set'.concat(':', key), {
+      key: key,
+      value: value
+    }, this)
     return this
   }
   unsetDataProperty(key) {
-    let unsetValueEventName = ['unset', ':', key].join('')
-    let unsetEventName = 'unset'
-    let unsetValue = this._data[key]
-    delete this._data['_'.concat(key)]
-    delete this._data[key]
-    this.emit(
-      unsetValueEventName,
-      {
-        name: unsetValueEventName,
-        data: {
-          key: key,
-          value: unsetValue,
-        }
-      },
-      this
-    )
-    this.emit(
-      unsetEventName,
-      {
-        name: unsetEventName,
-        data: {
-          key: key,
-          value: unsetValue,
-        }
-      },
-      this
-    )
+    if(this.data[key]) {
+      delete this.data[key]
+    }
+    this.emit('unset'.concat(':', arguments[0]), this)
     return this
   }
-  parse(data) {
-    data = data || this._data || this.storageContainer
-    return JSON.parse(JSON.stringify(data))
+  get() {
+    if(arguments[0]) return this.data[arguments[0]]
+    return Object.entries(this.data)
+      .reduce((_data, [key, value]) => {
+        _data[key] = value
+        return _data
+      }, {})
+  }
+  set() {
+    if(arguments.length === 2) {
+      this.setDataProperty(arguments[0], arguments[1])
+      if(this.localStorage) this.setDB(arguments[0], arguments[1])
+    } else if(
+      arguments.length === 1 &&
+      !Array.isArray(arguments[0]) &&
+      typeof arguments[0] === 'object'
+    ) {
+      Object.entries(arguments[0]).forEach(([key, value]) => {
+        this.setDataProperty(key, value)
+        if(this.localStorage) this.setDB(key, value)
+      })
+    }
+    this.emit('set', this.data, this)
+    return this
+  }
+  unset() {
+    if(arguments[0]) {
+      this.unsetDataProperty(arguments[0])
+      if(this.localStorage) this.unsetDB(key)
+    } else {
+      Object.keys(this.data).forEach((key) => {
+        this.unsetDataProperty(key)
+        if(this.localStorage) this.unsetDB(key)
+      })
+    }
+    this.emit('unset', this)
+    return this
+  }
+  parse(data = this.data) {
+    return Object.entries(data).reduce((_data, [key, value]) => {
+      if(value instanceof Model) {
+        _data[key] = value.parse()
+      } else {
+        _data[key] = value
+      }
+      return _data
+    }, {})
   }
 }
 

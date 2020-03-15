@@ -1,16 +1,31 @@
-import Base from '../Base/index'
+import Events from '../Events/index'
 
-const Router = class extends Base {
-  constructor() {
-    super(...arguments)
+const Router = class extends Events {
+  constructor(settings = {}, options = {}) {
+    super()
+    this.settings = settings
+    this.options = options
+    this.addSettings()
     this.addWindowEvents()
   }
-  get classDefaultProperties() { return [
+  get validSettings() { return [
     'root',
     'hashRouting',
     'controller',
     'routes'
   ] }
+  get settings() { return this._settings }
+  set settings(settings) {
+    this._settings = settings
+    this.validSettings.forEach((validSetting) => {
+      if(settings[validSetting]) this[validSetting] = settings[validSetting]
+    })
+  }
+  get options() {
+    if(!this._options) this._options = {}
+    return this._options
+  }
+  set options(options) { this._options = options }
   get protocol() { return window.location.protocol }
   get hostname() { return window.location.hostname }
   get port() { return window.location.port }

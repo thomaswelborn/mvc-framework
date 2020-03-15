@@ -1,120 +1,64 @@
-import Base from '../Base/index'
+import Events from '../Events/index'
 
-class Service extends Base {
-  constructor() {
+class Service extends Events {
+  constructor(settings = {}, options = {}) {
     super(...arguments)
   }
-  get classDefaultProperties() { return [
-    'responseType',
-    'type',
-    'parameters',
+  get validSettings() { return [
     'url',
+    'method',
+    'mode',
+    'cache',
+    'credentials',
     'headers',
-    'data'
+    'redirect',
+    'referrer-policy',
+    'body',
   ] }
-  get _defaults() { return this.defaults || {
-    contentType: {'Content-Type': 'application/json'},
-    responseType: 'json',
-  } }
-  get _async() {
-    this.async = this.async || true
-    return this.async
+  get settings() { return this._settings }
+  set settings(settings) {
+    this._settings = settings
+    this.validSettings.forEach((validSetting) => {
+      if(settings[validSetting]) this[validSetting] = settings[validSetting]
+    })
   }
-  set _async(async) { this.async = async }
-  get _responseTypes() { return ['', 'arraybuffer', 'blob', 'document', 'json', 'text'] }
-  get _responseType() { return this.responseType }
-  set _responseType(responseType) {
-    this._xhr.responseType = this._responseTypes.find(
-      (responseTypeItem) => responseTypeItem === responseType
-    ) || this._defaults.responseType
+  get options() {
+    if(!this._options) this._options = {}
+    return this._options
   }
-  get _type() {
-    this.type = this.type || true
-    return this.type
-  }
-  set _type(type) { this.type = type }
-  get _parameters() {
-    this.parameters = this.parameters || {}
-    return this.parameters
-  }
-  set _parameters(parameters) { this.parameters = parameters }
-  get _url() { return this.url }
-  set _url(url) { this.url = url }
-  get _headers() {
-    this.headers = this.headers || [this._defaults.contentType]
-    return this.headers
-  }
-  set _headers(headers) { this.headers = headers }
-  get _data() {
-    this.data = this.data || {}
-    return this.data
-  }
-  set _data(data) { this.data = data }
-  get _xhr() {
-    this.xhr = (this.xhr)
-      ? this.xhr
-      : new XMLHttpRequest()
-    return this.xhr
-  }
-  stringParameters() {
-    let parameters = Object.entries(this._parameters)
-    return (parameters.length)
-      ? parameters
-        .reduce(
-          (
-            parameterString,
-            [parameterKey, parameterValue],
-            parameterIndex
-          ) => {
-            let concatenator = (
-              parameterIndex !== parameters.length - 1
-            ) ? '&'
-              : ''
-            let assignmentOperator = '='
-            parameterString = parameterString.concat(
-              parameterKey,
-              assignmentOperator,
-              parameterValue,
-              concatenator
-            )
-            return parameterString
-          },
-          '?'
-        )
-      : ''
-  }
-  request() {
-    let type = this._type
-    let url = (Object.keys(this._parameters).length)
-      ? this._url.concat(
-        this.stringParameters()
-      )
-      : this._url
-    let async = this._async
-    let xhr = this._xhr
-    return new Promise((resolve, reject) => {
-      xhr.onload = resolve
-      xhr.onerror = reject
-      xhr.open(type, url, async)
-      this._headers.forEach((header) => {
-        header = Object.entries(header)[0]
-        xhr.setRequestHeader(header[0], header[1])
+  set options(options) { this._options = options }
+  get url() { return this._url }
+  set url(url) { this._url = url }
+  get method() { return this._method }
+  set mode(mode) { this._mode = mode }
+  get mode() { return this._mode }
+  set cache(cache) { this._cache = cache }
+  get cache() { return this._cache }
+  set credentials(credentials) { this._credentials = credentials }
+  get credentials() { return this._credentials }
+  set headers(headers) { this._headers = headers }
+  get headers() { return this._headers }
+  set redirect(redirect) { this._redirect = redirect }
+  get redirect() { return this._redirect }
+  set referrerPolicy(referrerPolicy) { this._referrerPolicy = referrerPolicy }
+  get referrerPolicy() { return this._referrerPolicy }
+  set body(body) { this._body = body }
+  get body() { return this._body }
+  fetch() {
+    const fetchOptions = this.validSettings.reduce((_fetchOptions, [fetchOptionName, fetchOptionValue]) => {
+      if(this[fetchOptionName]) _fetchOptions[fetchOptionName] = fetchOptionValue
+      return _fetchOptions
+    }, {})
+    fetch(this.url, fetchOptions)
+      .then((response) => {
+        return response.json()
       })
-      if(Object.keys(this._data).length) {
-        xhr.send(this._data)
-      } else {
-        xhr.send()
-      }
-    }).then((response) => {
-      this.emit(
-        'xhrResolve', {
-          name: 'xhrResolve',
-          data: response.currentTarget,
-        },
-        this
-      )
-      return response
-    }).catch((error) => { throw error })
+      .then((data) => {
+        this.emit('ready', {
+          data: data
+        })
+      })
+    return this
   }
 }
 export default Service
