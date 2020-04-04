@@ -89,7 +89,7 @@ class Collection extends Events {
         .forEach(([baseEventData, baseCallbackName]) => {
           const [baseTargetName, baseEventName] = baseEventData.split(' ')
           const baseTarget = base[baseTargetName]
-          const baseCallback = bseCallbacks[baseCallbackName]
+          const baseCallback = baseCallbacks[baseCallbackName]
           if(
             baseTargetName &&
             baseEventName &&
