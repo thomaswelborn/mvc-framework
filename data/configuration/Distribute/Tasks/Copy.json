@@ -1,5 +1,5 @@
 {
-  "stopwatch": {
+  "mvc-framework": {
     "src": {
       "globs": [
         "distribute/**/*"
@@ -10,8 +10,9 @@
     },
     "dest": [
       [
-        "../google/stopwatch/node_modules/mvc-framework/distribute",
-        "../google/contiguous-scroll/node_modules/mvc-framework/distribute"
+        "../process-manager/_process-manager/node_modules/mvc-framework/distribute",
+        "../blobule/node_modules/mvc-framework/distribute",
+        "../vmware-demo/node_modules/mvc-framework/distribute"
       ],
       {}
     ]

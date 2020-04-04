@@ -68,6 +68,8 @@
   "main": "index.js",
   "author": "Thomas Welborn",
   "license": "MIT",
-  "dependencies": {},
+  "dependencies": {
+    "easeljs": "^1.0.2"
+  },
   "description": "Allows data object configuration of Gulp Libraries to become Gulp Tasks, Series, and Parallels.  \r Instead of authoring new Gulpfiles for each project, use Gulp Boilerplate to automatically configure Gulp Processes based on JSON objects."
 }

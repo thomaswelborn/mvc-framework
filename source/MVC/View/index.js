@@ -191,7 +191,9 @@ class View extends Events {
     if(this.template) {
       const template = this.template(data)
       this.element.innerHTML = template
+      this.reset
     }
+    this.toggleEvents()
     return this
   }
 }
