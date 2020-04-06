@@ -26,6 +26,7 @@ const Controller = class extends Events {
   get bindableEventClassPropertyTypes() { return [
     'model',
     'view',
+    'collection',
     'controller',
     'router',
   ] }

@@ -3,6 +3,8 @@ import Events from '../Events/index'
 class Service extends Events {
   constructor(settings = {}, options = {}) {
     super(...arguments)
+    this.settings = settings
+    this.options = options
   }
   get validSettings() { return [
     'url',
@@ -44,12 +46,29 @@ class Service extends Events {
   get referrerPolicy() { return this._referrerPolicy }
   set body(body) { this._body = body }
   get body() { return this._body }
+  get previousAbortController() {
+    return this._previousAbortController
+  }
+  set previousAbortController(previousAbortController) { this._previousAbortController = previousAbortController }
+  get abortController() {
+    if(!this._abortController) {
+      this.previousAbortController = this._abortController
+    }
+    this._abortController = new AbortController()
+    return this._abortController
+  }
+  abort() {
+    this.abortController.abort()
+    return this
+  }
   fetch() {
     const fetchOptions = this.validSettings.reduce((_fetchOptions, [fetchOptionName, fetchOptionValue]) => {
       if(this[fetchOptionName]) _fetchOptions[fetchOptionName] = fetchOptionValue
       return _fetchOptions
     }, {})
-    fetch(this.url, fetchOptions)
+    fetchOptions.signal = this.abortController.signal
+    if(this.previousAbortController) this.previousAbortController.abort()
+    return fetch(this.url, fetchOptions)
       .then((response) => {
         return response.json()
       })
@@ -57,8 +76,11 @@ class Service extends Events {
         this.emit('ready', {
           data: data
         })
+        return data
       })
-    return this
+      .catch(() => {
+        
+      })
   }
 }
 export default Service

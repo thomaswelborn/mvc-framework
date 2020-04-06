@@ -14,6 +14,7 @@ class Collection extends Events {
     'services',
     'serviceEvents',
     'serviceCallbacks',
+    'localStorage'
   ] }
   get bindableEventClassPropertyTypes() { return [
     'service'
@@ -149,14 +150,21 @@ class Collection extends Events {
       (event, _model) => {
         this.emit(
           'change',
-          this.parse(),
-          this,
+          model.parse(),
+          model,
+          this
         )
       }
     )
     this.models.push(model)
     this.emit(
       'add',
+      model.parse(),
+      model,
+      this
+    )
+    this.emit(
+      'change',
       model.parse(),
       model,
       this
@@ -173,11 +181,6 @@ class Collection extends Events {
       this.addModel(modelData)
     }
     if(this.localStorage) this.db = this.data
-    this.emit(
-      'change',
-      this.parse(),
-      this
-    )
     return this
   }
   remove(modelData) {
@@ -199,7 +202,8 @@ class Collection extends Events {
 
     this.emit(
       'change',
-      this.parse(),
+      null,
+      null,
       this
     )
     return this
