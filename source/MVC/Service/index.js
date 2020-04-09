@@ -13,6 +13,7 @@ class Service extends Events {
     'cache',
     'credentials',
     'headers',
+    'parameters',
     'redirect',
     'referrer-policy',
     'body',
@@ -29,9 +30,30 @@ class Service extends Events {
     return this._options
   }
   set options(options) { this._options = options }
-  get url() { return this._url }
+  get url() {
+    if(this.parameters) {
+      return this._url.concat(this.queryString)
+    } else {
+      return this._url
+    }
+  }
   set url(url) { this._url = url }
+  get queryString() {
+    let queryString = ''
+    if(this.parameters) {
+      let parameterString = Object.entries(this.parameters)
+        .reduce((parameterStrings, [parameterKey, parameterValue]) => {
+          let parameterString = parameterKey.concat('=', parameterValue)
+          parameterStrings.push(parameterString)
+          return parameterStrings
+        }, [])
+          .join('&')
+      queryString = '?'.concat(parameterString)
+    }
+    return queryString
+  }
   get method() { return this._method }
+  set method(method) { this._method = method }
   set mode(mode) { this._mode = mode }
   get mode() { return this._mode }
   set cache(cache) { this._cache = cache }
@@ -46,6 +68,8 @@ class Service extends Events {
   get referrerPolicy() { return this._referrerPolicy }
   set body(body) { this._body = body }
   get body() { return this._body }
+  get parameters() { return this._parameters || null }
+  set parameters(parameters) { this._parameters = parameters }
   get previousAbortController() {
     return this._previousAbortController
   }
@@ -62,8 +86,8 @@ class Service extends Events {
     return this
   }
   fetch() {
-    const fetchOptions = this.validSettings.reduce((_fetchOptions, [fetchOptionName, fetchOptionValue]) => {
-      if(this[fetchOptionName]) _fetchOptions[fetchOptionName] = fetchOptionValue
+    const fetchOptions = this.validSettings.reduce((_fetchOptions, fetchOptionName) => {
+      if(this[fetchOptionName]) _fetchOptions[fetchOptionName] = this[fetchOptionName]
       return _fetchOptions
     }, {})
     fetchOptions.signal = this.abortController.signal
@@ -78,8 +102,15 @@ class Service extends Events {
         })
         return data
       })
-      .catch(() => {
-        
+      .catch((error) => {
+        let data = {
+          type: 'error',
+          message: error,
+        }
+        this.emit('error', {
+          data: data
+        })
+        return data
       })
   }
 }

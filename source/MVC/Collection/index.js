@@ -3,7 +3,7 @@ import Model from '../Model/index.js'
 
 class Collection extends Events {
   constructor(settings = {}, options = {}) {
-    super(...arguments)
+    super()
     this.settings = settings
     this.options = options
   }
