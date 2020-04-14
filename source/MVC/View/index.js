@@ -182,8 +182,8 @@ class View extends Events {
     return this
   }
   autoRemove() {
-    if(this.element.parent) {
-      this.element.parent.removeChild(this.element)
+    if(this.element.parentElement) {
+      this.element.parentElement.removeChild(this.element)
     }
     return this
   }
@@ -191,7 +191,6 @@ class View extends Events {
     if(this.template) {
       const template = this.template(data)
       this.element.innerHTML = template
-      this.reset
     }
     this.toggleEvents()
     return this

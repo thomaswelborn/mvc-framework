@@ -5,6 +5,11 @@ const Model = class extends Events {
     super()
     this.settings = settings
     this.options = options
+    this.emit(
+      'ready',
+      {},
+      this,
+    )
   }
   get validSettings() { return [
     'localStorage',
@@ -46,11 +51,16 @@ const Model = class extends Events {
     return this._defaults
   }
   set defaults(defaults) {
-    this._defaults = defaults
+    if(this.localStorage.sync === true) {
+      this._defaults = this.db
+    } else {
+      this._defaults = defaults
+    }
     this.set(this.defaults)
   }
-  get localStorage() { return this._localStorage }
+  get localStorage() { return this._localStorage || {} }
   set localStorage(localStorage) { this._localStorage = localStorage }
+  get storageContainer() { return {} }
   get db() { return this._db }
   get _db() {
     let db = localStorage.getItem(this.localStorage.endpoint) || JSON.stringify(this.storageContainer)

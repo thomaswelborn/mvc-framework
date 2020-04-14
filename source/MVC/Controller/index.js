@@ -81,13 +81,13 @@ const Controller = class extends Events {
     const baseName = classType.concat('s')
     const baseEventsName = classType.concat('Events')
     const baseCallbacksName = classType.concat('Callbacks')
-    const base = this[baseName]
-    const baseEvents = this[baseEventsName]
-    const baseCallbacks = this[baseCallbacksName]
+    const base = this[baseName] || {}
+    const baseEvents = this[baseEventsName] || {}
+    const baseCallbacks = this[baseCallbacksName] || {}
     if(
-      base &&
-      baseEvents &&
-      baseCallbacks
+      Object.values(base).length &&
+      Object.values(baseEvents).length &&
+      Object.values(baseCallbacks).length
     ) {
       Object.entries(baseEvents)
         .forEach(([baseEventData, baseCallbackName]) => {
@@ -111,7 +111,7 @@ const Controller = class extends Events {
           } else {
             baseTargets.push(base[baseTargetName])
           }
-          baseCallbacks[baseCallbackName] = baseCallbacks[baseCallbackName].bind(this)
+          if(baseCallbacks[baseCallbackName]) baseCallbacks[baseCallbackName] = baseCallbacks[baseCallbackName].bind(this)
           const baseEventCallback = baseCallbacks[baseCallbackName]
           if(
             baseTargetName &&
@@ -130,7 +130,9 @@ const Controller = class extends Events {
                       baseTarget[method](baseEventName, baseEventCallback.name.split(' ')[1])
                       break
                   }
-                } catch(error) {}
+                } catch(error) {
+                  throw error
+                }
               })
           }
         })

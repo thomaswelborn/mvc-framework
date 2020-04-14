@@ -124,10 +124,10 @@ class Collection extends Events {
   removeModelByIndex(modelIndex) {
     let model = this._models.splice(modelIndex, 1, null)
     this.emit(
-      'remove',
-      {},
-      model[0],
-      this
+      'remove:model',
+      model[0].parse(),
+      this,
+      model[0]
     )
     return this
   }
@@ -149,10 +149,10 @@ class Collection extends Events {
       'set',
       (event, _model) => {
         this.emit(
-          'change',
-          model.parse(),
+          'change:model',
+          this.parse(),
+          this,
           model,
-          this
         )
       }
     )
@@ -160,16 +160,10 @@ class Collection extends Events {
     this.emit(
       'add',
       model.parse(),
-      model,
-      this
+      this,
+      model
     )
-    this.emit(
-      'change',
-      model.parse(),
-      model,
-      this
-    )
-    return this
+    return model
   }
   add(modelData) {
     if(Array.isArray(modelData)) {
@@ -181,6 +175,11 @@ class Collection extends Events {
       this.addModel(modelData)
     }
     if(this.localStorage) this.db = this.data
+    this.emit(
+      'change',
+      this.parse(),
+      this
+    )
     return this
   }
   remove(modelData) {
@@ -199,11 +198,9 @@ class Collection extends Events {
     this.models = this.models
       .filter((model) => model !== null)
     if(this._localStorage) this.db = this.data
-
     this.emit(
-      'change',
-      null,
-      null,
+      'remove',
+      this.parse(),
       this
     )
     return this
