@@ -1,7 +1,7 @@
 import './Shims/events'
 import Events from './Events/index'
 import Channels from './Channels/index'
-import * as Utils from './Utils/index'
+import * as Utilities from './Utilities/index'
 import Service from './Service/index'
 import Model from './Model/index'
 import Collection from './Collection/index'
@@ -11,7 +11,7 @@ import Router from './Router/index'
 const MVC = {
   Events,
   Channels,
-  Utils,
+  Utilities,
   Service,
   Model,
   Collection,

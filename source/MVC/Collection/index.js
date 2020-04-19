@@ -1,3 +1,4 @@
+import { UUID } from '../Utilities/index.js'
 import Events from '../Events/index.js'
 import Model from '../Model/index.js'
 
@@ -41,6 +42,10 @@ class Collection extends Events {
   set defaults(defaults) {
     this._defaults = defaults
     this.add(defaults)
+  }
+  get uuid() {
+    if(!this._uuid) this._uuid = Utilities.UUID()
+    return this._uuid
   }
   get models() {
     this._models = this._models || this.storageContainer
@@ -184,14 +189,15 @@ class Collection extends Events {
   }
   remove(modelData) {
     if(
-      !Array.isArray(modelData)
+      !Array.isArray(modelData) &&
+      typeof modelData === 'object'
     ) {
-      var modelIndex = this.getModelIndex(modelData._uuid)
+      var modelIndex = this.getModelIndex(modelData.uuid)
       this.removeModelByIndex(modelIndex)
     } else if(Array.isArray(modelData)) {
       modelData
         .forEach((model) => {
-          var modelIndex = this.getModelIndex(model._uuid)
+          var modelIndex = this.getModelIndex(model.uuid)
           this.removeModelByIndex(modelIndex)
         })
     }

@@ -65,7 +65,7 @@ const Controller = class extends Events {
       })
     this.bindableEventClassPropertyTypes
       .forEach((bindableEventClassPropertyType) => {
-        this.toggleEvents(bindableEventClassPropertyType, 'on')
+        this.resetEvents(bindableEventClassPropertyType)
       })
   }
   resetEvents(classType) {
@@ -108,11 +108,16 @@ const Controller = class extends Events {
                 }
                 return _baseTargets
               }, [])
-          } else {
+          } else if(base[baseTargetName]) {
             baseTargets.push(base[baseTargetName])
           }
-          if(baseCallbacks[baseCallbackName]) baseCallbacks[baseCallbackName] = baseCallbacks[baseCallbackName].bind(this)
-          const baseEventCallback = baseCallbacks[baseCallbackName]
+          let baseEventCallback = baseCallbacks[baseCallbackName]
+          if(
+            baseEventCallback &&
+            baseEventCallback.name.split(' ').length === 1
+          ) {
+            baseEventCallback = baseEventCallback.bind(this)
+          }
           if(
             baseTargetName &&
             baseEventName &&
@@ -127,7 +132,7 @@ const Controller = class extends Events {
                       baseTarget[method](baseEventName, baseEventCallback)
                       break
                     case 'off':
-                      baseTarget[method](baseEventName, baseEventCallback.name.split(' ')[1])
+                      baseTarget[method](baseEventName, baseEventCallback)
                       break
                   }
                 } catch(error) {
