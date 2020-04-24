@@ -371,5 +371,127 @@
         }
       }
     }
+  },
+  "model": {
+    "src": {
+      "globs": [
+        "source/MVC/model.js"
+      ],
+      "options": {
+        "allowEmpty": true,
+        "sourcemaps": true
+      }
+    },
+    "rollup": {
+      "options": {
+        "input": "source/MVC/model.js",
+        "plugins": [
+          [
+            "rollupPluginBabel",
+            {
+              "babelrc": false,
+              "plugins": [
+                [
+                  "@babel/plugin-proposal-class-properties",
+                  {
+                    "loose": false
+                  }
+                ],
+                [
+                  "@babel/plugin-proposal-export-default-from"
+                ]
+              ],
+              "presets": [
+                [
+                  "@babel/preset-env",
+                  {
+                    "targets": {
+                      "esmodules": true
+                    }
+                  }
+                ]
+              ]
+            }
+          ],
+          [
+            "rollupPluginEJS",
+            {
+              "compilerOptions": {
+                "client": true
+              }
+            }
+          ]
+        ],
+        "output": {
+          "file": "distribute/browser/model.js",
+          "name": "Model",
+          "format": "umd"
+        }
+      }
+    }
+  },
+  "model.minify": {
+    "src": {
+      "globs": [
+        "source/MVC/model.js"
+      ],
+      "options": {
+        "allowEmpty": true,
+        "sourcemaps": true
+      }
+    },
+    "rollup": {
+      "options": {
+        "input": "source/MVC/model.js",
+        "plugins": [
+          [
+            "rollupPluginBabel",
+            {
+              "babelrc": false,
+              "plugins": [
+                [
+                  "@babel/plugin-proposal-class-properties",
+                  {
+                    "loose": false
+                  }
+                ],
+                [
+                  "@babel/plugin-proposal-export-default-from"
+                ]
+              ],
+              "presets": [
+                [
+                  "@babel/preset-env",
+                  {
+                    "targets": {
+                      "esmodules": true
+                    }
+                  }
+                ],
+                [
+                  "minify"
+                ]
+              ]
+            }
+          ],
+          [
+            "rollupPluginEJS",
+            {
+              "compilerOptions": {
+                "client": true
+              }
+            }
+          ]
+        ],
+        "output": {
+          "file": "distribute/browser/model.min.js",
+          "name": "Channels",
+          "format": "umd"
+        }
+      }
+    },
+    "minify": {
+      "options": {}
+    }
   }
 }
