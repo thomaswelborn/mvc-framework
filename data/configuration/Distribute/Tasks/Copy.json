@@ -1,5 +1,5 @@
 {
-  "mvc-framework": {
+  "mvc-framework-distribute": {
     "src": {
       "globs": [
         "distribute/**/*"
@@ -10,9 +10,23 @@
     },
     "dest": [
       [
-        "../process-manager/_process-manager/node_modules/mvc-framework/distribute",
-        "../blobule/node_modules/mvc-framework/distribute",
-        "../vmware-demo/node_modules/mvc-framework/distribute"
+        "../test-framework/node_modules/mvc-framework/distribute"
+      ],
+      {}
+    ]
+  },
+  "mvc-framework-distribute-source": {
+    "src": {
+      "globs": [
+        "source/**/*"
+      ],
+      "options": {
+        "allowEmpty": false
+      }
+    },
+    "dest": [
+      [
+        "../test-framework/node_modules/mvc-framework/source"
       ],
       {}
     ]

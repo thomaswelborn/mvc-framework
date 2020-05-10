@@ -227,9 +227,9 @@
           var [baseEventData, baseCallbackName] = _ref;
           var [baseTargetName, baseEventName] = baseEventData.split(' ');
           var baseTarget = base[baseTargetName];
-          var baseCallback = bseCallbacks[baseCallbackName];
+          var baseCallback = baseCallbacks[baseCallbackName];
 
-          if (baseTargetName && baseEventName && baseTarget && baseEventCallback) {
+          if (baseTargetName && baseEventName && baseTarget && baseCallback) {
             try {
               classTypeTarget[method](classTypeEventName, classTypeEventCallback);
             } catch (error) {}
