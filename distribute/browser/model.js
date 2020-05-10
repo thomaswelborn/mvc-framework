@@ -229,6 +229,10 @@
           var baseTarget = base[baseTargetName];
           var baseCallback = baseCallbacks[baseCallbackName];
 
+          if (baseCallback && baseCallback.name.split(' ').length === 1) {
+            baseCallback = baseCallback.bind(this);
+          }
+
           if (baseTargetName && baseEventName && baseTarget && baseCallback) {
             try {
               baseTarget[method](baseEventName, baseCallback);
