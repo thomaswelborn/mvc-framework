@@ -175,7 +175,11 @@ class View extends Events {
   }
   autoInsert() {
     if(this.insert) {
-      const parent = this.insert.parent
+      const parent = (typeof this.insert.parent === 'string')
+        ? document.querySelector(this.insert.parent)
+        : (this.insert.parent instanceof HTMLElement)
+          ? this.insert.parent
+          : null
       const method = this.insert.method
       parent.insertAdjacentElement(method, this.element)
     }
