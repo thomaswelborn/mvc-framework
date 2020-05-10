@@ -112,7 +112,7 @@ const Model = class extends Events {
             baseCallback
           ) {
             try {
-              classTypeTarget[method](classTypeEventName, classTypeEventCallback)
+              baseTarget[method](baseEventName, baseCallback)
             } catch(error) {}
           }
         })

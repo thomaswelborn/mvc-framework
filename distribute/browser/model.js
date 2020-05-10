@@ -231,7 +231,7 @@
 
           if (baseTargetName && baseEventName && baseTarget && baseCallback) {
             try {
-              classTypeTarget[method](classTypeEventName, classTypeEventCallback);
+              baseTarget[method](baseEventName, baseCallback);
             } catch (error) {}
           }
         });
