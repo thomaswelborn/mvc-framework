@@ -97,9 +97,7 @@ class Service extends Events {
         return response.json()
       })
       .then((data) => {
-        this.emit('ready', {
-          data: data
-        })
+        this.emit('ready', data)
         return data
       })
       .catch((error) => {
