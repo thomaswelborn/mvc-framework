@@ -107,14 +107,19 @@ class View extends Events {
       switch(mutationRecord.type) {
         case 'childList':
           if(mutationRecord.addedNodes.length) {
-            Object.entries(Object.getOwnPropertyDescriptors(this.ui))
-            .forEach(([uiKey, uiValue]) => {
-              const uiValueGet = uiValue.get()
-              const addedUIElement = Array.from(mutationRecord.addedNodes).find((addedNode) => addedNode === uiValueGet)
-              if(addedUIElement) {
-                this.toggleEvents(uiKey)
-              }
-            })
+            // Object.entries(Object.getOwnPropertyDescriptors(this.ui))
+            // .forEach(([uiKey, uiValue]) => {
+            //   const uiValueGet = uiValue.get()
+            //   const addedUIElement = Array.from(mutationRecord.addedNodes).find((addedNode) => {
+            //     console.log('addedNode', addedNode)
+            //     console.log('uiValueGet', uiValueGet)
+            //     return addedNode === uiValueGet
+            //   })
+            //   if(addedUIElement) {
+            //     this.toggleEvents(uiKey)
+            //   }
+            // })
+            this.toggleEvents()
           }
           break
       }

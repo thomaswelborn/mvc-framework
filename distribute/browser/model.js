@@ -362,12 +362,12 @@
           this.setDataProperty(arguments[0], arguments[1]);
         }
 
-        if (this.localStorage) this.setDB(arguments[0], arguments[1]);
+        if (this.localStorage.endpoint) this.setDB(arguments[0], arguments[1]);
       } else if (arguments.length === 1 && !Array.isArray(arguments[0]) && typeof arguments[0] === 'object') {
         Object.entries(arguments[0]).forEach((_ref5) => {
           var [key, value] = _ref5;
           this.setDataProperty(key, value);
-          if (this.localStorage) this.setDB(key, value);
+          if (this.localStorage.endpoint) this.setDB(key, value);
         });
       }
 
@@ -394,7 +394,7 @@
         });
       }
 
-      if (this.localStorage) this.unsetDB(key);
+      if (this.localStorage.endpoint) this.unsetDB(key);
       this.emit('unset', this);
       return this;
     }

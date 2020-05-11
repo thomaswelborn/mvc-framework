@@ -230,7 +230,7 @@ const Model = class extends Events {
       } else {
         this.setDataProperty(arguments[0], arguments[1])
       }
-      if(this.localStorage) this.setDB(arguments[0], arguments[1])
+      if(this.localStorage.endpoint) this.setDB(arguments[0], arguments[1])
     } else if(
       arguments.length === 1 &&
       !Array.isArray(arguments[0]) &&
@@ -238,7 +238,7 @@ const Model = class extends Events {
     ) {
       Object.entries(arguments[0]).forEach(([key, value]) => {
         this.setDataProperty(key, value)
-        if(this.localStorage) this.setDB(key, value)
+        if(this.localStorage.endpoint) this.setDB(key, value)
       })
     }
     this.emit('set', this.data, this)
@@ -265,7 +265,7 @@ const Model = class extends Events {
         this.unsetDataProperty(key)
       })
     }
-    if(this.localStorage) this.unsetDB(key)
+    if(this.localStorage.endpoint) this.unsetDB(key)
     this.emit('unset', this)
     return this
   }
