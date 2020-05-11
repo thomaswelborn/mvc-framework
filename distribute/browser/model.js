@@ -312,7 +312,7 @@
 
       this.data[key] = value;
 
-      if (typeof silent === 'undefined' || silent === false || typeof silent === 'undefined') {
+      if (typeof silent === 'undefined' || silent === false) {
         this.emit('set'.concat(':', key), {
           key: key,
           value: value
@@ -351,8 +351,9 @@
         value = arguments[1];
         silent = arguments[2];
         this.setDataProperty(key, value, silent);
+        if (this.localStorage.endpoint) this.setDB(arguments[0], arguments[1]);
       } else if (arguments.length === 2) {
-        if (typeof arguments[0] === 'string' && typeof arguments[1] === 'boolean') {
+        if (typeof arguments[0] === 'object' && typeof arguments[1] === 'boolean') {
           silent = arguments[1];
           Object.entries(arguments[0]).forEach((_ref4) => {
             var [key, value] = _ref4;
