@@ -372,7 +372,7 @@
         });
       }
 
-      this.emit('set', this.data, this);
+      if (!silent) this.emit('set', this.data, this);
       return this;
     }
 

@@ -239,7 +239,7 @@ const Model = class extends Events {
         if(this.localStorage.endpoint) this.setDB(key, value)
       })
     }
-    this.emit('set', this.data, this)
+    if(!silent) this.emit('set', this.data, this)
     return this
   }
   unset() {
