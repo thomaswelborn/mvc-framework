@@ -174,6 +174,11 @@ const Model = class extends Events {
       })
     }
     this.data[key] = value
+    if(this.data[key] instanceof Model) {
+      this.data[key]
+        .on('set', (event, model) => this.emit(event.name, event.data, model))
+        .on('unset', (event, model) => this.emit(event.name, event.data, model))
+    }
     if(
       typeof silent === 'undefined' ||
       silent === false

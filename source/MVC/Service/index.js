@@ -93,22 +93,21 @@ class Service extends Events {
     fetchOptions.signal = this.abortController.signal
     if(this.previousAbortController) this.previousAbortController.abort()
     return fetch(this.url, fetchOptions)
-      .then((response) => {
-        return response.json()
-      })
+      .then((response) => response.json())
       .then((data) => {
-        this.emit('ready', data)
-        return data
+        if(
+          data.code >= 400 &&
+          data.code <= 499
+        ) {
+          throw data
+        } else {
+          this.emit('ready', data)
+          return data
+        }
       })
       .catch((error) => {
-        let data = {
-          type: 'error',
-          message: error,
-        }
-        this.emit('error', {
-          data: data
-        })
-        return data
+        this.emit('error', error)
+        return error
       })
   }
 }
