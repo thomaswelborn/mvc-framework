@@ -287,7 +287,9 @@
     }
 
     setDataProperty(key, value, silent) {
-      if (!this.data[key]) {
+      var currentDataProperty = this.data[key];
+
+      if (!currentDataProperty) {
         Object.defineProperties(this.data, {
           ['_'.concat(key)]: {
             configurable: true,
@@ -312,11 +314,13 @@
 
       this.data[key] = value;
 
-      if (this.data[key] instanceof Model) {
-        this.data[key].on('set', (event, model) => this.emit(event.name, event.data, model)).on('unset', (event, model) => this.emit(event.name, event.data, model));
+      if (currentDataProperty instanceof Model) {
+        var emit = (name, data, model) => this.emit(name, data, model);
+
+        this.data[key].off('set', emit).off('unset', emit).on('set', (event, model) => emit(event.name, event.data, model)).on('unset', (event, model) => emit(event.name, event.data, model));
       }
 
-      if (typeof silent === 'undefined' || silent === false) {
+      if (typeof silent === 'undefined' || silent === false && currentDataProperty !== value) {
         this.emit('set'.concat(':', key), {
           key: key,
           value: value

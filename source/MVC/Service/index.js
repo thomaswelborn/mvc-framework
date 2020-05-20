@@ -101,12 +101,20 @@ class Service extends Events {
         ) {
           throw data
         } else {
-          this.emit('ready', data)
+          this.emit(
+            'ready',
+            data,
+            this,
+          )
           return data
         }
       })
       .catch((error) => {
-        this.emit('error', error)
+        this.emit(
+          'error',
+          error,
+          this,
+        )
         return error
       })
   }
