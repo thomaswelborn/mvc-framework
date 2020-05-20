@@ -158,7 +158,8 @@ const Model = class extends Events {
     return this
   }
   setDataProperty(key, value, silent) {
-    if(!this.data[key]) {
+    const currentDataProperty = this.data[key]
+    if(!currentDataProperty) {
       Object.defineProperties(this.data, {
         ['_'.concat(key)]: {
           configurable: true,
@@ -174,14 +175,18 @@ const Model = class extends Events {
       })
     }
     this.data[key] = value
-    if(this.data[key] instanceof Model) {
+    if(currentDataProperty instanceof Model) {
+      const emit = (name, data ,model) => this.emit(name, data, model)
       this.data[key]
-        .on('set', (event, model) => this.emit(event.name, event.data, model))
-        .on('unset', (event, model) => this.emit(event.name, event.data, model))
+        .off('set', emit)
+        .off('unset', emit)
+        .on('set', (event, model) => emit(event.name, event.data, model))
+        .on('unset', (event, model) => emit(event.name, event.data, model))
     }
     if(
       typeof silent === 'undefined' ||
-      silent === false
+      silent === false &&
+      currentDataProperty !== value
     ) {
       this.emit('set'.concat(':', key), {
         key: key,
@@ -214,32 +219,33 @@ const Model = class extends Events {
       }, {})
   }
   set() {
-    let key, value, silent
-    if(arguments.length === 3) {
-      key = arguments[0]
-      value = arguments[1]
-      silent = arguments[2]
+    const _arguments = Array.from(arguments)
+    var key, value, silent
+    if(_arguments.length === 3) {
+      key = _arguments[0]
+      value = _arguments[1]
+      silent = _arguments[2]
       this.setDataProperty(key, value, silent)
       if(this.localStorage.endpoint) this.setDB(arguments[0], arguments[1])
-    } else if(arguments.length === 2) {
+    } else if(_arguments.length === 2) {
       if(
-        typeof arguments[0] === 'object' &&
-        typeof arguments[1] === 'boolean'
+        typeof _arguments[0] === 'object' &&
+        typeof _arguments[1] === 'boolean'
       ) {
-        silent = arguments[1]
+        silent = _arguments[1]
         Object.entries(arguments[0]).forEach(([key, value]) => {
           this.setDataProperty(key, value, silent)
         })
       } else {
-        this.setDataProperty(arguments[0], arguments[1])
+        this.setDataProperty(_arguments[0], _arguments[1])
       }
-      if(this.localStorage.endpoint) this.setDB(arguments[0], arguments[1])
+      if(this.localStorage.endpoint) this.setDB(_arguments[0], _arguments[1])
     } else if(
-      arguments.length === 1 &&
-      !Array.isArray(arguments[0]) &&
-      typeof arguments[0] === 'object'
+      _arguments.length === 1 &&
+      !Array.isArray(_arguments[0]) &&
+      typeof _arguments[0] === 'object'
     ) {
-      Object.entries(arguments[0]).forEach(([key, value]) => {
+      Object.entries(_arguments[0]).forEach(([key, value]) => {
         this.setDataProperty(key, value)
         if(this.localStorage.endpoint) this.setDB(key, value)
       })

@@ -348,28 +348,30 @@
     }
 
     set() {
+      var _arguments = Array.from(arguments);
+
       var key, value, silent;
 
-      if (arguments.length === 3) {
-        key = arguments[0];
-        value = arguments[1];
-        silent = arguments[2];
+      if (_arguments.length === 3) {
+        key = _arguments[0];
+        value = _arguments[1];
+        silent = _arguments[2];
         this.setDataProperty(key, value, silent);
         if (this.localStorage.endpoint) this.setDB(arguments[0], arguments[1]);
-      } else if (arguments.length === 2) {
-        if (typeof arguments[0] === 'object' && typeof arguments[1] === 'boolean') {
-          silent = arguments[1];
+      } else if (_arguments.length === 2) {
+        if (typeof _arguments[0] === 'object' && typeof _arguments[1] === 'boolean') {
+          silent = _arguments[1];
           Object.entries(arguments[0]).forEach((_ref4) => {
             var [key, value] = _ref4;
             this.setDataProperty(key, value, silent);
           });
         } else {
-          this.setDataProperty(arguments[0], arguments[1]);
+          this.setDataProperty(_arguments[0], _arguments[1]);
         }
 
-        if (this.localStorage.endpoint) this.setDB(arguments[0], arguments[1]);
-      } else if (arguments.length === 1 && !Array.isArray(arguments[0]) && typeof arguments[0] === 'object') {
-        Object.entries(arguments[0]).forEach((_ref5) => {
+        if (this.localStorage.endpoint) this.setDB(_arguments[0], _arguments[1]);
+      } else if (_arguments.length === 1 && !Array.isArray(_arguments[0]) && typeof _arguments[0] === 'object') {
+        Object.entries(_arguments[0]).forEach((_ref5) => {
           var [key, value] = _ref5;
           this.setDataProperty(key, value);
           if (this.localStorage.endpoint) this.setDB(key, value);
