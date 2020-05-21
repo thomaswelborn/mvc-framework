@@ -159,6 +159,18 @@ const Model = class extends Events {
   }
   setDataProperty(key, value, silent) {
     const currentDataProperty = this.data[key]
+    if(
+      !silent &&
+      currentDataProperty !== value
+    ) {
+      this.emit('beforeSet'.concat(':', key), {
+        key: key,
+        value: this.get(key),
+      }, {
+        key: key,
+        value: value,
+      }, this)
+    }
     if(!currentDataProperty) {
       Object.defineProperties(this.data, {
         ['_'.concat(key)]: {
@@ -176,36 +188,32 @@ const Model = class extends Events {
     }
     this.data[key] = value
     if(currentDataProperty instanceof Model) {
-      const emit = (name, data ,model) => this.emit(name, data, model)
+      const emit = (name, data, model) => this.emit(name, data, model)
       this.data[key]
-        .off('set', emit)
-        .off('unset', emit)
-        .on('set', (event, model) => emit(event.name, event.data, model))
-        .on('unset', (event, model) => emit(event.name, event.data, model))
+        .on('beforeSet', this.emit(event.name, event.data, model))
+        .on('set', this.emit(event.name, event.data, model))
+        .on('beforeUnset', this.emit(event.name, event.data, model))
+        .on('unset', this.emit(event.name, event.data, model))
     }
     if(
-      typeof silent === 'undefined' ||
-      silent === false &&
+      !silent &&
       currentDataProperty !== value
     ) {
       this.emit('set'.concat(':', key), {
         key: key,
-        value: value
+        value: value,
       }, this)
     }
     return this
   }
   unsetDataProperty(key, silent) {
+    if(!silent) {
+      this.emit('beforeUnset'.concat(':', arguments[0]), this)
+    }
     if(this.data[key]) {
       delete this.data[key]
     }
-    if(
-      (
-        typeof silent === 'boolean' &&
-        silent === false
-      ) ||
-      typeof silent === 'undefined'
-    ) {
+    if(!silent) {
       this.emit('unset'.concat(':', arguments[0]), this)
     }
     return this
@@ -225,7 +233,15 @@ const Model = class extends Events {
       key = _arguments[0]
       value = _arguments[1]
       silent = _arguments[2]
+      if(!silent) this.emit('beforeSet', this.data, Object.assign(
+        {},
+        this.data,
+        {
+          [key]: value,
+        },
+      ), this)
       this.setDataProperty(key, value, silent)
+      if(!silent) this.emit('set', this.data, this)
       if(this.localStorage.endpoint) this.setDB(arguments[0], arguments[1])
     } else if(_arguments.length === 2) {
       if(
@@ -233,11 +249,25 @@ const Model = class extends Events {
         typeof _arguments[1] === 'boolean'
       ) {
         silent = _arguments[1]
-        Object.entries(arguments[0]).forEach(([key, value]) => {
+        if(!silent) this.emit('beforeSet', this.data, Object.assign(
+          {},
+          this.data,
+          _arguments[0],
+        ), this)
+        Object.entries(_arguments[0]).forEach(([key, value]) => {
           this.setDataProperty(key, value, silent)
         })
+        if(!silent) this.emit('set', this.data, this)
       } else {
+        if(!silent) this.emit('beforeSet', this.data, Object.assign(
+          {},
+          this.data,
+          {
+            [_arguments[0]]: _arguments[1],
+          },
+        ), this)
         this.setDataProperty(_arguments[0], _arguments[1])
+        if(!silent) this.emit('set', this.data, this)
       }
       if(this.localStorage.endpoint) this.setDB(_arguments[0], _arguments[1])
     } else if(
@@ -245,12 +275,17 @@ const Model = class extends Events {
       !Array.isArray(_arguments[0]) &&
       typeof _arguments[0] === 'object'
     ) {
+      if(!silent) this.emit('beforeSet', this.data, Object.assign(
+        {},
+        this.data,
+        _arguments[0],
+      ), this)
       Object.entries(_arguments[0]).forEach(([key, value]) => {
         this.setDataProperty(key, value)
         if(this.localStorage.endpoint) this.setDB(key, value)
       })
+      if(!silent) this.emit('set', this.data, this)
     }
-    if(!silent) this.emit('set', this.data, this)
     return this
   }
   unset() {
@@ -259,23 +294,28 @@ const Model = class extends Events {
       arguments.length === 2
     ) {
       silent = arguments[1]
+      if(!silent) this.emit('beforeUnset', this.data, this)
       this.unsetDataProperty(arguments[0], silent)
+      if(!silent) this.emit('unset', this)
     } else if(
       arguments.length === 1
     ) {
       if(typeof arguments[0] === 'boolean') {
         silent = arguments[0]
+        if(!silent) this.emit('beforeUnset', this.data, this)
         Object.keys(this.data).forEach((key) => {
           this.unsetDataProperty(key, silent)
         })
+        if(!silent) this.emit('unset', this)
       }
     } else {
+      if(!silent) this.emit('beforeUnset', this.data, this)
       Object.keys(this.data).forEach((key) => {
         this.unsetDataProperty(key)
       })
+      if(!silent) this.emit('unset', this)
     }
     if(this.localStorage.endpoint) this.unsetDB(key)
-    this.emit('unset', this)
     return this
   }
   parse(data = this.data) {

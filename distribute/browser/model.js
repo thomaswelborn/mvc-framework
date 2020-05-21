@@ -289,6 +289,16 @@
     setDataProperty(key, value, silent) {
       var currentDataProperty = this.data[key];
 
+      if (!silent && currentDataProperty !== value) {
+        this.emit('beforeSet'.concat(':', key), {
+          key: key,
+          value: this.get(key)
+        }, {
+          key: key,
+          value: value
+        }, this);
+      }
+
       if (!currentDataProperty) {
         Object.defineProperties(this.data, {
           ['_'.concat(key)]: {
@@ -315,12 +325,11 @@
       this.data[key] = value;
 
       if (currentDataProperty instanceof Model) {
-        var emit = (name, data, model) => this.emit(name, data, model);
 
-        this.data[key].off('set', emit).off('unset', emit).on('set', (event, model) => emit(event.name, event.data, model)).on('unset', (event, model) => emit(event.name, event.data, model));
+        this.data[key].on('beforeSet', this.emit(event.name, event.data, model)).on('set', this.emit(event.name, event.data, model)).on('beforeUnset', this.emit(event.name, event.data, model)).on('unset', this.emit(event.name, event.data, model));
       }
 
-      if (typeof silent === 'undefined' || silent === false && currentDataProperty !== value) {
+      if (!silent && currentDataProperty !== value) {
         this.emit('set'.concat(':', key), {
           key: key,
           value: value
@@ -331,11 +340,15 @@
     }
 
     unsetDataProperty(key, silent) {
+      if (!silent) {
+        this.emit('beforeUnset'.concat(':', arguments[0]), this);
+      }
+
       if (this.data[key]) {
         delete this.data[key];
       }
 
-      if (typeof silent === 'boolean' && silent === false || typeof silent === 'undefined') {
+      if (!silent) {
         this.emit('unset'.concat(':', arguments[0]), this);
       }
 
@@ -360,29 +373,40 @@
         key = _arguments[0];
         value = _arguments[1];
         silent = _arguments[2];
+        if (!silent) this.emit('beforeSet', this.data, Object.assign({}, this.data, {
+          [key]: value
+        }), this);
         this.setDataProperty(key, value, silent);
+        if (!silent) this.emit('set', this.data, this);
         if (this.localStorage.endpoint) this.setDB(arguments[0], arguments[1]);
       } else if (_arguments.length === 2) {
         if (typeof _arguments[0] === 'object' && typeof _arguments[1] === 'boolean') {
           silent = _arguments[1];
-          Object.entries(arguments[0]).forEach((_ref4) => {
+          if (!silent) this.emit('beforeSet', this.data, Object.assign({}, this.data, _arguments[0]), this);
+          Object.entries(_arguments[0]).forEach((_ref4) => {
             var [key, value] = _ref4;
             this.setDataProperty(key, value, silent);
           });
+          if (!silent) this.emit('set', this.data, this);
         } else {
+          if (!silent) this.emit('beforeSet', this.data, Object.assign({}, this.data, {
+            [_arguments[0]]: _arguments[1]
+          }), this);
           this.setDataProperty(_arguments[0], _arguments[1]);
+          if (!silent) this.emit('set', this.data, this);
         }
 
         if (this.localStorage.endpoint) this.setDB(_arguments[0], _arguments[1]);
       } else if (_arguments.length === 1 && !Array.isArray(_arguments[0]) && typeof _arguments[0] === 'object') {
+        if (!silent) this.emit('beforeSet', this.data, Object.assign({}, this.data, _arguments[0]), this);
         Object.entries(_arguments[0]).forEach((_ref5) => {
           var [key, value] = _ref5;
           this.setDataProperty(key, value);
           if (this.localStorage.endpoint) this.setDB(key, value);
         });
+        if (!silent) this.emit('set', this.data, this);
       }
 
-      if (!silent) this.emit('set', this.data, this);
       return this;
     }
 
@@ -391,22 +415,27 @@
 
       if (arguments.length === 2) {
         silent = arguments[1];
+        if (!silent) this.emit('beforeUnset', this.data, this);
         this.unsetDataProperty(arguments[0], silent);
+        if (!silent) this.emit('unset', this);
       } else if (arguments.length === 1) {
         if (typeof arguments[0] === 'boolean') {
           silent = arguments[0];
+          if (!silent) this.emit('beforeUnset', this.data, this);
           Object.keys(this.data).forEach(key => {
             this.unsetDataProperty(key, silent);
           });
+          if (!silent) this.emit('unset', this);
         }
       } else {
+        if (!silent) this.emit('beforeUnset', this.data, this);
         Object.keys(this.data).forEach(key => {
           this.unsetDataProperty(key);
         });
+        if (!silent) this.emit('unset', this);
       }
 
       if (this.localStorage.endpoint) this.unsetDB(key);
-      this.emit('unset', this);
       return this;
     }
 
