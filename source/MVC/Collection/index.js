@@ -58,8 +58,13 @@ class Collection extends Events {
   set localStorage(localStorage) { this._localStorage = localStorage }
   get data() { return this._data }
   get data() {
-    return this._models
-      .map((model) => model.parse())
+    const modelsExist = (Object.keys(this.models).length)
+      ? true
+      : false
+    return (modelsExist)
+      ? this.models
+        .map((model) => model.parse())
+      : []
   }
   get db() { return this._db }
   get db() {

@@ -26,7 +26,8 @@
     },
     "dest": [
       [
-        "../test-framework/node_modules/mvc-framework/source"
+        "../test-framework/node_modules/mvc-framework/source",
+        "../lixil/american-standard/microsite-demo/node_modules/mvc-framework/source"
       ],
       {}
     ]
