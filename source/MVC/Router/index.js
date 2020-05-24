@@ -104,14 +104,14 @@ const Router = class extends Events {
       data: data
     }
   }
-  get _root() { return this.root || '/' }
-  set _root(root) { this.root = root }
-  get _hashRouting() { return this.hashRouting || false }
-  set _hashRouting(hashRouting) { this.hashRouting = hashRouting }
-  get _routes() { return this.routes }
-  set _routes(routes) { this.routes = routes }
-  get _controller() { return this.controller }
-  set _controller(controller) { this.controller = controller }
+  get root() { return this._root || '/' }
+  set root(root) { this._root = root }
+  get hashRouting() { return this._hashRouting || false }
+  set hashRouting(hashRouting) { this._hashRouting = hashRouting }
+  get routes() { return this._routes }
+  set routes(routes) { this._routes = routes }
+  get controller() { return this._controller }
+  set controller(controller) { this._controller = controller }
   get location() {
     return {
       root: this.root,
