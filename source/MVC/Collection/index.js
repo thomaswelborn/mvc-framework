@@ -98,17 +98,23 @@ class Collection extends Events {
     ) {
       Object.entries(baseEvents)
         .forEach(([baseEventData, baseCallbackName]) => {
-          const [baseTargetName, baseEventName] = baseEventData.split(' ')
-          const baseTarget = base[baseTargetName]
-          const baseEventCallback = baseCallbacks[baseCallbackName]
+          let [baseTargetName, baseEventName] = baseEventData.split(' ')
+          let baseTarget = base[baseTargetName]
+          let baseCallback = baseCallbacks[baseCallbackName]
+          if(
+            baseCallback &&
+            baseCallback.name.split(' ').length === 1
+          ) {
+            baseCallback = baseCallback.bind(this)
+          }
           if(
             baseTargetName &&
             baseEventName &&
             baseTarget &&
-            baseEventCallback
+            baseCallback
           ) {
             try {
-              classTypeTarget[method](classTypeEventName, classTypeEventCallback)
+              baseTarget[method](baseEventName, baseCallback)
             } catch(error) {}
           }
         })
