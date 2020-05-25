@@ -8,7 +8,8 @@ import Collection from './Collection/index'
 import View from './View/index'
 import Controller from './Controller/index'
 import Router from './Router/index'
-const MVC = {
+
+export {
   Events,
   Channels,
   Utilities,
@@ -19,4 +20,3 @@ const MVC = {
   Controller,
   Router,
 }
-export default MVC

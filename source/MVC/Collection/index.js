@@ -11,6 +11,7 @@ class Collection extends Events {
   get validSettings() { return [
     'idAttribute',
     'model',
+    'modelOptions',
     'defaults',
     'services',
     'serviceEvents',
@@ -149,28 +150,28 @@ class Collection extends Events {
   }
   addModel(modelData) {
     let model
-    let someModel = new Model()
     if(modelData instanceof Model) {
       model = modelData
     } else if(
       this.model
     ) {
-      model = new this.model()
-      model.set(modelData)
+      const ModelPrototype = this.model
+      model = new ModelPrototype({
+        defaults: modelData,
+      }, this.modelOptions)
     } else {
-      model = new Model()
-      model.set(modelData)
+      model = new Model({
+        defaults: modelData
+      })
     }
     model.on(
       'set',
-      (event, _model) => {
-        this.emit(
-          'change:model',
-          this.parse(),
-          this,
-          model,
-        )
-      }
+      (event, _model) => this.emit(
+        'change:model',
+        this.parse(),
+        this,
+        _model,
+      ),
     )
     this.models.push(model)
     this.emit(
@@ -184,9 +185,7 @@ class Collection extends Events {
   add(modelData) {
     if(Array.isArray(modelData)) {
       modelData
-        .forEach((model) => {
-          this.addModel(model)
-        })
+        .forEach((model) => this.addModel(model))
     } else {
       this.addModel(modelData)
     }

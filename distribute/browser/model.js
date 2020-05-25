@@ -289,7 +289,7 @@
     setDataProperty(key, value, silent) {
       var currentDataProperty = this.data[key];
 
-      if (!silent && currentDataProperty !== value) {
+      if (!silent) {
         this.emit('beforeSet'.concat(':', key), {
           key: key,
           value: this.get(key)
@@ -329,7 +329,7 @@
         this.data[key].on('beforeSet', this.emit(event.name, event.data, model)).on('set', this.emit(event.name, event.data, model)).on('beforeUnset', this.emit(event.name, event.data, model)).on('unset', this.emit(event.name, event.data, model));
       }
 
-      if (!silent && currentDataProperty !== value) {
+      if (!silent) {
         this.emit('set'.concat(':', key), {
           key: key,
           value: value

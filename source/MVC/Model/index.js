@@ -159,10 +159,7 @@ const Model = class extends Events {
   }
   setDataProperty(key, value, silent) {
     const currentDataProperty = this.data[key]
-    if(
-      !silent &&
-      currentDataProperty !== value
-    ) {
+    if(!silent) {
       this.emit('beforeSet'.concat(':', key), {
         key: key,
         value: this.get(key),
@@ -195,10 +192,7 @@ const Model = class extends Events {
         .on('beforeUnset', this.emit(event.name, event.data, model))
         .on('unset', this.emit(event.name, event.data, model))
     }
-    if(
-      !silent &&
-      currentDataProperty !== value
-    ) {
+    if(!silent) {
       this.emit('set'.concat(':', key), {
         key: key,
         value: value,

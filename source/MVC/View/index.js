@@ -60,17 +60,19 @@ class View extends Events {
   get uiElements() { return this._uiElements || {} }
   set uiElements(uiElements) {
     this._uiElements = uiElements
-    this.toggleEvents()
+    // this.toggleEvents()
   }
   get uiElementEvents() { return this._uiElementEvents || {} }
   set uiElementEvents(uiElementEvents) {
     this._uiElementEvents = uiElementEvents
-    this.toggleEvents()
+    // this.toggleEvents()
   }
   get uiElementCallbacks() { return this._uiElementCallbacks || {} }
   set uiElementCallbacks(uiElementCallbacks) {
     this._uiElementCallbacks = uiElementCallbacks
-    this.toggleEvents()
+    Object.values(this._uiElementCallbacks)
+      .forEach((uiElementCallback) => uiElementCallback.bind(this))
+    // this.toggleEvents()
   }
   get ui() {
     const context = this
@@ -102,6 +104,11 @@ class View extends Events {
     }
     return this._ui
   }
+  resetUI() {
+    delete this._ui
+    this.toggleEvents()
+    return this
+  }
   elementObserve(mutationRecordList, observer) {
     for(let [mutationRecordIndex, mutationRecord] of Object.entries(mutationRecordList)) {
       switch(mutationRecord.type) {
@@ -129,7 +136,7 @@ class View extends Events {
     try {
       switch(method) {
         case 'addEventListener':
-          this.uiElementCallbacks[eventCallbackName] = this.uiElementCallbacks[eventCallbackName].bind(this)
+          this.uiElementCallbacks[eventCallbackName] = this.uiElementCallbacks[eventCallbackName]// .bind(this)
           element[method](eventName, this.uiElementCallbacks[eventCallbackName])
           break
         case 'removeEventListener':
@@ -150,11 +157,7 @@ class View extends Events {
             ui[uiElementName].forEach((uiElement) => {
               this.bindEventToElement(uiElement, eventBindMethod, uiElementEventName, uiElementEventCallbackName)
             })
-          } else if(
-            ui[uiElementName] instanceof HTMLElement ||
-            ui[uiElementName] instanceof Document ||
-            ui[uiElementName] instanceof Window
-          ) {
+          } else if(ui[uiElementName]) {
             this.bindEventToElement(ui[uiElementName], eventBindMethod, uiElementEventName, uiElementEventCallbackName)
           }
         })

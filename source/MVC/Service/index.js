@@ -17,6 +17,7 @@ class Service extends Events {
     'redirect',
     'referrer-policy',
     'body',
+    'files'
   ] }
   get settings() { return this._settings }
   set settings(settings) {
@@ -54,20 +55,22 @@ class Service extends Events {
   }
   get method() { return this._method }
   set method(method) { this._method = method }
-  set mode(mode) { this._mode = mode }
   get mode() { return this._mode }
-  set cache(cache) { this._cache = cache }
+  set mode(mode) { this._mode = mode }
   get cache() { return this._cache }
-  set credentials(credentials) { this._credentials = credentials }
+  set cache(cache) { this._cache = cache }
   get credentials() { return this._credentials }
-  set headers(headers) { this._headers = headers }
+  set credentials(credentials) { this._credentials = credentials }
   get headers() { return this._headers }
-  set redirect(redirect) { this._redirect = redirect }
+  set headers(headers) { this._headers = headers }
   get redirect() { return this._redirect }
-  set referrerPolicy(referrerPolicy) { this._referrerPolicy = referrerPolicy }
+  set redirect(redirect) { this._redirect = redirect }
   get referrerPolicy() { return this._referrerPolicy }
-  set body(body) { this._body = body }
+  set referrerPolicy(referrerPolicy) { this._referrerPolicy = referrerPolicy }
   get body() { return this._body }
+  set body(body) { this._body = body }
+  get files() { return this._files }
+  set files(files) { this._files = files }
   get parameters() { return this._parameters || null }
   set parameters(parameters) { this._parameters = parameters }
   get previousAbortController() {
@@ -81,6 +84,10 @@ class Service extends Events {
     this._abortController = new AbortController()
     return this._abortController
   }
+  get response() { return this._response }
+  set response(response) { this._response = response }
+  get responseData() { return this._responseData }
+  set responseData(responseData) { this._responseData = responseData }
   abort() {
     this.abortController.abort()
     return this
@@ -93,7 +100,10 @@ class Service extends Events {
     fetchOptions.signal = this.abortController.signal
     if(this.previousAbortController) this.previousAbortController.abort()
     return fetch(this.url, fetchOptions)
-      .then((response) => response.json())
+      .then((response) => {
+        this.response = response
+        return response.json()
+      })
       .then((data) => {
         if(
           data.code >= 400 &&
@@ -117,6 +127,34 @@ class Service extends Events {
         )
         return error
       })
+  }
+  async fetchSync() {
+    const fetchOptions = this.validSettings.reduce((_fetchOptions, fetchOptionName) => {
+      if(this[fetchOptionName]) _fetchOptions[fetchOptionName] = this[fetchOptionName]
+      return _fetchOptions
+    }, {})
+    fetchOptions.signal = this.abortController.signal
+    if(this.previousAbortController) this.previousAbortController.abort()
+    this.response =  await fetch(this.url, fetchOptions)
+    this.responseData = await this.response.json()
+    if(
+      this.responseData.code >= 400 &&
+      this.responseData.code <= 499
+    ) {
+      this.emit(
+        'error',
+        this.responseData,
+        this,
+      )
+      throw this.responseData
+    } else {
+      this.emit(
+        'ready',
+        this.responseData,
+        this,
+      )
+    }
+    return this.responseData
   }
 }
 export default Service
