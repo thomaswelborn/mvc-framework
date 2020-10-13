@@ -5,7 +5,6 @@ const Router = class extends Events {
     super()
     this.settings = settings
     this.options = options
-    this.addSettings()
     this.addWindowEvents()
   }
   get validSettings() { return [
