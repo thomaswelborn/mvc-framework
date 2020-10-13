@@ -193,9 +193,11 @@ const Router = class extends Events {
   }
   addWindowEvents() {
     window.on('popstate', this.popState.bind(this))
+    window.on('hashchange', this.popState.bind(this))
   }
   removeWindowEvents() {
     window.off('popstate', this.popState.bind(this))
+    window.off('hashchange', this.popState.bind(this))
   }
   navigate(path) {
     window.location.href = path
