@@ -10,7 +10,7 @@
     },
     "dest": [
       [
-        "../test-framework/node_modules/mvc-framework/distribute"
+        "../mvc-framework-demonstration/node_modules/mvc-framework/distribute"
       ],
       {}
     ]
@@ -26,8 +26,7 @@
     },
     "dest": [
       [
-        "../test-framework/node_modules/mvc-framework/source",
-        "../lixil/american-standard/microsite-demo/node_modules/mvc-framework/source"
+        "../mvc-framework-demonstration/node_modules/mvc-framework/source"
       ],
       {}
     ]
