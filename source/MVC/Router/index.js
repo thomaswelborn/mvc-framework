@@ -196,12 +196,15 @@ const Router = class extends Events {
         this
       )
     }
+    return this
   }
   addWindowEvents() {
     window.on('popstate', this.popState.bind(this))
+    return this
   }
   removeWindowEvents() {
     window.off('popstate', this.popState.bind(this))
+    return this
   }
   navigate(path) {
     if(this.hashRouting) {
@@ -209,6 +212,7 @@ const Router = class extends Events {
     } else {
       window.location.href = path
     }
+    return this
   }
 }
 export default Router

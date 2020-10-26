@@ -218,25 +218,56 @@
       var baseName = classType.concat('s');
       var baseEventsName = classType.concat('Events');
       var baseCallbacksName = classType.concat('Callbacks');
-      var base = this[baseName];
-      var baseEvents = this[baseEventsName];
-      var baseCallbacks = this[baseCallbacksName];
+      var base = this[baseName] || {};
+      var baseEvents = this[baseEventsName] || {};
+      var baseCallbacks = this[baseCallbacksName] || {};
 
-      if (base && baseEvents && baseCallbacks) {
+      if (Object.values(base).length && Object.values(baseEvents).length && Object.values(baseCallbacks).length) {
         Object.entries(baseEvents).forEach((_ref) => {
           var [baseEventData, baseCallbackName] = _ref;
           var [baseTargetName, baseEventName] = baseEventData.split(' ');
-          var baseTarget = base[baseTargetName];
-          var baseCallback = baseCallbacks[baseCallbackName];
+          var baseTargetNameSubstringFirst = baseTargetName.substring(0, 1);
+          var baseTargetNameSubstringLast = baseTargetName.substring(baseTargetName.length - 1);
+          var baseTargets = [];
 
-          if (baseCallback && baseCallback.name.split(' ').length === 1) {
-            baseCallback = baseCallback.bind(this);
+          if (baseTargetNameSubstringFirst === '[' && baseTargetNameSubstringLast === ']') {
+            baseTargets = Object.entries(base).reduce((_baseTargets, _ref2) => {
+              var [baseName, baseTarget] = _ref2;
+              var baseTargetNameRegExpString = baseTargetName.slice(1, -1);
+              var baseTargetNameRegExp = new RegExp(baseTargetNameRegExpString);
+
+              if (baseName.match(baseTargetNameRegExp)) {
+                _baseTargets.push(baseTarget);
+              }
+
+              return _baseTargets;
+            }, []);
+          } else if (base[baseTargetName]) {
+            baseTargets.push(base[baseTargetName]);
           }
 
-          if (baseTargetName && baseEventName && baseTarget && baseCallback) {
-            try {
-              baseTarget[method](baseEventName, baseCallback);
-            } catch (error) {}
+          var baseEventCallback = baseCallbacks[baseCallbackName];
+
+          if (baseEventCallback && baseEventCallback.name.split(' ').length === 1) {
+            baseEventCallback = baseEventCallback.bind(this);
+          }
+
+          if (baseTargetName && baseEventName && baseTargets.length && baseEventCallback) {
+            baseTargets.forEach(baseTarget => {
+              try {
+                switch (method) {
+                  case 'on':
+                    baseTarget[method](baseEventName, baseEventCallback);
+                    break;
+
+                  case 'off':
+                    baseTarget[method](baseEventName, baseEventCallback);
+                    break;
+                }
+              } catch (error) {
+                throw error;
+              }
+            });
           }
         });
       }
@@ -251,8 +282,8 @@
         case 1:
           var _arguments = Object.entries(arguments[0]);
 
-          _arguments.forEach((_ref2) => {
-            var [key, value] = _ref2;
+          _arguments.forEach((_ref3) => {
+            var [key, value] = _ref3;
             db[key] = value;
           });
 
@@ -357,8 +388,8 @@
 
     get() {
       if (arguments[0]) return this.data[arguments[0]];
-      return Object.entries(this.data).reduce((_data, _ref3) => {
-        var [key, value] = _ref3;
+      return Object.entries(this.data).reduce((_data, _ref4) => {
+        var [key, value] = _ref4;
         _data[key] = value;
         return _data;
       }, {});
@@ -383,8 +414,8 @@
         if (typeof _arguments[0] === 'object' && typeof _arguments[1] === 'boolean') {
           silent = _arguments[1];
           if (!silent) this.emit('beforeSet', this.data, Object.assign({}, this.data, _arguments[0]), this);
-          Object.entries(_arguments[0]).forEach((_ref4) => {
-            var [key, value] = _ref4;
+          Object.entries(_arguments[0]).forEach((_ref5) => {
+            var [key, value] = _ref5;
             this.setDataProperty(key, value, silent);
           });
           if (!silent) this.emit('set', this.data, this);
@@ -399,8 +430,8 @@
         if (this.localStorage.endpoint) this.setDB(_arguments[0], _arguments[1]);
       } else if (_arguments.length === 1 && !Array.isArray(_arguments[0]) && typeof _arguments[0] === 'object') {
         if (!silent) this.emit('beforeSet', this.data, Object.assign({}, this.data, _arguments[0]), this);
-        Object.entries(_arguments[0]).forEach((_ref5) => {
-          var [key, value] = _ref5;
+        Object.entries(_arguments[0]).forEach((_ref6) => {
+          var [key, value] = _ref6;
           this.setDataProperty(key, value);
           if (this.localStorage.endpoint) this.setDB(key, value);
         });
@@ -441,8 +472,8 @@
 
     parse() {
       var data = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this.data;
-      return Object.entries(data).reduce((_data, _ref6) => {
-        var [key, value] = _ref6;
+      return Object.entries(data).reduce((_data, _ref7) => {
+        var [key, value] = _ref7;
 
         if (value instanceof Model) {
           _data[key] = value.parse();

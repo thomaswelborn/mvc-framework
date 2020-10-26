@@ -15,9 +15,9 @@ class Service extends Events {
     'headers',
     'parameters',
     'redirect',
-    'referrer-policy',
+    'referrerPolicy',
     'body',
-    'files'
+    'files',
   ] }
   get settings() { return this._settings }
   set settings(settings) {
@@ -105,24 +105,19 @@ class Service extends Events {
         return response.json()
       })
       .then((data) => {
-        if(
-          data.code >= 400 &&
-          data.code <= 499
-        ) {
-          throw data
-        } else {
-          this.emit(
-            'ready',
-            data,
-            this,
-          )
-          return data
-        }
+        this.emit(
+          'ready',
+          data,
+          this,
+        )
+        return data
       })
       .catch((error) => {
         this.emit(
           'error',
-          error,
+          {
+            message: error,
+          },
           this,
         )
         return error

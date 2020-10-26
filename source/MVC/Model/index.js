@@ -92,34 +92,64 @@ const Model = class extends Events {
     const baseName = classType.concat('s')
     const baseEventsName = classType.concat('Events')
     const baseCallbacksName = classType.concat('Callbacks')
-    const base = this[baseName]
-    const baseEvents = this[baseEventsName]
-    const baseCallbacks = this[baseCallbacksName]
+    const base = this[baseName] || {}
+    const baseEvents = this[baseEventsName] || {}
+    const baseCallbacks = this[baseCallbacksName] || {}
     if(
-      base &&
-      baseEvents &&
-      baseCallbacks
+      Object.values(base).length &&
+      Object.values(baseEvents).length &&
+      Object.values(baseCallbacks).length
     ) {
       Object.entries(baseEvents)
         .forEach(([baseEventData, baseCallbackName]) => {
-          let [baseTargetName, baseEventName] = baseEventData.split(' ')
-          let baseTarget = base[baseTargetName]
-          let baseCallback = baseCallbacks[baseCallbackName]
+          const [baseTargetName, baseEventName] = baseEventData.split(' ')
+          const baseTargetNameSubstringFirst = baseTargetName.substring(0, 1)
+          const baseTargetNameSubstringLast = baseTargetName.substring(baseTargetName.length - 1)
+          let baseTargets = []
           if(
-            baseCallback &&
-            baseCallback.name.split(' ').length === 1
+            baseTargetNameSubstringFirst === '[' &&
+            baseTargetNameSubstringLast === ']'
           ) {
-            baseCallback = baseCallback.bind(this)
+            baseTargets = Object.entries(base)
+              .reduce((_baseTargets, [baseName, baseTarget]) => {
+                let baseTargetNameRegExpString = baseTargetName.slice(1, -1)
+                let baseTargetNameRegExp = new RegExp(baseTargetNameRegExpString)
+                if(baseName.match(baseTargetNameRegExp)) {
+                  _baseTargets.push(baseTarget)
+                }
+                return _baseTargets
+              }, [])
+          } else if(base[baseTargetName]) {
+            baseTargets.push(base[baseTargetName])
+          }
+          let baseEventCallback = baseCallbacks[baseCallbackName]
+          if(
+            baseEventCallback &&
+            baseEventCallback.name.split(' ').length === 1
+          ) {
+            baseEventCallback = baseEventCallback.bind(this)
           }
           if(
             baseTargetName &&
             baseEventName &&
-            baseTarget &&
-            baseCallback
+            baseTargets.length &&
+            baseEventCallback
           ) {
-            try {
-              baseTarget[method](baseEventName, baseCallback)
-            } catch(error) {}
+            baseTargets
+              .forEach((baseTarget) => {
+                try {
+                  switch(method) {
+                    case 'on':
+                      baseTarget[method](baseEventName, baseEventCallback)
+                      break
+                    case 'off':
+                      baseTarget[method](baseEventName, baseEventCallback)
+                      break
+                  }
+                } catch(error) {
+                  throw error
+                }
+              })
           }
         })
     }
