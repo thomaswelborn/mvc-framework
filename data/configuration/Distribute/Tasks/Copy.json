@@ -10,7 +10,8 @@
     },
     "dest": [
       [
-        "../mvc-framework-demonstration/node_modules/mvc-framework/distribute"
+        "../../HALO/source-images/node_modules/mvc-framework/distribute",
+        "../../HALO/source-images/services/node_modules/mvc-framework/distribute"
       ],
       {}
     ]
@@ -26,7 +27,8 @@
     },
     "dest": [
       [
-        "../mvc-framework-demonstration/node_modules/mvc-framework/source"
+        "../../HALO/source-images/node_modules/mvc-framework/source",
+        "../../HALO/source-images/services/node_modules/mvc-framework/source"
       ],
       {}
     ]
