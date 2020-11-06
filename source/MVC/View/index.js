@@ -199,12 +199,27 @@ class View extends Events {
     }
     return this
   }
+  renderElementTextContent(uiElement, textContent) {
+    if(this.ui[uiElement]) this.ui[uiElement].innerHTML = textContent
+    return this
+  }
+  renderElementAttribute(uiElement, attributeName) {
+    if(this.ui[uiElement]) this.ui[uiElement].removeAttribute(attributeName)
+    return this
+  }
+  renderElementAttribute(uiElement, attributeName, attributeValue) {
+    if(this.ui[uiElement]) this.ui[uiElement].setAttribute(attributeName, attributeValue)
+    return this
+  }
+  renderElement(uiElement, insertMethod, element) {
+    if(this.ui[uiElement]) this.ui[uiElement].insertAdjacentElement(insertMethod, element)
+    return this
+  }
   render(data = {}) {
     if(this.template) {
       const template = this.template(data)
       this.element.innerHTML = template
     }
-    this.toggleEvents()
     return this
   }
 }
