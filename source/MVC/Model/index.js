@@ -22,9 +22,13 @@ const Model = class extends Events {
     'services',
     'serviceEvents',
     'serviceCallbacks',
+    'sockets',
+    'socketEvents',
+    'socketCallbacks',
   ] }
   get bindableEventClassPropertyTypes() { return [
     'service',
+    'socket',
   ] }
   get settings() { return this._settings }
   set settings(settings) {

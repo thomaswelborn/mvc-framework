@@ -118,11 +118,11 @@
     }
 
     get validSettings() {
-      return ['localStorage', 'defaults', 'services', 'serviceEvents', 'serviceCallbacks'];
+      return ['localStorage', 'defaults', 'services', 'serviceEvents', 'serviceCallbacks', 'sockets', 'socketEvents', 'socketCallbacks'];
     }
 
     get bindableEventClassPropertyTypes() {
-      return ['service'];
+      return ['service', 'socket'];
     }
 
     get settings() {
