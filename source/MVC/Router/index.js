@@ -189,12 +189,6 @@ const Router = class extends Events {
         routeData,
         this
       )
-    } else {
-      this.emit(
-        'error',
-        routeData,
-        this
-      )
     }
     return this
   }

@@ -199,6 +199,10 @@ class View extends Events {
     }
     return this
   }
+  emptyElement(uiElement) {
+    this.ui[uiElement].innerHTML = ''
+    return this
+  }
   renderElementTextContent(uiElement, textContent) {
     if(this.ui[uiElement]) this.ui[uiElement].innerHTML = textContent
     return this
