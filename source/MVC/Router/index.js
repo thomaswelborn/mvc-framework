@@ -5,7 +5,7 @@ const Router = class extends Events {
     super()
     this.settings = settings
     this.options = options
-    this.addWindowEvents()
+    if(this.hashRouting) this.addWindowEvents()
   }
   get validSettings() { return [
     'root',
@@ -175,7 +175,7 @@ const Router = class extends Events {
         return matchRoute === true
       })
   }
-  popState(event) {
+  hashChange(event) {
     let location = this.location
     let route = this.getRoute(location)
     let routeData = {
@@ -183,7 +183,6 @@ const Router = class extends Events {
       location: location,
     }
     if(route) {
-      this.controller[route.callback](routeData)
       this.emit(
         'change', 
         routeData,
@@ -193,18 +192,20 @@ const Router = class extends Events {
     return this
   }
   addWindowEvents() {
-    window.on('popstate', this.popState.bind(this))
+    window.on('hashchange', this.hashChange.bind(this))
     return this
   }
   removeWindowEvents() {
-    window.off('popstate', this.popState.bind(this))
+    window.off('hashchange', this.hashChange.bind(this))
     return this
   }
-  navigate(path) {
+  navigate(url = String()) {
     if(this.hashRouting) {
-      window.location.hash = path
+      if(url === '') url = '/'
+      window.location.hash = url
     } else {
-      window.location.href = path
+      if(url === '') url = '/'
+      window.location.href = url
     }
     return this
   }
